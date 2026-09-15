@@ -25,14 +25,13 @@ Standard agent prompting often leads to architectural drift, broken types, and t
 
 Install `stubs` into your project workspace or global environment:
 
-```bash
-# Add as a dev dependency (recommended)
-npm install -D github:Wiltermoodj/stubs
+```Bash
+npm i -D github:Wiltermoodj/stubs && npx stubs init && npx stubs map --scaffold && npx stubs scan && npx stubs tree --graph
 ```
 
-```bash
-# Or initialize directly without local installation
-npx github:Wiltermoodj/stubs install
+Alternative (no local node_modules install):
+```Bash
+npx -y github:Wiltermoodj/stubs install && stubs init && stubs map --scaffold && stubs scan && stubs tree --graph
 ```
 
 ### 2. Standalone Install (curl)
