@@ -147,7 +147,9 @@ async function reloadLocalServerWorkspaceSilent() {
     if (selectedPath) {
       await loadAndRenderSidecarDetail(selectedPath);
     }
-  } catch {}
+  } catch {
+    // Ignore silent reload errors
+  }
 }
 
 function connectLocalSse() {
@@ -169,9 +171,13 @@ function connectLocalSse() {
           ) {
             await reloadLocalServerWorkspaceSilent();
           }
-        } catch {}
+        } catch {
+          // Ignore malformed event payload
+        }
       };
-    } catch {}
+    } catch {
+      // EventSource connection failed
+    }
   }
 }
 
@@ -202,7 +208,10 @@ async function openLocalDirectoryPicker() {
     filesList = await graphEngine.getFilesIndexed();
     localStorage.setItem('STUBS_FILES_LIST', JSON.stringify(filesList));
 
-    showToast(`Successfully indexed ${filesList.length} specifications from ${localFolderName}.`, 'success');
+    showToast(
+      `Successfully indexed ${filesList.length} specifications from ${localFolderName}.`,
+      'success',
+    );
     renderApp();
   } catch (err: any) {
     if (err.name !== 'AbortError') {
@@ -315,7 +324,9 @@ async function startApp() {
   } else if (workspaceSource === 'local-folder' && localFolderName && filesList.length > 0) {
     try {
       await graphEngine.indexWorkspace('/', { force: true });
-    } catch {}
+    } catch {
+      // Ignore initial workspace indexing error
+    }
     renderApp();
   } else if (workspaceSource === 'github-remote' && currentRepo && pat) {
     await loadWorkspace().catch(async (err) => {
@@ -487,7 +498,12 @@ function renderApp() {
                   ? `<option value="local">🖥️ local (live filesystem)</option>`
                   : workspaceSource === 'local-folder'
                     ? `<option value="local">📁 local (${localFolderName || 'directory'})</option>`
-                    : branchesList.map((b) => `<option value="${b}" ${b === currentBranch ? 'selected' : ''}>${b}</option>`).join('')
+                    : branchesList
+                        .map(
+                          (b) =>
+                            `<option value="${b}" ${b === currentBranch ? 'selected' : ''}>${b}</option>`,
+                        )
+                        .join('')
               }
             </select>
           </div>
@@ -1585,7 +1601,10 @@ async function submitDirective() {
             currentBranch,
           )
           .catch((err) => {
-            showToast('Offline save succeeded locally. GitHub sync failed: ' + err.message, 'warning');
+            showToast(
+              'Offline save succeeded locally. GitHub sync failed: ' + err.message,
+              'warning',
+            );
           });
       }
       showToast('Successfully saved directive note!', 'success');

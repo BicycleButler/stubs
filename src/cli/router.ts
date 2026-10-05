@@ -1760,7 +1760,9 @@ Options:
     const nonFlagArgs = ctx.args.filter((a) => !a.startsWith('-'));
     if (nonFlagArgs.length === 0) {
       console.error('Error: "blast" command requires a target file or symbol name.');
-      console.error('Usage: stubs blast <target> [--upstream|--downstream] [--depth <N>] [--guard [level]] [--json]');
+      console.error(
+        'Usage: stubs blast <target> [--upstream|--downstream] [--depth <N>] [--guard [level]] [--json]',
+      );
       return 1;
     }
 
@@ -1813,11 +1815,17 @@ Options:
       } else {
         if (guardRes.safe) {
           console.log(`✓ Blast radius guard PASSED for "${target}" at [${validLevel}] threshold.`);
-          console.log(`  Impact: ${guardRes.impactCount} entities across ${guardRes.domainsAffected.length} domain(s).`);
+          console.log(
+            `  Impact: ${guardRes.impactCount} entities across ${guardRes.domainsAffected.length} domain(s).`,
+          );
         } else {
-          console.error(`✖ Blast radius guard FAILED for "${target}" at [${validLevel}] threshold.`);
+          console.error(
+            `✖ Blast radius guard FAILED for "${target}" at [${validLevel}] threshold.`,
+          );
           console.error(`  Reason: ${guardRes.reason}`);
-          console.error(`  Impact: ${guardRes.impactCount} entities across ${guardRes.domainsAffected.length} domain(s).`);
+          console.error(
+            `  Impact: ${guardRes.impactCount} entities across ${guardRes.domainsAffected.length} domain(s).`,
+          );
           return 2;
         }
       }
@@ -2548,7 +2556,9 @@ Options:
 
     const files = ctx.args.filter((a) => !a.startsWith('-'));
     if (files.length === 0) {
-      console.error('Error: At least one file path is required. Usage: stubs plan:order <file1> <file2> ... [--dependents-first] [--json]');
+      console.error(
+        'Error: At least one file path is required. Usage: stubs plan:order <file1> <file2> ... [--dependents-first] [--json]',
+      );
       return 1;
     }
 
@@ -2562,14 +2572,18 @@ Options:
     if (isJson) {
       console.log(JSON.stringify(result, null, 2));
     } else {
-      console.log(`📋 Topological Edit Sequence (${result.direction === 'dependencies_first' ? 'Dependencies First' : 'Dependents First'}):`);
+      console.log(
+        `📋 Topological Edit Sequence (${result.direction === 'dependencies_first' ? 'Dependencies First' : 'Dependents First'}):`,
+      );
       result.orderedFiles.forEach((file, idx) => {
         const deps = result.dependencyMap[file] || [];
         const depTag = deps.length > 0 ? ` (depends on: ${deps.join(', ')})` : '';
         console.log(`  ${idx + 1}. ${file}${depTag}`);
       });
       if (result.hasCycles) {
-        console.warn(`⚠️ Warning: Circular dependencies detected among: ${result.cycleNodes.join(', ')}`);
+        console.warn(
+          `⚠️ Warning: Circular dependencies detected among: ${result.cycleNodes.join(', ')}`,
+        );
       }
     }
 
@@ -2596,7 +2610,9 @@ Options:
 
     // Initial sync
     const initialSync = await graphEngine.syncWorkspaceFiles(rootDir);
-    console.log(`✓ Initial sync complete (added: ${initialSync.added}, updated: ${initialSync.updated}, removed: ${initialSync.removed}).`);
+    console.log(
+      `✓ Initial sync complete (added: ${initialSync.added}, updated: ${initialSync.updated}, removed: ${initialSync.removed}).`,
+    );
 
     let isSyncing = false;
     const triggerSync = async () => {
@@ -2606,7 +2622,9 @@ Options:
         const syncRes = await graphEngine.syncWorkspaceFiles(rootDir);
         if (syncRes.added > 0 || syncRes.updated > 0 || syncRes.removed > 0) {
           const timestamp = new Date().toLocaleTimeString();
-          console.log(`[${timestamp}] ✓ Graph updated: +${syncRes.added} ~${syncRes.updated} -${syncRes.removed}`);
+          console.log(
+            `[${timestamp}] ✓ Graph updated: +${syncRes.added} ~${syncRes.updated} -${syncRes.removed}`,
+          );
         }
       } catch (err: any) {
         console.error(`Sync error: ${err.message || err}`);
@@ -2634,7 +2652,9 @@ Options:
     const target = ctx.args.find((a) => !a.startsWith('-'));
 
     if (!target) {
-      console.error('Error: Target file is required. Usage: stubs co-change <file> [--limit <N>] [--json]');
+      console.error(
+        'Error: Target file is required. Usage: stubs co-change <file> [--limit <N>] [--json]',
+      );
       return 1;
     }
 
@@ -2675,9 +2695,13 @@ Options:
       if (isJson) {
         console.log(JSON.stringify(result, null, 2));
       } else {
-        console.log(`📊 Git Temporal Co-Change Coupling for "${result.targetFile}" (${result.totalCommitsAnalyzed} commits analyzed):`);
+        console.log(
+          `📊 Git Temporal Co-Change Coupling for "${result.targetFile}" (${result.totalCommitsAnalyzed} commits analyzed):`,
+        );
         if (result.relatedFiles.length === 0) {
-          console.log(`  No frequent co-change relationships detected in the last ${limit} commits.`);
+          console.log(
+            `  No frequent co-change relationships detected in the last ${limit} commits.`,
+          );
         } else {
           result.relatedFiles.forEach((pair, idx) => {
             console.log(`  ${idx + 1}. ${pair.fileB} — ${pair.reason}`);
@@ -2729,7 +2753,9 @@ Options:
             console.log(`     - Missing in code: ${r.drift.missingInCode.join(', ')}`);
           }
           if (r.drift.undocumentedExports.length > 0) {
-            console.log(`     - Undocumented code exports: ${r.drift.undocumentedExports.join(', ')}`);
+            console.log(
+              `     - Undocumented code exports: ${r.drift.undocumentedExports.join(', ')}`,
+            );
           }
         });
       }

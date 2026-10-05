@@ -28,7 +28,12 @@ describe('Graphing & Mapping Optimizations', () => {
         { id: 'src/core/util.ts', file_path: 'src/core/util.ts', kind: 'file', domain: 'core' },
       ];
       const edges: GraphEdge[] = [
-        { source_id: 'src/core/hub.ts', target_id: 'src/core/util.ts', relation: 'imports', confidence: 'EXTRACTED' },
+        {
+          source_id: 'src/core/hub.ts',
+          target_id: 'src/core/util.ts',
+          relation: 'imports',
+          confidence: 'EXTRACTED',
+        },
       ];
 
       await graphEngine.upsertGraphNodes(nodes);
@@ -68,7 +73,12 @@ describe('Graphing & Mapping Optimizations', () => {
 
       for (let i = 1; i <= 15; i++) {
         const depId = `dep-${i}`;
-        nodes.push({ id: depId, file_path: `src/dep${i}.ts`, kind: 'file', domain: `dom-${i % 4}` });
+        nodes.push({
+          id: depId,
+          file_path: `src/dep${i}.ts`,
+          kind: 'file',
+          domain: `dom-${i % 4}`,
+        });
         edges.push({ source_id: depId, target_id: 'god-node', relation: 'imports' });
       }
 
@@ -89,7 +99,12 @@ describe('Graphing & Mapping Optimizations', () => {
     it('generates structured L0, L1, L2 tiered context', () => {
       const nodes: GraphNode[] = [
         { id: 'src/api/handler.ts', file_path: 'src/api/handler.ts', kind: 'file', domain: 'api' },
-        { id: 'src/core/service.ts', file_path: 'src/core/service.ts', kind: 'file', domain: 'core' },
+        {
+          id: 'src/core/service.ts',
+          file_path: 'src/core/service.ts',
+          kind: 'file',
+          domain: 'core',
+        },
       ];
       const edges: GraphEdge[] = [
         { source_id: 'src/api/handler.ts', target_id: 'src/core/service.ts', relation: 'imports' },

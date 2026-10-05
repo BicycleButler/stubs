@@ -218,7 +218,6 @@ export interface GitCoChangeResult {
   totalCommitsAnalyzed: number;
 }
 
-
 export class TopologyEngine {
   private nodes: Map<string, GraphNode> = new Map();
   private outgoingEdges: Map<string, GraphEdge[]> = new Map(); // source_id -> edges
@@ -1294,13 +1293,22 @@ export class TopologyEngine {
     if (threshold === 'low' && blast.totalAffected > limit) {
       safe = false;
       reason = `Affected entity count (${blast.totalAffected}) exceeds low safety limit (${limit}).`;
-    } else if (threshold === 'medium' && (blast.totalAffected > limit || (isGodNode && blast.totalAffected > 3))) {
+    } else if (
+      threshold === 'medium' &&
+      (blast.totalAffected > limit || (isGodNode && blast.totalAffected > 3))
+    ) {
       safe = false;
       reason = `Impact (${blast.totalAffected} nodes) exceeds medium threshold (${limit})${isGodNode ? ' on a central God Node' : ''}.`;
-    } else if (threshold === 'high' && (blast.totalAffected > limit || (isGodNode && isMultiDomainHub))) {
+    } else if (
+      threshold === 'high' &&
+      (blast.totalAffected > limit || (isGodNode && isMultiDomainHub))
+    ) {
       safe = false;
       reason = `High blast impact (${blast.totalAffected} nodes, ${blast.domainsAffected.length} domains) across critical architecture boundaries.`;
-    } else if (threshold === 'critical' && (exceedsLimit || (isGodNode && blast.totalAffected >= 10 && isMultiDomainHub))) {
+    } else if (
+      threshold === 'critical' &&
+      (exceedsLimit || (isGodNode && blast.totalAffected >= 10 && isMultiDomainHub))
+    ) {
       safe = false;
       reason = `CRITICAL BLAST IMPACT: Target is a core architectural hub affecting ${blast.totalAffected} entities across ${blast.domainsAffected.join(', ')}.`;
     }
@@ -1374,15 +1382,16 @@ export class TopologyEngine {
 
     const lines: string[] = [];
     lines.push(`[L0 TARGET]: ${l0_target.id} (${l0_target.kind})`);
-    if (l0_target.domain) lines.push(`Domain: ${l0_target.domain} | Phase: ${l0_target.phase || 'N/A'}`);
-    
+    if (l0_target.domain)
+      lines.push(`Domain: ${l0_target.domain} | Phase: ${l0_target.phase || 'N/A'}`);
+
     if (l1_dependencies.length > 0) {
       lines.push(`[L1 DEPENDS ON (${l1_dependencies.length})]:`);
       for (const d of l1_dependencies.slice(0, 15)) {
         lines.push(`  - ──[${d.relation}]──> ${d.id} (${d.confidence})`);
       }
     }
-    
+
     if (l1_dependents.length > 0) {
       lines.push(`[L1 DEPENDENTS (${l1_dependents.length})]:`);
       for (const d of l1_dependents.slice(0, 15)) {
@@ -1392,7 +1401,9 @@ export class TopologyEngine {
 
     if (l2_subsystem) {
       lines.push(`[L2 SUBSYSTEM]: #${l2_subsystem.communityId} ${l2_subsystem.label}`);
-      lines.push(`Coordinator Hub: ${l2_subsystem.hubNode} | Cohesion: ${(l2_subsystem.cohesion * 100).toFixed(0)}%`);
+      lines.push(
+        `Coordinator Hub: ${l2_subsystem.hubNode} | Cohesion: ${(l2_subsystem.cohesion * 100).toFixed(0)}%`,
+      );
     }
 
     return {
@@ -1421,7 +1432,8 @@ export class TopologyEngine {
 
     for (const p of filePaths) {
       const matched = this.resolveNodeIds(p);
-      const canonical = matched.length > 0 ? this.nodes.get(matched[0])?.file_path || matched[0] : p;
+      const canonical =
+        matched.length > 0 ? this.nodes.get(matched[0])?.file_path || matched[0] : p;
       inputSet.add(canonical);
       resolvedMap.set(p, canonical);
     }
@@ -1541,7 +1553,8 @@ export class TopologyEngine {
         for (const rule of rules) {
           if (
             (rule.source_domain === '*' || srcNode.domain === rule.source_domain) &&
-            (rule.forbidden_target_domain === '*' || tgtNode.domain === rule.forbidden_target_domain) &&
+            (rule.forbidden_target_domain === '*' ||
+              tgtNode.domain === rule.forbidden_target_domain) &&
             srcNode.domain !== tgtNode.domain
           ) {
             violations.push({
@@ -1550,7 +1563,9 @@ export class TopologyEngine {
               targetId: edge.target_id,
               targetDomain: tgtNode.domain,
               relation: edge.relation,
-              reason: rule.reason || `Forbidden boundary dependency from domain "${srcNode.domain}" to "${tgtNode.domain}"`,
+              reason:
+                rule.reason ||
+                `Forbidden boundary dependency from domain "${srcNode.domain}" to "${tgtNode.domain}"`,
             });
           }
         }
@@ -1589,10 +1604,7 @@ export class TopologyEngine {
         const otherCanonical = this.resolveNodeIds(f)[0] || f;
         if (otherCanonical === canonicalTarget) continue;
 
-        coChangeCounts.set(
-          otherCanonical,
-          (coChangeCounts.get(otherCanonical) || 0) + 1,
-        );
+        coChangeCounts.set(otherCanonical, (coChangeCounts.get(otherCanonical) || 0) + 1);
       }
     }
 
@@ -1619,4 +1631,3 @@ export class TopologyEngine {
     };
   }
 }
-
