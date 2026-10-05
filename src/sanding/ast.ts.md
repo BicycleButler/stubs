@@ -23,7 +23,10 @@ exports:
   - getAstStructuralHash
   - typeCheckCode
 depends_on:
-  - src/compiler/typechecker.ts
+  - ../../typescript
+  - ../../crypto
+  - ../../path
+  - ../compiler/typechecker
 used_by:
   - src/sanding/engine.ts
 ---

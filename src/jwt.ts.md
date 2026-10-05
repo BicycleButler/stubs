@@ -10,10 +10,10 @@ tags:
   - security
 module_depth: deep
 context_object: AuthContext
-status: spec
+status: materialized
 version: 1
 target_code_file: ./jwt.ts
-status_flag: typecheck-failed
+status_flag: clean
 user_notes:
   - id: NOTE-101
     timestamp: '2026-08-05T12:00:00Z'
@@ -81,18 +81,13 @@ user_notes:
       throwing exceptions)? | A: [Automated reply to: How does this module
       "define e...]
     status: resolved
-stale_details: >-
-  Type-checking failed:
-
-  /Users/lappier/code/projects/stubs/src/jwt.ts (16,28): Property 'createHmac'
-  does not exist on type 'Crypto'.
-
-  /Users/lappier/code/projects/stubs/src/jwt.ts (26,30): Property 'createHmac'
-  does not exist on type 'Crypto'.
+stale_details: null
 sync_state:
-  last_sync_timestamp: '2026-08-21T10:03:07.890Z'
-  sidecar_hash: 23d2779f922c5ac573564d4b84c6b05cc07aa4c2a7fd942d97d604e207a0a58b
-  code_hash: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  last_sync_timestamp: '2026-10-05T21:02:39.266Z'
+  sidecar_hash: 2a7a7455ef660d9c9a21071048826e6e79a5a01e02b66cf36a487b89a000607e
+  code_hash: aa249b03ab4f51ccbbbaac259dfc54e2a0243d35d15edabd4d83f486e1120b80
+depends_on:
+  - ../crypto
 ---
 
 # JWT Authentication Specification
@@ -118,6 +113,8 @@ with the actual implementation section below.
 ## Implementation
 
 ```typescript
+import * as crypto from 'crypto';
+
 export interface AuthContext {
   userId: string;
   roles: string[];

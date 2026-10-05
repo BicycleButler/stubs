@@ -240,6 +240,9 @@ export async function mkdir(_dirPath: string): Promise<void> {}
 export async function access(_filePath: string): Promise<void> {}
 export async function rename(_oldPath: string, _newPath: string): Promise<void> {}
 export async function unlink(_filePath: string): Promise<void> {}
+export async function stat(_filePath: string): Promise<any> {
+  return { mtimeMs: 1000 };
+}
 
 // Named exports from fs (Sync methods)
 export function readFileSync(_p: string, _encoding?: string): string {
@@ -270,6 +273,7 @@ export const promises = {
   access,
   rename,
   unlink,
+  stat,
 };
 
 // Shimming "os" Node.js module

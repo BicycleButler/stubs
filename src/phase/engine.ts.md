@@ -2,9 +2,9 @@
 title: Phase Engine — 5-Phase Lifecycle Verification & State Machine
 type: sidecar-spec
 description: >-
-  Verifies phase transition gating rules across the 5 deterministic lifecycle phases:
-  Conceptualize, Grill, Spec/Scaffold, Materialize, and Sand & Audit. Enforces
-  quality gates and safely updates OKF specification frontmatter.
+  Verifies phase transition gating rules across the 5 deterministic lifecycle
+  phases: Conceptualize, Grill, Spec/Scaffold, Materialize, and Sand & Audit.
+  Enforces quality gates and safely updates OKF specification frontmatter.
 tags:
   - phase
   - lifecycle
@@ -26,10 +26,12 @@ exports:
   - AdvancePhaseResult
   - WorkspacePhaseMatrix
 depends_on:
-  - src/parser/okf.ts
-  - src/graph/engine.ts
-  - src/materializer/engine.ts
-  - src/storage/index.ts
+  - ../../path
+  - ../../js-yaml
+  - ../parser/okf
+  - ../graph/engine
+  - ../storage
+  - ../materializer/engine
 used_by:
   - src/cli/router.ts
   - src/server/portal.ts

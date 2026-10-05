@@ -22,8 +22,11 @@ status_flag: clean
 exports:
   - StubsWebApp
 depends_on:
-  - src/server/portal.ts
-  - src/server/github.ts
+  - ../storage
+  - ../graph/engine
+  - ../parser/okf
+  - ../materializer/engine
+  - ../server/github
 ---
 
 # Web PWA — Browser Client & WASM SQLite Bundle

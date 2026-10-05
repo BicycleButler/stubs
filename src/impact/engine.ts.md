@@ -4,8 +4,8 @@ type: sidecar-spec
 description: >-
   Analyzes upstream and downstream blast-radius using the SQLite dependency
   graph and AST topology. Computes risk levels (LOW/MEDIUM/HIGH/CRITICAL),
-  detects impacted architectural domains, and identifies stale sidecars
-  in the cascade path.
+  detects impacted architectural domains, and identifies stale sidecars in the
+  cascade path.
 tags:
   - impact
   - blast-radius
@@ -24,10 +24,9 @@ exports:
   - ImpactAnalysisResult
   - AffectedModuleInfo
 depends_on:
-  - src/config/schema.ts
-  - src/graph/engine.ts
-  - src/graph/topology.ts
-  - src/storage/index.ts
+  - ../graph/engine
+  - ../config/schema
+  - ../storage
 used_by:
   - src/cli/router.ts
 ---

@@ -44,15 +44,17 @@ Every initiative and module in the repository progresses through 5 deterministic
 | Initiative                                       | Lead / Agents   | Current Phase                     | Task Tracker Link                                       | Target Milestone |
 | :----------------------------------------------- | :-------------- | :-------------------------------- | :------------------------------------------------------ | :--------------- |
 | **Framework Lifecycle & Planning Hub Expansion** | AI Agent & Team | **Phase 1: Conceptualize / Plan** | [Lifecycle Expansion Plan](lifecycle-expansion-plan.md) | v1.1.0           |
+| **stubs Standalone Optimization**                | AI Agent & Team | **Phase 5: Sand & Audit**         | [Optimization Plan](stubs-optimization-plan.md)         | v1.3.0           |
 
 ---
 
 ## Conceptual Blueprints & Domain Concepts
 
-| Concept Doc                                                        | Scope / Domain                        | Phase         | File Tree Blueprint | Linked Initiative   |
-| :----------------------------------------------------------------- | :------------------------------------ | :------------ | :------------------ | :------------------ |
-| [Lifecycle & Planning Expansion Plan](lifecycle-expansion-plan.md) | Core CLI, GraphEngine, Parser, Server | Conceptualize | Defined             | Framework Expansion |
-| [Context Map](../architecture/context-map.md)                      | Root Architecture Hierarchy           | Spec          | Defined             | System Core         |
+| Concept Doc                                                        | Scope / Domain                        | Phase         | File Tree Blueprint | Linked Initiative             |
+| :----------------------------------------------------------------- | :------------------------------------ | :------------ | :------------------ | :---------------------------- |
+| [Lifecycle & Planning Expansion Plan](lifecycle-expansion-plan.md) | Core CLI, GraphEngine, Parser, Server | Conceptualize | Defined             | Framework Expansion           |
+| [Optimization Plan](stubs-optimization-plan.md)                    | QueryEngine, GraphEngine, CLI, Routes | Conceptualize | Defined             | stubs Standalone Optimization |
+| [Context Map](../architecture/context-map.md)                      | Root Architecture Hierarchy           | Spec          | Defined             | System Core                   |
 
 ---
 

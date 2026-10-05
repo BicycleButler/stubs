@@ -19,23 +19,25 @@ context_object: PortalServer
 status: spec
 version: 2
 target_code_file: ./portal.ts
-status_flag: needs-human-review-resolution
+status_flag: clean
 exports:
   - PortalServer
 depends_on:
-  - src/config/schema.ts
-  - src/graph/engine.ts
-  - src/parser/okf.ts
-  - src/materializer/engine.ts
-  - src/sanding/engine.ts
-  - src/templates/engine.ts
-  - src/server/github.ts
-  - src/storage/credentials.ts
+  - ../../http
+  - ../../fs
+  - ../../path
+  - ../../crypto
+  - ../../js-yaml
+  - ../parser/okf
+  - ../graph/engine
+  - ../config/schema
+  - ../storage/credentials
+  - ../materializer/engine
+  - ../templates/engine
+  - ./github
 used_by:
   - src/cli/router.ts
-stale_details: >-
-  Conflict detected: Both sidecar and code files have been modified with
-  structural AST differences.
+stale_details: null
 ---
 
 # Portal Server — HTTP & SSE Web Portal

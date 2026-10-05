@@ -19,7 +19,7 @@ context_object: AutonomyLevel
 status: spec
 version: 1
 target_code_file: ./protocol.ts
-status_flag: needs-human-review-resolution
+status_flag: clean
 exports:
   - AutonomyLevel
   - DriftReport
@@ -27,14 +27,16 @@ exports:
   - ReconciliationResult
   - AutonomyProtocol
 depends_on:
-  - src/config/schema.ts
-  - src/parser/okf.ts
-  - src/graph/engine.ts
+  - ../../fs
+  - ../../path
+  - ../../crypto
+  - ../../js-yaml
+  - ../config/schema
+  - ../parser/okf
+  - ../graph/engine
 used_by:
   - src/cli/router.ts
-stale_details: >-
-  Conflict detected: Both sidecar and code files have been modified with
-  structural AST differences.
+stale_details: null
 ---
 
 # Autonomy Protocol — 3-Tier Gate & 5-Phase Reconciliation

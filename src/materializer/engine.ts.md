@@ -17,22 +17,24 @@ module_depth: deep
 status: spec
 version: 1
 target_code_file: ./engine.ts
-status_flag: needs-human-review-resolution
+status_flag: clean
 exports:
   - MaterializerEngine
   - MaterializeResult
   - stringifyOkfSpec
 depends_on:
-  - src/parser/okf.ts
-  - src/parser/ast.ts
-  - src/compiler/typechecker.ts
-  - src/graph/engine.ts
-  - src/storage/containment.ts
+  - ../../fs
+  - ../../path
+  - ../../crypto
+  - ../../js-yaml
+  - ../parser/okf
+  - ../parser/ast
+  - ../compiler/typechecker
+  - ../graph/engine
+  - ../storage/containment
 used_by:
   - src/cli/router.ts
-stale_details: >-
-  Conflict detected: Both sidecar and code files have been modified with
-  structural AST differences.
+stale_details: null
 ---
 
 # Materializer Engine — Code Extraction & Atomic Write

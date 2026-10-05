@@ -30,6 +30,7 @@ npm i -D github:Wiltermoodj/stubs && npx stubs init && npx stubs map --scaffold 
 ```
 
 Alternative (no local node_modules install):
+
 ```Bash
 npx -y github:Wiltermoodj/stubs install && stubs init && stubs map --scaffold && stubs scan && stubs tree --graph
 ```

@@ -18,7 +18,7 @@ module_depth: deep
 status: spec
 version: 1
 target_code_file: ./index.ts
-status_flag: needs-human-review-resolution
+status_flag: clean
 exports:
   - FileStorageDriver
   - FileSystemDriver
@@ -30,9 +30,12 @@ exports:
   - VirtualFileSystem
 used_by:
   - src/graph/engine.ts
-stale_details: >-
-  Conflict detected: Both sidecar and code files have been modified with
-  structural AST differences.
+stale_details: null
+depends_on:
+  - ../../fs/promises
+  - ../../fs
+  - ../../path
+  - ../../sql.js
 ---
 
 # Storage Abstraction Layer

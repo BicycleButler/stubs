@@ -16,7 +16,7 @@ module_depth: shallow
 status: spec
 version: 1
 target_code_file: ./ast.ts
-status_flag: needs-human-review-resolution
+status_flag: clean
 exports:
   - MarkdownBlock
   - parseMarkdown
@@ -24,13 +24,11 @@ exports:
   - extractDistilledSignatures
   - extractExportedSymbolNames
 depends_on:
-  - src/parser/okf.ts
+  - ../../typescript
 used_by:
   - src/materializer/engine.ts
   - src/context/engine.ts
-stale_details: >-
-  Conflict detected: Both sidecar and code files have been modified with
-  structural AST differences.
+stale_details: null
 ---
 
 # Markdown AST — Block Tokenizer

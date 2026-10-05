@@ -3,9 +3,9 @@ title: Architectural Lint Engine — Guardrails & Layer Invariant Enforcement
 type: sidecar-spec
 description: >-
   Enforces zero-dependency architectural guardrails across the repository:
-  downward layer hierarchy (Layer 0 Foundation -> Layer 6 Interface),
-  circular dependency cycle bans, sidecar manifest parity (code imports vs
-  depends_on frontmatter), and domain encapsulation.
+  downward layer hierarchy (Layer 0 Foundation -> Layer 6 Interface), circular
+  dependency cycle bans, sidecar manifest parity (code imports vs depends_on
+  frontmatter), and domain encapsulation.
 tags:
   - lint
   - architecture
@@ -29,11 +29,10 @@ exports:
   - LAYER_DEFINITIONS
   - getModuleLayer
 depends_on:
-  - src/config/schema.ts
-  - src/graph/engine.ts
-  - src/graph/topology.ts
-  - src/parser/okf.ts
-  - src/storage/index.ts
+  - ../graph/engine
+  - ../graph/topology
+  - ../storage
+  - ../config/schema
 used_by:
   - src/cli/router.ts
 ---

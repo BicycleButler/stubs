@@ -20,6 +20,7 @@ export interface FileStorageDriver {
   exists(path: string): Promise<boolean>;
   readDir(path: string): Promise<string[]>;
   mkdir(path: string, options?: { recursive?: boolean }): Promise<void>;
+  stat?(path: string): Promise<{ mtimeMs: number } | null>;
 }
 
 export interface FileSystemDriver extends FileStorageDriver {
@@ -82,6 +83,15 @@ export class NodeFileSystem implements FileSystemDriver {
 
   public async mkdir(dirPath: string, options?: { recursive?: boolean }): Promise<void> {
     await fs.mkdir(dirPath, options || { recursive: true });
+  }
+
+  public async stat(filePath: string): Promise<{ mtimeMs: number } | null> {
+    try {
+      const s = await fs.stat(filePath);
+      return { mtimeMs: Math.round(s.mtimeMs) };
+    } catch {
+      return null;
+    }
   }
 
   public async glob(pattern: string): Promise<string[]> {
@@ -383,6 +393,14 @@ export class VirtualFileSystem implements FileSystemDriver {
 
   public async mkdir(_dirPath: string, _options?: { recursive?: boolean }): Promise<void> {
     // Virtual file system manages paths implicitly
+  }
+
+  public async stat(filePath: string): Promise<{ mtimeMs: number } | null> {
+    const norm = this.normalizePath(filePath);
+    if (!this.files.has(norm)) {
+      return null;
+    }
+    return { mtimeMs: 1000 };
   }
 
   public async glob(pattern: string): Promise<string[]> {

@@ -3,8 +3,8 @@ title: Template Engine — Handlebars/EJS Sidecar Renderer
 type: sidecar-spec
 description: >-
   Renders OKF sidecar template molds (.ts.md.tpl files) by translating
-  Handlebars-style syntax ({{variable}}, {{#if}}, {{#each}}) into EJS-style
-  tags and executing them via a compiled JavaScript function. Provides the
+  Handlebars-style syntax ({{variable}}, {{#if}}, {{#each}}) into EJS-style tags
+  and executing them via a compiled JavaScript function. Provides the
   TemplateEngine class for filesystem-based template management and the
   compileTemplate/translateHandlebarsToEjs pure functions for programmatic use.
 tags:
@@ -23,7 +23,9 @@ exports:
   - compileTemplate
   - translateHandlebarsToEjs
 depends_on:
-  - src/config/schema.ts
+  - ../../fs
+  - ../../path
+  - ../config/schema
 used_by:
   - src/cli/router.ts
 ---

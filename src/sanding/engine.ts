@@ -328,13 +328,33 @@ export class SandingEngine {
       }
     }
 
+    // 1. Distinguish between code sidecars (sidecar-spec, module-stub) and pure
+    // architectural documents (subsystem-index, concept-doc, planning-map, architecture-doc, etc.).
+    const isCodeSidecar = frontmatter.type === 'sidecar-spec' || frontmatter.type === 'module-stub';
     const targetCodeFile = frontmatter.target_code_file;
-    if (!targetCodeFile) {
+
+    if (!isCodeSidecar || !targetCodeFile) {
+      let updated = false;
+      if (frontmatter.status_flag === 'needs-human-review-resolution') {
+        frontmatter.status_flag = 'clean';
+        frontmatter.stale_details = null;
+        updated = true;
+      }
+      if (wasHealed || updated) {
+        const healedContent = `---\n${yaml.dump(frontmatter)}---\n${body}`;
+        writeFileSync(resolvedSidecar, healedContent, 'utf8');
+        return {
+          filePath: sidecarPath,
+          targetCodeFile: targetCodeFile || '',
+          status: wasHealed ? 'healed' : 'synced',
+          direction: 'none',
+        };
+      }
       return {
         filePath: sidecarPath,
-        targetCodeFile: '',
-        status: 'error',
-        error: `Required property "target_code_file" is missing in frontmatter.`,
+        targetCodeFile: targetCodeFile || '',
+        status: 'no_change',
+        direction: 'none',
       };
     }
 
@@ -374,20 +394,59 @@ export class SandingEngine {
     const cleanSidecarContent = stripSyncStateFromContent(content);
     const currentSidecarHash = sha256(cleanSidecarContent);
 
-    // Extract implementation code from specification
-    const extractedCode = extractImplementationCode(body);
-    if (extractedCode === null) {
-      return {
-        filePath: sidecarPath,
-        targetCodeFile,
-        status: 'error',
-        error: `No implementation code block found under ## Implementation or as a fallback in sidecar.`,
-      };
-    }
-
+    // Extract implementation code from specification (strict ## Implementation section)
+    const extractedCode = extractImplementationCode(body, false);
     const sidecarMtime = statSync(resolvedSidecar).mtime;
     const codeExists = existsSync(resolvedTarget);
     const codeMtime = codeExists ? statSync(resolvedTarget).mtime : null;
+
+    // Handle pure declarative spec sidecars without an embedded ## Implementation code block
+    if (extractedCode === null) {
+      let sidecarUpdated = false;
+
+      // 1. Sync frontmatter dependencies from actual code if code file exists
+      if (codeExists) {
+        try {
+          const codeContent = readFileSync(resolvedTarget, 'utf8');
+          if (!options.noGraphSync && codeContent) {
+            const depsUpdated = syncFrontmatterDependencies(
+              frontmatter,
+              resolvedTarget,
+              codeContent,
+              resolvedSidecar,
+            );
+            if (depsUpdated) sidecarUpdated = true;
+          }
+        } catch {
+          // ignore read error
+        }
+      }
+
+      // 2. Clear false conflict flags caused by old parser behavior
+      if (frontmatter.status_flag === 'needs-human-review-resolution') {
+        frontmatter.status_flag = 'clean';
+        frontmatter.stale_details = null;
+        sidecarUpdated = true;
+      }
+
+      if (sidecarUpdated || wasHealed) {
+        const updatedContent = `---\n${yaml.dump(frontmatter)}---\n${body}`;
+        writeFileSync(resolvedSidecar, updatedContent, 'utf8');
+        return {
+          filePath: sidecarPath,
+          targetCodeFile,
+          status: wasHealed ? 'healed' : 'synced',
+          direction: codeExists ? 'code_to_sidecar' : 'none',
+        };
+      }
+
+      return {
+        filePath: sidecarPath,
+        targetCodeFile,
+        status: 'no_change',
+        direction: 'none',
+      };
+    }
 
     const sidecarHashRecorded = frontmatter.sync_state?.sidecar_hash || '';
     const codeHashRecorded = frontmatter.sync_state?.code_hash || '';

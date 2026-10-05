@@ -4,10 +4,12 @@
 
 /**
  * Extracts the first code block under a section matching "Implementation" (case-insensitive).
- * If no such block exists, it falls back to extracting the first code block in the file.
- * Returns null if no code block is found.
+ * If allowFallback is true, it falls back to extracting the first code block in the file.
+ * Defaults to allowFallback = false to ensure pure specifications, interfaces, and architecture
+ * diagrams are not mistakenly extracted as executable code implementations.
+ * Returns null if no implementation code block is found.
  */
-export function extractImplementationCode(body: string): string | null {
+export function extractImplementationCode(body: string, allowFallback = false): string | null {
   if (!body) return null;
 
   const lines = body.replace(/\r\n/g, '\n').split('\n');
@@ -47,6 +49,10 @@ export function extractImplementationCode(body: string): string | null {
 
   if (codeBlockLines.length > 0) {
     return codeBlockLines.join('\n');
+  }
+
+  if (!allowFallback) {
+    return null;
   }
 
   // Fallback: search for the first fenced code block in the entire markdown body

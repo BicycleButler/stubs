@@ -3,6 +3,7 @@ import * as ts from 'typescript';
 import { parseOkfSpec } from '../parser/okf';
 import { extractImplementationCode } from '../parser/markdown';
 import { normalizePosixPath } from './engine';
+import { extractFrameworkRoutes } from './routes';
 
 export type EdgeConfidence = 'EXTRACTED' | 'DECLARED' | 'INFERRED' | 'AMBIGUOUS';
 
@@ -30,7 +31,7 @@ export interface GraphNode {
 export interface GraphEdge {
   source_id: string;
   target_id: string;
-  relation: 'imports' | 'calls' | 'depends_on' | 'implements' | 'exports' | 'contains';
+  relation: 'imports' | 'calls' | 'depends_on' | 'implements' | 'exports' | 'contains' | 'handles';
   confidence?: EdgeConfidence;
   weight?: number;
 }
@@ -87,30 +88,45 @@ export function extractFileGraph(
   // 3. TypeScript / JavaScript AST Extraction
   if (['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs'].includes(ext)) {
     extractTypeScriptGraph(normPath, content, fileNodeId, domain, phase, nodes, edges);
-    return { nodes, edges };
-  }
-
-  // 4. Python Pattern Extraction
-  if (ext === '.py') {
+  } else if (ext === '.py') {
+    // 4. Python Pattern Extraction (with dynamic optional parser check)
+    tryLoadOptionalParser('tree-sitter-python');
     extractPythonGraph(normPath, content, fileNodeId, domain, phase, nodes, edges);
-    return { nodes, edges };
-  }
-
-  // 5. Rust Pattern Extraction
-  if (ext === '.rs') {
+  } else if (ext === '.rs') {
+    // 5. Rust Pattern Extraction (with dynamic optional parser check)
+    tryLoadOptionalParser('tree-sitter-rust');
     extractRustGraph(normPath, content, fileNodeId, domain, phase, nodes, edges);
-    return { nodes, edges };
-  }
-
-  // 6. Go Pattern Extraction
-  if (ext === '.go') {
+  } else if (ext === '.go') {
+    // 6. Go Pattern Extraction (with dynamic optional parser check)
+    tryLoadOptionalParser('tree-sitter-go');
     extractGoGraph(normPath, content, fileNodeId, domain, phase, nodes, edges);
-    return { nodes, edges };
+  } else {
+    // Generic fallback: line-by-line import search
+    extractGenericGraph(normPath, content, fileNodeId, domain, phase, nodes, edges);
   }
 
-  // Generic fallback: line-by-line import search
-  extractGenericGraph(normPath, content, fileNodeId, domain, phase, nodes, edges);
+  // 7. Framework Route Extraction (Express, FastAPI, Django, Flask, Gin)
+  try {
+    const routeGraph = extractFrameworkRoutes(normPath, content, { domain, phase });
+    nodes.push(...routeGraph.nodes);
+    edges.push(...routeGraph.edges);
+  } catch {
+    // Gracefully ignore route extraction failures
+  }
+
   return { nodes, edges };
+}
+
+/**
+ * Safely attempts to load an optional external parser module at runtime.
+ * Returns null if the optional grammar/parser package is not installed.
+ */
+export function tryLoadOptionalParser(parserModuleName: string): any | null {
+  try {
+    return require(parserModuleName);
+  } catch {
+    return null;
+  }
 }
 
 /**

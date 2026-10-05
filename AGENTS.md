@@ -51,10 +51,12 @@ For individual module sidecar specs (interface contracts, design decisions, depe
 
 The repository maintains an AST-extracted dependency graph in `.stubs/graph.sqlite` with Louvain community detection and edge confidence tagging (`EXTRACTED`, `DECLARED`, `INFERRED`, `AMBIGUOUS`).
 
-- **Querying GraphRAG Context:** Run `npx stubs query "<question or concept>"` (or `npx stubs query "<text>" --budget 1500 --dfs`) to retrieve token-budgeted subgraph context before modifying files.
-- **Explaining Symbols & Nodes:** Run `npx stubs explain <target>` to inspect callers, callees, confidence tags, degree centralities, and subsystem community clusters.
-- **Reading Architecture:** Query graph topology via `npx stubs blast <target>`, `npx stubs path <src> <dest>`, `npx stubs diagram`, or `npx stubs export <obsidian|wiki>`.
-- **Model Context Protocol (MCP):** Connect your IDE/agent to `npx stubs mcp` for live stdio JSON-RPC tool access.
+- **Querying Knowledge & GraphRAG (Preferred Single Call):** Run `npx stubs query "<query>"` as the default entry point for all architectural intelligence. It supports both natural language questions and prefix-based surgical operations in a single invocation (saving ~50% tool calls and up to 90% tokens):
+  - `npx stubs query "explain: <symbol or file>"` — Inspect callers, callees, confidence tags, degree centralities, and subsystem community clusters (replaces standalone `stubs explain`).
+  - `npx stubs query "path: <source> to <target>"` — Trace shortest dependency path chain between modules (replaces standalone `stubs path`).
+  - `npx stubs query "blast: <target>"` — Calculate downstream impact radius and affected dependents (replaces standalone `stubs blast`).
+  - `npx stubs query "<question or concept>"` (or `--budget 1500 --dfs`) — Multi-hop token-budgeted GraphRAG context retrieval.
+- **Model Context Protocol (MCP):** Connect your IDE/agent to `npx stubs mcp` for live stdio JSON-RPC tool access. The `stubs_query` tool accepts the same surgical prefixes (`explain:`, `path:`, `blast:`) to minimize tool calls.
 - **Automatic Graph Maintenance:** Whenever files (source code or markdown sidecars) are created, deleted, or structurally modified, agents **MUST automatically run `npx stubs scan`** to refresh `.stubs/graph.sqlite`.
 
 ## CLI Commands
@@ -63,7 +65,8 @@ Agents should use the following commands to execute repository tasks:
 
 - **Scan & Index Code Graph:** `npx stubs scan` (or `node .agents/skills/stubs/dist/cli.cjs scan`)
 - **Query GraphRAG Subgraph:** `npx stubs query "<question>"`
-- **Explain Symbol / Node:** `npx stubs explain <target>`
+- **Unified Surgical Query:** `npx stubs query "explain: <target>"` | `path: <A> to <B>` | `blast: <target>`
+- **Explain Symbol / Node (Alias):** `npx stubs explain <target>`
 - **Export Knowledge Graph:** `npx stubs export <obsidian|wiki> [--out <dir>]`
 - **Start MCP Stdio Server:** `npx stubs mcp`
 - **Install Assistant Rules:** `npx stubs hook install`
@@ -78,7 +81,7 @@ Agents should use the following commands to execute repository tasks:
 
 The `stubs` CLI binary is at `.agents/skills/stubs/dist/cli.cjs`. Invoke via `npx stubs <command>` or `node .agents/skills/stubs/dist/cli.cjs <command>`.
 
-Known CLI bugs (see STUBS_CLI_ASSESSMENT.md): B1 sand path, B2 non-interactive grind, B3 materialize parser, B4 audit flags, B5 grind command missing. Phase 1 work targets B1/B2/B3.
+Known CLI bugs (see STUBS_CLI_ASSESSMENT.md): B1 sand path resolution & pure spec handling (RESOLVED), B2 non-interactive grind, B3 materialize parser, B4 audit flags, B5 grind command missing. Phase 1 work targets B1/B2/B3.
 
 ## Hermes contextloop integration
 

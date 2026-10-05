@@ -3,9 +3,10 @@ title: Graph Engine — SQLite Adjacency Graph & FTS5
 type: sidecar-spec
 description: >-
   Core dependency graph and full-text search engine. Manages a SQLite database
-  of sidecar specs, initiatives, planned filetrees, tasks, their dependency edges,
-  and an FTS5 virtual table for full-text search. Provides CRUD operations, graph
-  traversal, 5-phase lifecycle tracking, and planning hub metrics.
+  of sidecar specs, initiatives, planned filetrees, tasks, their dependency
+  edges, and an FTS5 virtual table for full-text search. Provides CRUD
+  operations, graph traversal, 5-phase lifecycle tracking, and planning hub
+  metrics.
 tags:
   - graph
   - sqlite
@@ -35,9 +36,13 @@ exports:
   - normalizePosixPath
   - resolvePosixPath
 depends_on:
-  - src/config/schema.ts
-  - src/parser/okf.ts
-  - src/storage/index.ts
+  - ../../path
+  - ../../crypto
+  - ../parser/okf
+  - ../config/schema
+  - ../storage
+  - ./extractor
+  - ./topology
 used_by:
   - src/grill/engine.ts
   - src/concept/engine.ts
@@ -68,6 +73,10 @@ Tracks markdown checklist items extracted from initiative plans and sidecars: `i
 ### `planned_files` table
 
 Tracks file tree blueprint items extracted from `filetree` code blocks and OKF manifests: `id`, `source_doc`, `path`, `type`, `description`, `status`.
+
+### `file_meta` table
+
+Tracks file hash and modification time for incremental scan caching: `file_path`, `file_hash`, `mtime_ms`. Enables instant skipping of unchanged files without disk content read I/O.
 
 ### `dependencies` table
 

@@ -18,7 +18,7 @@ context_object: SyncResult
 status: spec
 version: 1
 target_code_file: ./engine.ts
-status_flag: needs-human-review-resolution
+status_flag: clean
 exports:
   - SyncResult
   - SandingEngine
@@ -26,16 +26,18 @@ exports:
   - stripSyncStateFromContent
   - healCorruptedFrontmatter
 depends_on:
-  - src/parser/okf.ts
-  - src/parser/markdown.ts
-  - src/sanding/ast.ts
-  - src/storage/containment.ts
+  - ../../fs
+  - ../../path
+  - ../../crypto
+  - ../../js-yaml
+  - ../parser/okf
+  - ../parser/markdown
+  - ./ast
+  - ../storage/containment
+  - ../graph/extractor
 used_by:
   - src/cli/router.ts
   - src/autonomy/protocol.ts
-stale_details: >-
-  Conflict detected: Both sidecar and code files have been modified with
-  structural AST differences.
 ---
 
 # Sanding Engine — Bi-Directional Spec/Code Sync

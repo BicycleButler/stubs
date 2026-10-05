@@ -3,9 +3,9 @@ title: OKF Sidecar Parser
 type: sidecar-spec
 description: >-
   Parses and validates Open Knowledge Format (OKF) sidecar specification files,
-  planning maps, concept documents, and initiative plans. Splits YAML frontmatter
-  from Markdown body, validates schemas, extracts conceptual file trees and
-  markdown checklists.
+  planning maps, concept documents, and initiative plans. Splits YAML
+  frontmatter from Markdown body, validates schemas, extracts conceptual file
+  trees and markdown checklists.
 tags:
   - parser
   - okf
@@ -38,6 +38,8 @@ used_by:
   - src/sanding/engine.ts
   - src/autonomy/protocol.ts
   - src/cli/router.ts
+depends_on:
+  - ../../js-yaml
 ---
 
 # OKF Sidecar Parser

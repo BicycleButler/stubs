@@ -2,9 +2,10 @@
 title: Diagram Engine — Living Mermaid Architecture & Sequence Exporter
 type: sidecar-spec
 description: >-
-  Synthesizes living, GitHub-rendered Mermaid diagrams (flowchart TD, sequenceDiagram,
-  and neighborhood slices) directly from the SQLite dependency graph and AST call
-  edges. Provides automatic documentation synchronization for architectural context maps.
+  Synthesizes living, GitHub-rendered Mermaid diagrams (flowchart TD,
+  sequenceDiagram, and neighborhood slices) directly from the SQLite dependency
+  graph and AST call edges. Provides automatic documentation synchronization for
+  architectural context maps.
 tags:
   - diagram
   - mermaid
@@ -23,10 +24,11 @@ exports:
   - DiagramResult
   - DiagramType
 depends_on:
-  - src/config/schema.ts
-  - src/graph/engine.ts
-  - src/lint/engine.ts
-  - src/storage/index.ts
+  - ../../path
+  - ../graph/engine
+  - ../lint/engine
+  - ../storage
+  - ../config/schema
 used_by:
   - src/cli/router.ts
 ---

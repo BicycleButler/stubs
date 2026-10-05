@@ -22,31 +22,39 @@ context_object: CliContext
 status: spec
 version: 2
 target_code_file: ./router.ts
-status_flag: needs-human-review-resolution
+status_flag: clean
 exports:
   - CliContext
   - CliRouter
 depends_on:
-  - src/config/schema.ts
-  - src/parser/okf.ts
-  - src/graph/engine.ts
-  - src/templates/engine.ts
-  - src/autonomy/protocol.ts
-  - src/server/portal.ts
-  - src/sanding/engine.ts
-  - src/materializer/engine.ts
-  - src/storage/credentials.ts
-  - src/grill/engine.ts
-  - src/concept/engine.ts
-  - src/concept/tree.ts
-  - src/phase/engine.ts
-  - src/context/engine.ts
-  - src/impact/engine.ts
+  - ../../fs
+  - ../../path
+  - ../../child_process
+  - ../parser/okf
+  - ../graph/engine
+  - ../templates/engine
+  - ../autonomy/protocol
+  - ../server/portal
+  - ../config/schema
+  - ../sanding/engine
+  - ../materializer/engine
+  - ../concept/engine
+  - ../concept/tree
+  - ../phase/engine
+  - ../context/engine
+  - ../impact/engine
+  - ../lint/engine
+  - ../mock/engine
+  - ../diagram/engine
+  - ../prune/engine
+  - ../changelog/engine
+  - ../query/engine
+  - ../export/engine
+  - ../server/mcp
+  - ../storage/credentials
 used_by:
   - src/cli.ts
-stale_details: >-
-  Conflict detected: Both sidecar and code files have been modified with
-  structural AST differences.
+stale_details: null
 ---
 
 # CLI Router — Command Dispatcher

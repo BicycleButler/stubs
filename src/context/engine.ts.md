@@ -2,10 +2,10 @@
 title: Context Engine — Agent Context Packaging & Subgraph Slicing
 type: sidecar-spec
 description: >-
-  Generates token-optimized, topologically bounded context packages for AI agents
-  and developer workflows. Uses tiered depth slicing (Target Full + Direct
-  Dependencies Distilled Signatures/ADRs + 2-Hop Boundary Symbols) to minimize
-  prompt bloat without losing interface clarity.
+  Generates token-optimized, topologically bounded context packages for AI
+  agents and developer workflows. Uses tiered depth slicing (Target Full +
+  Direct Dependencies Distilled Signatures/ADRs + 2-Hop Boundary Symbols) to
+  minimize prompt bloat without losing interface clarity.
 tags:
   - context
   - agent-briefing
@@ -27,11 +27,12 @@ exports:
   - Tier1DependentContext
   - Tier2BoundaryContext
 depends_on:
-  - src/config/schema.ts
-  - src/graph/engine.ts
-  - src/parser/okf.ts
-  - src/parser/ast.ts
-  - src/storage/index.ts
+  - ../../path
+  - ../graph/engine
+  - ../parser/okf
+  - ../parser/ast
+  - ../storage
+  - ../config/schema
 used_by:
   - src/cli/router.ts
 ---

@@ -3,10 +3,10 @@ title: Storage — Credentials & Console Masking
 type: sidecar-spec
 description: >-
   Secures GitHub Personal Access Token (PAT) storage using AES-256-GCM
-  encryption derived from a machine-unique PBKDF2 key. Credentials are
-  persisted to ~/.stubs/credentials.json. Also provides applyGlobalConsoleMasking()
-  which patches process.stdout and process.stderr to redact stored secrets from
-  all console output at runtime.
+  encryption derived from a machine-unique PBKDF2 key. Credentials are persisted
+  to ~/.stubs/credentials.json. Also provides applyGlobalConsoleMasking() which
+  patches process.stdout and process.stderr to redact stored secrets from all
+  console output at runtime.
 tags:
   - storage
   - security
@@ -28,6 +28,11 @@ exports:
 used_by:
   - src/cli/router.ts
   - src/server/github.ts
+depends_on:
+  - ../../crypto
+  - ../../os
+  - ../../fs
+  - ../../path
 ---
 
 # Storage — Credentials & Console Masking

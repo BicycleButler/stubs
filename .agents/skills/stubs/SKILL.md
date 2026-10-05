@@ -196,15 +196,25 @@ npx stubs serve --port 3000
 ```
 
 ### 19. `stubs explain <target>`
-Inspects an entity or symbol's architectural profile, incoming/outgoing callers with confidence levels, degree centrality, downstream impact radius, and detected subsystem community.
+Inspects an entity or symbol's architectural profile, incoming/outgoing callers with confidence levels, degree centrality, downstream impact radius, and detected subsystem community. (Legacy alias for `stubs query "explain: <target>"`).
 ```bash
 npx stubs explain QueryEngine
 npx stubs explain src/parser/okf.ts --json
 ```
 
-### 20. `stubs query "<question or concept>"`
-GraphRAG context retrieval: executes multi-hop BFS/DFS subgraph traversal from matched seed nodes and packs relevant architectural signatures, relations, and ADRs within a strict token budget.
+### 20. `stubs query "<question, concept, or surgical prefix>"`
+Unified architectural query and GraphRAG retrieval: executes multi-hop BFS/DFS subgraph traversal from matched seed nodes within a strict token budget, OR runs targeted surgical operations via prefix syntax:
+- **Explain Symbol:** `npx stubs query "explain: <target>"`
+- **Shortest Path:** `npx stubs query "path: <source> to <target>"`
+- **Blast Radius:** `npx stubs query "blast: <target>"`
+- **GraphRAG Context:** `npx stubs query "<question or concept>"`
 ```bash
+# Surgical Queries (saves tool calls and tokens):
+npx stubs query "explain: QueryEngine"
+npx stubs query "path: GraphEngine to CliRouter"
+npx stubs query "blast: src/graph/engine.ts"
+
+# GraphRAG Context Retrieval:
 npx stubs query "How does the MCP server work?" --budget 1500
 npx stubs query "Parser AST extraction" --dfs --json
 ```
@@ -217,7 +227,7 @@ npx stubs export wiki --out ./wiki
 ```
 
 ### 22. `stubs mcp`
-Starts a native Model Context Protocol (MCP) JSON-RPC 2.0 stdio server, exposing `stubs_query`, `stubs_explain`, `stubs_blast`, `stubs_path`, and `stubs_communities` to AI agents and IDEs.
+Starts a native Model Context Protocol (MCP) JSON-RPC 2.0 stdio server, exposing `stubs_query` (with unified surgical prefixes `explain:`, `path:`, `blast:`), `stubs_explain`, `stubs_blast`, `stubs_path`, and `stubs_communities` to AI agents and IDEs.
 ```bash
 npx stubs mcp
 ```

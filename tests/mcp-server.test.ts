@@ -90,4 +90,35 @@ describe('McpServer (Model Context Protocol)', () => {
     expect(res.id).toBe(4);
     expect(res.result.content[0].text).toContain('Knowledge Graph Context');
   });
+
+  it('should execute stubs_query with surgical prefix explain:', async () => {
+    const req = {
+      jsonrpc: '2.0',
+      id: 5,
+      method: 'tools/call',
+      params: {
+        name: 'stubs_query',
+        arguments: { query: 'explain: parseOkfSpec' },
+      },
+    };
+    const res = await mcpServer.handleRpcRequest(req);
+    expect(res.id).toBe(5);
+    expect(res.result.content[0].text).toContain('Node Profile:');
+    expect(res.result.content[0].text).toContain('parseOkfSpec');
+  });
+
+  it('should execute stubs_query with surgical prefix blast:', async () => {
+    const req = {
+      jsonrpc: '2.0',
+      id: 6,
+      method: 'tools/call',
+      params: {
+        name: 'stubs_query',
+        arguments: { query: 'blast: src/parser/okf.ts.md' },
+      },
+    };
+    const res = await mcpServer.handleRpcRequest(req);
+    expect(res.id).toBe(6);
+    expect(res.result.content[0].text).toContain('Blast Radius');
+  });
 });

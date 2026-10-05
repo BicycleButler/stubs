@@ -2,11 +2,12 @@
 title: GitHub API Integration — Remote Repository Bridge
 type: sidecar-spec
 description: >-
-  Provides authenticated GitHub REST API access for remote repository operations:
-  listing branches, reading and writing files, authenticating with PATs, and
-  fetching repository metadata. Used by the PortalServer for the GitHub tab and
-  by the install command to fetch skill bundles. Implements AES-256-GCM token
-  encryption using a machine-unique key for in-memory token storage.
+  Provides authenticated GitHub REST API access for remote repository
+  operations: listing branches, reading and writing files, authenticating with
+  PATs, and fetching repository metadata. Used by the PortalServer for the
+  GitHub tab and by the install command to fetch skill bundles. Implements
+  AES-256-GCM token encryption using a machine-unique key for in-memory token
+  storage.
 tags:
   - server
   - github
@@ -27,8 +28,10 @@ exports:
   - GitHubFile
   - GitHubApiClient
 depends_on:
-  - src/config/schema.ts
-  - src/storage/credentials.ts
+  - ../../os
+  - ../../crypto
+  - ../config/schema
+  - ../storage/credentials
 used_by:
   - src/server/portal.ts
   - src/cli/router.ts

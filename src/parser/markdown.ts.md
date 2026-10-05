@@ -18,8 +18,7 @@ status_flag: clean
 exports:
   - extractImplementationCode
   - replaceImplementationCode
-depends_on:
-  - src/parser/okf.ts
+depends_on: []
 used_by:
   - src/materializer/engine.ts
   - src/sanding/engine.ts

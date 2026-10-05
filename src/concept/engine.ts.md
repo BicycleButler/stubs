@@ -2,9 +2,10 @@
 title: Concept Engine — Conceptual Documentation & Filetree Scaffolder
 type: sidecar-spec
 description: >-
-  Scaffolds conceptual documents, initiative plans, and planning maps from template
-  molds. Extracts planned file tree blueprints from concept markdown specifications
-  and automatically generates initial directories, code stubs, and OKF sidecar specs.
+  Scaffolds conceptual documents, initiative plans, and planning maps from
+  template molds. Extracts planned file tree blueprints from concept markdown
+  specifications and automatically generates initial directories, code stubs,
+  and OKF sidecar specs.
 tags:
   - concept
   - scaffolding
@@ -24,10 +25,11 @@ exports:
   - ScaffoldResult
   - ConceptInfo
 depends_on:
-  - src/parser/okf.ts
-  - src/graph/engine.ts
-  - src/templates/engine.ts
-  - src/storage/index.ts
+  - ../../path
+  - ../parser/okf
+  - ../graph/engine
+  - ../templates/engine
+  - ../storage
 used_by:
   - src/cli/router.ts
   - src/server/portal.ts

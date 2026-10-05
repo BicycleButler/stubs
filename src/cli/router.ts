@@ -790,6 +790,21 @@ Options:
     const codeSummary = await graphEngine.indexCodeWorkspace(scanDir);
     const sidecarSummary = await graphEngine.indexWorkspace(scanDir);
 
+    // Compute and persist Louvain community clusters (Step 4.3)
+    let communitiesCount = 0;
+    try {
+      const topology = await graphEngine.getTopologyEngine();
+      const communityRes = topology.getCommunities();
+      const labels: Record<number, string> = {};
+      for (const info of communityRes.communityInfo) {
+        labels[info.id] = info.label;
+      }
+      await graphEngine.assignCommunities(communityRes.communities, labels);
+      communitiesCount = communityRes.totalCommunities;
+    } catch {
+      // Community calculation fallback
+    }
+
     const nodes = await graphEngine.getGraphNodes();
     const edges = await graphEngine.getGraphEdges();
 
@@ -800,9 +815,11 @@ Options:
             scanDir,
             codeFilesScanned: codeSummary.scanned,
             codeFilesIndexed: codeSummary.indexed,
+            codeFilesSkipped: codeSummary.skipped,
             sidecarsIndexed: sidecarSummary.indexed,
             totalGraphNodes: nodes.length,
             totalGraphEdges: edges.length,
+            communitiesDetected: communitiesCount,
             errors: [...codeSummary.errors, ...sidecarSummary.errors],
           },
           null,
@@ -813,10 +830,15 @@ Options:
     }
 
     console.log(`\n✓ Codebase AST Indexing Complete:`);
-    console.log(`  - Source files indexed : ${codeSummary.indexed} / ${codeSummary.scanned}`);
+    console.log(
+      `  - Source files indexed : ${codeSummary.indexed} / ${codeSummary.scanned} (${codeSummary.skipped} skipped)`,
+    );
     console.log(`  - Sidecars indexed     : ${sidecarSummary.indexed}`);
     console.log(`  - Graph Nodes cached   : ${nodes.length}`);
     console.log(`  - Graph Edges cached   : ${edges.length}`);
+    if (communitiesCount > 0) {
+      console.log(`  - Communities detected : ${communitiesCount}`);
+    }
 
     if (codeSummary.errors.length > 0) {
       console.log(`\nWarnings / Errors:`);
@@ -2402,6 +2424,12 @@ Options:
     const isDfs = ctx.args.includes('--dfs');
 
     let budget = 1500;
+    let surgicalKind: 'search' | 'explain' | 'path' | 'blast' | undefined;
+    let surgicalTarget: string | undefined;
+    let surgicalSource: string | undefined;
+    let depth: number | undefined;
+    let direction: 'upstream' | 'downstream' | 'both' | undefined;
+    let relationTypes: string[] | undefined;
     const queryParts: string[] = [];
 
     for (let i = 0; i < ctx.args.length; i++) {
@@ -2411,6 +2439,53 @@ Options:
         i++;
       } else if (arg.startsWith('--budget=')) {
         budget = parseInt(arg.split('=')[1], 10) || 1500;
+      } else if (arg === '--depth' && ctx.args[i + 1]) {
+        depth = parseInt(ctx.args[i + 1], 10) || 3;
+        i++;
+      } else if (arg.startsWith('--depth=')) {
+        depth = parseInt(arg.split('=')[1], 10) || 3;
+      } else if (arg === '--upstream') {
+        direction = 'upstream';
+      } else if (arg === '--downstream') {
+        direction = 'downstream';
+      } else if (arg === '--both') {
+        direction = 'both';
+      } else if (arg === '--type' && ctx.args[i + 1]) {
+        relationTypes = ctx.args[i + 1].split(',').map((r) => r.trim());
+        i++;
+      } else if (arg.startsWith('--type=')) {
+        relationTypes = arg
+          .split('=')[1]
+          .split(',')
+          .map((r) => r.trim());
+      } else if (arg === '--explain') {
+        surgicalKind = 'explain';
+        if (ctx.args[i + 1] && !ctx.args[i + 1].startsWith('-')) {
+          surgicalTarget = ctx.args[i + 1];
+          i++;
+        }
+      } else if (arg.startsWith('--explain=')) {
+        surgicalKind = 'explain';
+        surgicalTarget = arg.split('=')[1];
+      } else if (arg === '--blast') {
+        surgicalKind = 'blast';
+        if (ctx.args[i + 1] && !ctx.args[i + 1].startsWith('-')) {
+          surgicalTarget = ctx.args[i + 1];
+          i++;
+        }
+      } else if (arg.startsWith('--blast=')) {
+        surgicalKind = 'blast';
+        surgicalTarget = arg.split('=')[1];
+      } else if (arg === '--path') {
+        surgicalKind = 'path';
+        if (ctx.args[i + 1] && !ctx.args[i + 1].startsWith('-')) {
+          surgicalSource = ctx.args[i + 1];
+          i++;
+        }
+        if (ctx.args[i + 1] && !ctx.args[i + 1].startsWith('-')) {
+          surgicalTarget = ctx.args[i + 1];
+          i++;
+        }
       } else if (arg === '--dfs' || arg === '--bfs' || arg === '--json') {
         // flag
       } else if (!arg.startsWith('-')) {
@@ -2419,8 +2494,10 @@ Options:
     }
 
     const queryText = queryParts.join(' ').trim();
-    if (!queryText) {
-      console.error('Error: Query text is required. Usage: stubs query "<question or concept>"');
+    if (!queryText && !surgicalKind) {
+      console.error(
+        'Error: Query text or surgical flag is required.\nUsage: stubs query "<question or prefix>" [--path A B] [--explain A] [--blast A]',
+      );
       return 1;
     }
 
@@ -2428,9 +2505,15 @@ Options:
     const graphEngine = new GraphEngine(config.paths.db_path);
     const queryEngine = new QueryEngine({ graphEngine });
 
-    const result = await queryEngine.query(queryText, {
+    const result = await queryEngine.query(queryText || surgicalTarget || '', {
       budget,
       mode: isDfs ? 'dfs' : 'bfs',
+      surgicalKind,
+      target: surgicalTarget,
+      source: surgicalSource,
+      depth,
+      direction,
+      relationTypes,
     });
 
     if (isJson) {

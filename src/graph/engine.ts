@@ -541,9 +541,15 @@ export class GraphEngine {
       CREATE TABLE IF NOT EXISTS file_meta (
         file_path TEXT PRIMARY KEY,
         file_hash TEXT NOT NULL,
-        indexed_at INTEGER NOT NULL
+        indexed_at INTEGER NOT NULL,
+        mtime_ms INTEGER
       );
     `);
+    try {
+      await this.run('ALTER TABLE file_meta ADD COLUMN mtime_ms INTEGER;');
+    } catch {
+      // Column already exists
+    }
 
     // 14. Create graph_edges table for AST imports, calls, depends_on relationships
     await this.run(`
@@ -1190,7 +1196,7 @@ Decisions: ${decisionsText}
   public async indexCodeFile(
     filePath: string,
     content?: string,
-    options: { domain?: string; phase?: string } = {},
+    options: { domain?: string; phase?: string; mtimeMs?: number } = {},
   ): Promise<void> {
     await this.ensureInitialized();
     const norm = normalizePosixPath(filePath);
@@ -1218,9 +1224,19 @@ Decisions: ${decisionsText}
     await this.upsertGraphEdges(edges);
 
     const hash = this.calculateHash(codeContent);
+    let mtimeMs = options.mtimeMs;
+    if (mtimeMs === undefined && typeof this.fsDriver.stat === 'function') {
+      try {
+        const s = await this.fsDriver.stat(norm);
+        if (s) mtimeMs = s.mtimeMs;
+      } catch {
+        // Ignore stat error
+      }
+    }
+
     await this.run(
-      `INSERT OR REPLACE INTO file_meta (file_path, file_hash, indexed_at) VALUES (?, ?, ?);`,
-      [norm, hash, Date.now()],
+      `INSERT OR REPLACE INTO file_meta (file_path, file_hash, indexed_at, mtime_ms) VALUES (?, ?, ?, ?);`,
+      [norm, hash, Date.now(), mtimeMs ?? null],
     );
   }
 
@@ -1349,27 +1365,42 @@ Decisions: ${decisionsText}
 
     const cachedMetaRows = options.force
       ? []
-      : await this.all<{ file_path: string; file_hash: string }>(
-          'SELECT file_path, file_hash FROM file_meta;',
+      : await this.all<{ file_path: string; file_hash: string; mtime_ms: number | null }>(
+          'SELECT file_path, file_hash, mtime_ms FROM file_meta;',
         );
-    const cachedMetaMap = new Map<string, string>();
+    const cachedMetaMap = new Map<string, { hash: string; mtimeMs: number | null }>();
     for (const r of cachedMetaRows) {
-      cachedMetaMap.set(r.file_path, r.file_hash);
+      cachedMetaMap.set(r.file_path, { hash: r.file_hash, mtimeMs: r.mtime_ms });
     }
 
     for (const f of matchedFiles) {
       const norm = normalizePosixPath(f);
       try {
+        const cached = cachedMetaMap.get(norm);
+        let stat: { mtimeMs: number } | null = null;
+        if (!options.force && typeof this.fsDriver.stat === 'function') {
+          stat = await this.fsDriver.stat(norm);
+          if (stat && cached && cached.mtimeMs && cached.mtimeMs === stat.mtimeMs) {
+            summary.skipped++;
+            continue;
+          }
+        }
+
         const content = await this.fsDriver.readFile(norm);
         const currentHash = this.calculateHash(content);
-        const cachedHash = cachedMetaMap.get(norm);
 
-        if (!options.force && cachedHash === currentHash) {
+        if (!options.force && cached && cached.hash === currentHash) {
+          if (stat && (!cached.mtimeMs || cached.mtimeMs !== stat.mtimeMs)) {
+            await this.run('UPDATE file_meta SET mtime_ms = ? WHERE file_path = ?;', [
+              stat.mtimeMs,
+              norm,
+            ]);
+          }
           summary.skipped++;
           continue;
         }
 
-        await this.indexCodeFile(norm, content);
+        await this.indexCodeFile(norm, content, { mtimeMs: stat?.mtimeMs });
         if (norm.endsWith('.md') && !norm.endsWith('.tpl') && content.trim().startsWith('---')) {
           try {
             await this.indexFile(norm);
@@ -2118,7 +2149,23 @@ Decisions: ${decisionsText}
           continue;
         }
 
-        const content = await this.fsDriver.readFile(relativePath);
+        const normPath = normalizePosixPath(relativePath);
+        let stat: { mtimeMs: number } | null = null;
+        if (!options.force && typeof this.fsDriver.stat === 'function') {
+          stat = await this.fsDriver.stat(normPath);
+          if (stat) {
+            const cachedMeta = await this.get<{ mtime_ms: number | null }>(
+              'SELECT mtime_ms FROM file_meta WHERE file_path = ?;',
+              [normPath],
+            );
+            if (cachedMeta && cachedMeta.mtime_ms && cachedMeta.mtime_ms === stat.mtimeMs) {
+              processedFiles.add(normPath);
+              continue;
+            }
+          }
+        }
+
+        const content = await this.fsDriver.readFile(normPath);
 
         // Ignore files that don't start with YAML frontmatter marker
         if (!content.trim().startsWith('---')) {
@@ -2126,14 +2173,20 @@ Decisions: ${decisionsText}
         }
 
         const fileHash = this.calculateHash(content);
-        processedFiles.add(relativePath);
+        processedFiles.add(normPath);
 
         if (!options.force) {
           const existing = await this.get<{ file_hash: string }>(
             'SELECT file_hash FROM sidecars WHERE file_path = ?;',
-            [relativePath],
+            [normPath],
           );
           if (existing && existing.file_hash === fileHash) {
+            if (stat?.mtimeMs) {
+              await this.run(
+                `INSERT OR REPLACE INTO file_meta (file_path, file_hash, indexed_at, mtime_ms) VALUES (?, ?, ?, ?);`,
+                [normPath, fileHash, Date.now(), stat.mtimeMs],
+              );
+            }
             continue;
           }
         }
@@ -2153,6 +2206,13 @@ Decisions: ${decisionsText}
           body: parseResult.body,
           fileHash,
         });
+
+        if (stat?.mtimeMs) {
+          await this.run(
+            `INSERT OR REPLACE INTO file_meta (file_path, file_hash, indexed_at, mtime_ms) VALUES (?, ?, ?, ?);`,
+            [normPath, fileHash, Date.now(), stat.mtimeMs],
+          );
+        }
 
         summary.indexed++;
       } catch (err: any) {

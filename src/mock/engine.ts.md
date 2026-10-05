@@ -3,9 +3,9 @@ title: Mock Engine — Spec-Driven Test & Mock Scaffolding
 type: sidecar-spec
 description: >-
   Synthesizes complete unit test suites and typed mock implementations directly
-  from OKF sidecar interface contracts, ADR decisions, and distilled AST signatures.
-  Supports Jest, Vitest, and Node test runners to enforce TDD before and during
-  code materialization.
+  from OKF sidecar interface contracts, ADR decisions, and distilled AST
+  signatures. Supports Jest, Vitest, and Node test runners to enforce TDD before
+  and during code materialization.
 tags:
   - mock
   - test-scaffold
@@ -26,11 +26,13 @@ exports:
   - MockedSymbolSuite
   - TestFramework
 depends_on:
-  - src/config/schema.ts
-  - src/parser/okf.ts
-  - src/parser/ast.ts
-  - src/graph/engine.ts
-  - src/storage/index.ts
+  - ../../path
+  - ../../typescript
+  - ../parser/okf
+  - ../parser/ast
+  - ../graph/engine
+  - ../storage
+  - ../config/schema
 used_by:
   - src/cli/router.ts
 ---

@@ -1,6 +1,6 @@
 {
   "name": "stubs",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "stubs AI Agent Skill",
   "main": "dist/cli.cjs",
   "bin": {

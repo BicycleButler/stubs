@@ -3,8 +3,8 @@ title: Changelog Engine — Semantic Architectural Release Notes
 type: sidecar-spec
 description: >-
   Synthesizes semantic architectural changelogs from git history and sidecar
-  specifications, tracking ADR decisions, public interface contract drift,
-  and 5-phase lifecycle transitions.
+  specifications, tracking ADR decisions, public interface contract drift, and
+  5-phase lifecycle transitions.
 tags:
   - changelog
   - adr
@@ -27,10 +27,12 @@ exports:
   - ExportChange
   - PhaseTransition
 depends_on:
-  - src/config/schema.ts
-  - src/parser/okf.ts
-  - src/graph/engine.ts
-  - src/storage/index.ts
+  - ../../path
+  - ../../child_process
+  - ../../js-yaml
+  - ../graph/engine
+  - ../storage
+  - ../config/schema
 used_by:
   - src/cli/router.ts
 ---

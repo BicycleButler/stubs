@@ -18,11 +18,15 @@ export const STUBS_MCP_TOOLS: McpTool[] = [
   {
     name: 'stubs_query',
     description:
-      'Query the codebase knowledge graph with natural language or keywords to retrieve a token-budgeted subgraph context package (GraphRAG).',
+      'Unified architectural query and GraphRAG tool. Supports natural language exploration, keyword search, or surgical prefix queries: "explain: <symbol|file>" (inspect callers/callees/community), "path: <source> to <target>" (trace dependency path), and "blast: <target>" (calculate downstream impact radius). Preferred single-call entry point for codebase intelligence.',
     inputSchema: {
       type: 'object',
       properties: {
-        query: { type: 'string', description: 'The question, symbol, or concept to search.' },
+        query: {
+          type: 'string',
+          description:
+            'The search query, question, or surgical prefix command (e.g. "explain: SandingEngine", "path: GraphEngine to CliRouter", "blast: src/graph/engine.ts", or "How does typechecking work?").',
+        },
         budget: {
           type: 'number',
           description: 'Approximate token budget for the response (default: 1500).',
@@ -30,7 +34,29 @@ export const STUBS_MCP_TOOLS: McpTool[] = [
         mode: {
           type: 'string',
           enum: ['bfs', 'dfs'],
-          description: 'Graph traversal mode (bfs for broad, dfs for deep).',
+          description: 'Graph traversal mode for GraphRAG queries (bfs for broad, dfs for deep).',
+        },
+        surgicalKind: {
+          type: 'string',
+          enum: ['search', 'explain', 'path', 'blast'],
+          description: 'Optional explicit surgical query kind.',
+        },
+        target: {
+          type: 'string',
+          description: 'Optional target symbol or file for explain or blast operations.',
+        },
+        source: {
+          type: 'string',
+          description: 'Optional source symbol or file for path operations.',
+        },
+        depth: {
+          type: 'number',
+          description: 'Max traversal depth for blast operations (default: 3).',
+        },
+        direction: {
+          type: 'string',
+          enum: ['upstream', 'downstream', 'both'],
+          description: 'Impact direction for blast operations (default: downstream).',
         },
       },
       required: ['query'],
@@ -269,9 +295,14 @@ export class McpServer {
 
       switch (toolName) {
         case 'stubs_query': {
-          const res = await this.queryEngine.query(args.query, {
+          const res = await this.queryEngine.query(args.query || '', {
             budget: args.budget,
             mode: args.mode,
+            surgicalKind: args.surgicalKind,
+            target: args.target,
+            source: args.source,
+            depth: args.depth,
+            direction: args.direction,
           });
           return {
             jsonrpc: '2.0',

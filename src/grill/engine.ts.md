@@ -18,20 +18,22 @@ context_object: GrillEngineOptions
 status: spec
 version: 1
 target_code_file: ./engine.ts
-status_flag: needs-human-review-resolution
+status_flag: clean
 exports:
   - GrillState
   - GrillEngineOptions
   - GrillEngine
 depends_on:
-  - src/config/schema.ts
-  - src/parser/okf.ts
-  - src/graph/engine.ts
+  - ../../fs
+  - ../../path
+  - ../../readline
+  - ../../js-yaml
+  - ../config/schema
+  - ../parser/okf
+  - ../graph/engine
 used_by:
   - src/cli/router.ts
-stale_details: >-
-  Conflict detected: Both sidecar and code files have been modified with
-  structural AST differences.
+stale_details: null
 ---
 
 # Grill Engine — Interactive Spec Interrogation

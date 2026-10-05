@@ -3,8 +3,8 @@ title: Prune Engine — Phantom Spec & Dead Code Garbage Collection
 type: sidecar-spec
 description: >-
   Audits workspace for architectural drift, phantom sidecars referencing deleted
-  files, untracked code files missing sidecars, zombie exported symbols, and stale
-  graph database records. Supports auto-healing and pruning via the CLI.
+  files, untracked code files missing sidecars, zombie exported symbols, and
+  stale graph database records. Supports auto-healing and pruning via the CLI.
 tags:
   - prune
   - orphan
@@ -25,11 +25,14 @@ exports:
   - PruneIssueType
   - PruneFixResult
 depends_on:
-  - src/config/schema.ts
-  - src/parser/okf.ts
-  - src/parser/ast.ts
-  - src/graph/engine.ts
-  - src/storage/index.ts
+  - ../../fs
+  - ../../path
+  - ../../js-yaml
+  - ../graph/engine
+  - ../parser/okf
+  - ../parser/ast
+  - ../storage
+  - ../config/schema
 used_by:
   - src/cli/router.ts
 ---

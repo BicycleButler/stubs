@@ -23,6 +23,8 @@ exports:
 used_by:
   - src/materializer/engine.ts
   - src/sanding/engine.ts
+depends_on:
+  - ../../path
 ---
 
 # Storage — Path Containment Guard

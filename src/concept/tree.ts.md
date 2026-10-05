@@ -2,9 +2,10 @@
 title: Tree Engine — Visual Cross-Repository File Tree Generator
 type: sidecar-spec
 description: >-
-  Generates ASCII and Unicode visual file tree structures merging physical workspace
-  files with planned blueprint entries from OKF concept docs. Annotates nodes with
-  5-phase lifecycle states, drift status flags, and planned markers.
+  Generates ASCII and Unicode visual file tree structures merging physical
+  workspace files with planned blueprint entries from OKF concept docs.
+  Annotates nodes with 5-phase lifecycle states, drift status flags, and planned
+  markers.
 tags:
   - tree
   - visualization
@@ -21,9 +22,10 @@ exports:
   - TreeEngine
   - VisualTreeOptions
 depends_on:
-  - src/graph/engine.ts
-  - src/parser/okf.ts
-  - src/storage/index.ts
+  - ../../path
+  - ../graph/engine
+  - ../storage
+  - ../parser/okf
 used_by:
   - src/cli/router.ts
   - src/server/portal.ts
