@@ -699,7 +699,9 @@ function extractRustGraph(
     }
 
     // impl Trait for Struct or impl Struct
-    const implMatch = line.match(/^\s*impl(?:\s*<[^>]+>)?\s+(?:([a-zA-Z0-9_]+)\s+for\s+)?([a-zA-Z0-9_]+)/);
+    const implMatch = line.match(
+      /^\s*impl(?:\s*<[^>]+>)?\s+(?:([a-zA-Z0-9_]+)\s+for\s+)?([a-zA-Z0-9_]+)/,
+    );
     if (implMatch) {
       const traitName = implMatch[1];
       const structName = implMatch[2];
@@ -710,7 +712,9 @@ function extractRustGraph(
       if (traitName) {
         edges.push({
           source_id: structId,
-          target_id: traitName.includes('::') ? traitName.replace(/::/g, '/') : `${filePath}#${traitName}`,
+          target_id: traitName.includes('::')
+            ? traitName.replace(/::/g, '/')
+            : `${filePath}#${traitName}`,
           relation: 'implements',
           confidence: 'EXTRACTED',
           weight: 1.0,
@@ -831,7 +835,9 @@ function extractGoGraph(
     }
 
     // func (r *Receiver) Method() or func FuncName()
-    const receiverMatch = line.match(/^\s*func\s+\((?:[a-zA-Z0-9_]+\s+\*?([a-zA-Z0-9_]+))\)\s+([a-zA-Z0-9_]+)\s*\(/);
+    const receiverMatch = line.match(
+      /^\s*func\s+\((?:[a-zA-Z0-9_]+\s+\*?([a-zA-Z0-9_]+))\)\s+([a-zA-Z0-9_]+)\s*\(/,
+    );
     if (receiverMatch) {
       const structName = receiverMatch[1];
       const methodName = receiverMatch[2];

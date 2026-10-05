@@ -12,8 +12,16 @@ describe('Advanced Graphing & Mapping Capabilities', () => {
       ];
 
       const edges: GraphEdge[] = [
-        { source_id: 'src/api/handler.ts', target_id: 'src/services/storage.ts', relation: 'imports' },
-        { source_id: 'src/services/storage.ts', target_id: 'src/drivers/sqlite.ts', relation: 'imports' },
+        {
+          source_id: 'src/api/handler.ts',
+          target_id: 'src/services/storage.ts',
+          relation: 'imports',
+        },
+        {
+          source_id: 'src/services/storage.ts',
+          target_id: 'src/drivers/sqlite.ts',
+          relation: 'imports',
+        },
       ];
 
       const topology = new TopologyEngine(nodes, edges);
@@ -50,7 +58,12 @@ describe('Advanced Graphing & Mapping Capabilities', () => {
     it('detects forbidden cross-domain dependencies', () => {
       const nodes: GraphNode[] = [
         { id: 'src/cli/router.ts', file_path: 'src/cli/router.ts', kind: 'file', domain: 'cli' },
-        { id: 'src/storage/db.ts', file_path: 'src/storage/db.ts', kind: 'file', domain: 'storage' },
+        {
+          id: 'src/storage/db.ts',
+          file_path: 'src/storage/db.ts',
+          kind: 'file',
+          domain: 'storage',
+        },
       ];
       const edges: GraphEdge[] = [
         { source_id: 'src/cli/router.ts', target_id: 'src/storage/db.ts', relation: 'imports' },
@@ -74,7 +87,12 @@ describe('Advanced Graphing & Mapping Capabilities', () => {
     it('passes when no forbidden rules are matched', () => {
       const nodes: GraphNode[] = [
         { id: 'src/cli/router.ts', file_path: 'src/cli/router.ts', kind: 'file', domain: 'cli' },
-        { id: 'src/core/service.ts', file_path: 'src/core/service.ts', kind: 'file', domain: 'core' },
+        {
+          id: 'src/core/service.ts',
+          file_path: 'src/core/service.ts',
+          kind: 'file',
+          domain: 'core',
+        },
       ];
       const edges: GraphEdge[] = [
         { source_id: 'src/cli/router.ts', target_id: 'src/core/service.ts', relation: 'imports' },

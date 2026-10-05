@@ -182,7 +182,9 @@ export class ExportEngine {
       lines.push('---');
       lines.push(`title: "Subsystem: ${comm.label.replace(/"/g, '\\"')}"`);
       lines.push('type: wiki-subsystem');
-      lines.push(`description: "Architecture subsystem documentation for ${comm.label.replace(/"/g, '\\"')}"`);
+      lines.push(
+        `description: "Architecture subsystem documentation for ${comm.label.replace(/"/g, '\\"')}"`,
+      );
       lines.push('status: active');
       lines.push('version: 1');
       lines.push('status_flag: clean');
