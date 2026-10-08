@@ -66,6 +66,8 @@ shared/node_modules/
 /.stubs/*.sqlite
 /.stubs/graph.sqlite*
 /wiki/
+/obsidian-vault/
+/.stubsignore
 
 
 # kanban runtime state

@@ -297,7 +297,10 @@ Options:
       // 2. Configure .gitignore
       await this.updateGitignore(targetDir);
 
-      // 3. Seed agent skills
+      // 4. Create .stubsignore with sensible defaults
+      await this.createStubsignore(targetDir);
+
+      // 5. Seed agent skills
       await this.seedAgentSkills(targetDir, {
         force,
         claude: isClaude,
@@ -1504,6 +1507,38 @@ This project uses the \`stubs\` architecture-as-code sidecar framework.
       );
       console.log(`Updated .gitignore at ${gitignorePath}`);
     }
+  }
+
+  /**
+   * Creates a .stubsignore file with default exclusion patterns for build artifacts,
+   * dependencies, and generated output directories. This prevents stubs from indexing
+   * large minified/bundled files that can cause ENAMETOOLONG errors or bloat the graph.
+   */
+  public async createStubsignore(targetDir: string): Promise<void> {
+    const stubsignorePath = path.join(targetDir, '.stubsignore');
+    if (existsSync(stubsignorePath)) {
+      return;
+    }
+    const defaultPatterns = [
+      '# stubs — paths to exclude from AST extraction & graph indexing',
+      'node_modules/',
+      '.git/',
+      '.stubs/',
+      'dist/',
+      'build/',
+      'out/',
+      '.cache/',
+      '.next/',
+      '.nuxt/',
+      '.output/',
+      'coverage/',
+      '*.log',
+      'obsidian-vault/',
+      'wiki/',
+      '.obsidian/',
+    ];
+    await fs.writeFile(stubsignorePath, defaultPatterns.join('\n') + '\n', 'utf8');
+    console.log(`Created .stubsignore at ${stubsignorePath}`);
   }
 
   private async handleMap(ctx: CliContext): Promise<number> {
