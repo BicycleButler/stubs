@@ -147,7 +147,7 @@ stale_details: null
 
 ### Dual-File Paradigm
 
-Every `.ts` production file is paired 1:1 with a `.ts.md` sidecar specification in the same directory. The sidecar is the specification source of truth; the code file is the materialized output.
+A `.ts` production file may optionally be paired with a `.ts.md` sidecar specification in the same directory. When present, the sidecar is the specification source of truth and the code file is the materialized output. When absent, the code file is treated as a standard source file in the dependency graph. The framework supports both spec-driven and code-only workflows; sidecars are optional.
 
 ### OKF Frontmatter
 

@@ -402,5 +402,59 @@ title: "Temp Spec"
         expect.stringContaining('Codebase AST Indexing Complete'),
       );
     });
+
+    it('should fail pre-flight if no target is provided', async () => {
+      const code = await router.route(['pre-flight']);
+      expect(code).toBe(1);
+      expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('requires a target'));
+    });
+
+    it('should run pre-flight check and return JSON results', async () => {
+      fs.mkdirSync(path.join(tempDir, 'src'), { recursive: true });
+      fs.writeFileSync(
+        path.join(tempDir, 'src', 'target.ts'),
+        'export class TargetService { public run() { return true; } }',
+        'utf8',
+      );
+
+      const code = await router.route(['scan', 'src']);
+      expect(code).toBe(0);
+
+      // Default autonomy_level is 'strict_gate' which blocks materialize_code,
+      // so pre-flight returns exit code 2 (blocked). JSON should still contain blastGuard and autonomyCheck.
+      const preflightCode = await router.route(['pre-flight', 'src/target.ts', '--json', '--context']);
+      expect(preflightCode).toBe(2);
+      expect(logSpy).toHaveBeenCalledWith(
+        expect.stringContaining('"blastGuard"'),
+      );
+      expect(logSpy).toHaveBeenCalledWith(
+        expect.stringContaining('"autonomyCheck"'),
+      );
+    });
+
+    it('should run pre-flight with topological edit order', async () => {
+      fs.mkdirSync(path.join(tempDir, 'src'), { recursive: true });
+      fs.writeFileSync(
+        path.join(tempDir, 'src', 'a.ts'),
+        'export class A {}',
+        'utf8',
+      );
+      fs.writeFileSync(
+        path.join(tempDir, 'src', 'b.ts'),
+        'import { A } from "./a"; export class B {}',
+        'utf8',
+      );
+
+      const code = await router.route(['scan', 'src']);
+      expect(code).toBe(0);
+
+      const preflightCode = await router.route([
+        'pre-flight', 'src/a.ts', '--order', 'src/a.ts', 'src/b.ts', '--json',
+      ]);
+      expect(preflightCode).toBe(2);
+      expect(logSpy).toHaveBeenCalledWith(
+        expect.stringContaining('"editOrder"'),
+      );
+    });
   });
 });

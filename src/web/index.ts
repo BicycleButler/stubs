@@ -1782,7 +1782,7 @@ async function openBootstrapModal() {
     if (listContainer) {
       if (bootstrapFiles.length === 0) {
         listContainer.innerHTML =
-          '<p class="text-xs text-slate-500 italic p-2">All TypeScript files in the codebase have corresponding sidecar specifications!</p>';
+          '<p class="text-xs text-slate-500 italic p-2">No TypeScript files without sidecars found in workspace.</p>';
       } else {
         listContainer.innerHTML = bootstrapFiles
           .map(
