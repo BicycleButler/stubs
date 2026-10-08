@@ -43,11 +43,12 @@ export class ExportEngine {
 
     const filesGenerated: string[] = [];
 
-    // Map of nodeId -> clean filename
+    // Map of nodeId -> clean filename (truncated to filesystem-safe length)
     const nodeFileMap = new Map<string, string>();
     for (const node of allNodes) {
       const cleanName = node.id.replace(/[/\\#:]/g, '_').replace(/\.[^/.]+$/, '');
-      nodeFileMap.set(node.id, cleanName);
+      const truncated = cleanName.length > 240 ? cleanName.substring(0, 240) + '_' + require('crypto').createHash('sha1').update(node.id).digest('hex').substring(0, 8) : cleanName;
+      nodeFileMap.set(node.id, truncated);
     }
 
     const writeTasks: { path: string; content: string }[] = [];

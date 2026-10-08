@@ -118,7 +118,7 @@ _(Note: `stubs serve` runs directly out-of-the-box in any project. Static web bu
 | :------------------------------------ | :--------------------------------------------------------------------------------------------- |
 | **`init`**                            | Initializes `.stubs/config.json`, template molds, and agent skill configurations.              |
 | **`scan`**, **`index`** `[dir]`       | Scans source code, extracts AST symbols/imports, and populates the SQLite graph.               |
-| **`map`** `[--scaffold]`              | Scaffolds or validates architectural context maps (`knowledge/architecture/context-map.md`).   |
+| **`map`** `[--scaffold]` `[auto]`        | Scaffolds/validates context maps, or run the no-LLM `auto` graph→wiki→obsidian pipeline.        |
 | **`tree`** `[--status\|--graph]`      | Visualizes ASCII/Unicode file tree annotated with lifecycle phase and node degree centrality.  |
 | **`concept`** `<action>`              | Manages concept blueprints (`new <title>`, `scaffold <doc>`, `list`).                          |
 | **`phase`** `<action>`                | Manages 5-phase lifecycle (`status [file]`, `check <file>`, `advance <file> [phase]`).         |
@@ -138,6 +138,36 @@ _(Note: `stubs serve` runs directly out-of-the-box in any project. Static web bu
 | **`serve`** `[--port=3000]`           | Starts the local Web Portal and Event Bridge server for real-time visual exploration.          |
 | **`auth login`**                      | Authenticates GitHub credentials and stores Personal Access Tokens (PATs).                     |
 | **`update`**, **`upgrade`**           | Updates installed agent skills, template molds, dependencies, and SQLite schemas.              |
+
+---
+
+## Automated Graph Mapping (No LLM)
+
+Generate the full knowledge graph — AST extraction, community detection, wiki articles, and Obsidian vault — in a single command:
+
+```bash
+# One-command graph → wiki → obsidian pipeline (no LLM, deterministic)
+npx stubs map auto --json
+
+# With custom output directories
+npx stubs map auto -d src -w ./wiki -o ./obsidian-vault --json
+
+# Or use the standalone script for CI / cron
+./scripts/autoscan.sh
+./scripts/autoscan.sh --skip-scan --json   # use existing graph.sqlite
+```
+
+**What it produces:**
+- `.stubs/graph.sqlite` — SQLite knowledge graph (nodes, edges, communities, FTS5 search)
+- `wiki/` — Subsystem articles with god-node detection and architecture questions
+- `obsidian-vault/` — Markdown notes with `[[wikilinks]]` for each symbol and file
+
+**Then query the graph:**
+```bash
+stubs query "How does the export pipeline work?" --budget 5000
+stubs context src/cli/router.ts --depth 3 --json
+stubs blast src/graph/engine.ts --guard high
+```
 
 ---
 
