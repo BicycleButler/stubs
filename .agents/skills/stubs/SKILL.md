@@ -219,7 +219,22 @@ npx stubs query "How does the MCP server work?" --budget 1500
 npx stubs query "Parser AST extraction" --dfs --json
 ```
 
-### 21. `stubs export <obsidian|wiki>`
+### 21. `stubs pre-flight <target>`
+Pre-execution safety gate that combines blast radius guard, tiered agent context, topological edit order, and autonomy evaluation into a single CLI check. Use this before making code changes to verify the target is safe to modify under the current autonomy level.
+```bash
+npx stubs pre-flight src/service.ts
+npx stubs pre-flight src/service.ts --guard critical --depth 3
+npx stubs pre-flight src/service.ts --context --json
+npx stubs pre-flight src/service.ts --order src/a.ts src/b.ts
+```
+- `--guard <low|medium|high|critical>`: Blast radius safety threshold (default: high)
+- `--depth <N>`: Blast traversal depth (default: 3)
+- `--context`: Include L0/L1/L2 tiered agent context summary
+- `--order <files...>`: Compute topological edit order for listed files (dependencies first)
+- `--json`: Output structured JSON results
+- Exit codes: 0 = all safe, 1 = error, 2 = guard or autonomy check blocked
+
+### 22. `stubs export <obsidian|wiki>`
 Exports the entire codebase architecture graph into an interconnected Obsidian Vault (`[[wikilinks]]`) or Wikipedia-style modular markdown documentation with community hub maps.
 ```bash
 npx stubs export obsidian --out ./vault

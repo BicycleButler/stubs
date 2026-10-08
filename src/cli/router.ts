@@ -114,6 +114,9 @@ export class CliRouter {
           return await this.handleChangelog(context);
         case 'blast':
           return await this.handleBlast(context);
+        case 'pre-flight':
+        case 'preflight':
+          return await this.handlePreFlight(context);
         case 'path':
           return await this.handlePath(context);
         case 'explain':
@@ -197,6 +200,7 @@ Commands:
   changelog [options] Generate semantic architectural changelog (--since, --from, --to, --output, --json).
   blast <target>      Query downstream/upstream blast radius with domain boundaries.
   path <src> <dest>   Find shortest call/import dependency chain between files or symbols.
+  pre-flight <target> Run pre-execution safety checks: blast guard, autonomy gate, tiered context (--guard <level>, --context, --order <files...>, --json).
   explain <target>    Inspect entity/symbol profile, degree centrality, callers, and community cluster.
   query <text>        Token-budgeted GraphRAG query extracting relevant subgraphs (--budget, --dfs).
   export <format>     Export knowledge graph to Obsidian Vault or Wiki articles (obsidian, wiki).
@@ -210,6 +214,10 @@ Commands:
   reconcile <file>    Execute the 5-phase retroactive reconciliation engine on a sidecar.
   sync [file]         Synchronize sidecars and code files.
   map [options]       Audit or scaffold architectural context maps (knowledge/architecture/context-map.md).
+                      Use \\x60map auto\\x60 (or \\x60map --auto\\x60) for one-command graph→wiki+obsidian pipeline.
+  map auto [dir]      Automatically scan, export wiki, and export obsidian in one deterministic pass (no LLM).
+                      Options: --wiki-out <dir>, --obsidian-out <dir>, --json
+  map --auto          Alias for \\x60map auto\\x60.
   template <action>   Manage template molds. Actions: list, render <name> <json_data_or_file>
   evaluate <action>   Evaluate autonomy permission. Actions: draft_template_proposal, scaffold_sidecar, materialize_code
   validate <file>     Parse and validate an OKF specification (*.md) file.
@@ -1539,6 +1547,12 @@ Describe the primary purpose and execution model of the application.
       return 0;
     }
 
+    // --- map:auto: Fully-automated graph → wiki → obsidian pipeline (no LLM) ---
+    const isAuto = ctx.args.includes('--auto') || ctx.args.includes('auto');
+    if (isAuto) {
+      return await this.handleMapAuto(ctx);
+    }
+
     // Default: Audit / Inspect context map files
     if (!existsSync(rootMapFile)) {
       console.warn(
@@ -1568,6 +1582,163 @@ Describe the primary purpose and execution model of the application.
     console.log(`✓ Architecture map found: ${rootMapFile}`);
     console.log(`✓ Indexed domain maps: ${domainCount} found in ${domainsDir}`);
     return 0;
+  }
+
+  /**
+   * Fully-automated graph → wiki → obsidian pipeline (no LLM required).
+   * Chains scan, wiki export, and obsidian export in a single invocation.
+   * Results are deterministic: AST extraction + community detection + topological sorting.
+   */
+  private async handleMapAuto(ctx: CliContext): Promise<number> {
+    const isJson = ctx.args.includes('--json');
+    // Filter out the 'auto' subcommand keyword — it's consumed by handleMap routing, not a dir
+    const nonFlagArgs = ctx.args.filter((a) => !a.startsWith('-') && a !== 'auto');
+
+    // Optional target directory override
+    const targetDir = nonFlagArgs.length > 0 ? nonFlagArgs[0] : undefined;
+
+    // Optional output directories
+    let wikiOut: string | undefined;
+    let obsidianOut: string | undefined;
+    for (let i = 0; i < ctx.args.length; i++) {
+      if (ctx.args[i] === '--wiki-out' && ctx.args[i + 1]) {
+        wikiOut = ctx.args[i + 1];
+        i++;
+      } else if (ctx.args[i].startsWith('--wiki-out=')) {
+        wikiOut = ctx.args[i].split('=')[1];
+      } else if (ctx.args[i] === '--obsidian-out' && ctx.args[i + 1]) {
+        obsidianOut = ctx.args[i + 1];
+        i++;
+      } else if (ctx.args[i].startsWith('--obsidian-out=')) {
+        obsidianOut = ctx.args[i].split('=')[1];
+      }
+    }
+
+    const config = loadConfig(ctx.configPath);
+    const graphEngine = new GraphEngine(config.paths.db_path);
+    const exportEngine = new ExportEngine({ graphEngine });
+
+    const summary: Record<string, any> = {
+      steps: [] as any[],
+    };
+
+    try {
+      await graphEngine.initialize();
+
+      // Step 1: Scan & index the codebase (AST extraction + community detection)
+      const scanDir = targetDir || config.paths?.specs_dir || 'src';
+      if (existsSync(scanDir)) {
+        if (!isJson) {
+          console.log(`🔬 [1/3] Scanning codebase under "${scanDir}"...`);
+        }
+        const codeSummary = await graphEngine.indexCodeWorkspace(scanDir);
+        const sidecarSummary = await graphEngine.indexWorkspace(scanDir);
+
+        // Compute and persist Louvain community clusters
+        let communitiesCount = 0;
+        try {
+          const topology = await graphEngine.getTopologyEngine();
+          const communityRes = topology.getCommunities();
+          const labels: Record<number, string> = {};
+          for (const info of communityRes.communityInfo) {
+            labels[info.id] = info.label;
+          }
+          await graphEngine.assignCommunities(communityRes.communities, labels);
+          communitiesCount = communityRes.totalCommunities;
+        } catch {
+          // Community calculation fallback — non-fatal
+        }
+
+        const nodes = await graphEngine.getGraphNodes();
+        const edges = await graphEngine.getGraphEdges();
+
+        summary.steps.push({
+          step: 'scan',
+          status: 'complete',
+          nodes: nodes.length,
+          edges: edges.length,
+          communities: communitiesCount,
+          codeFilesIndexed: codeSummary.indexed,
+          codeFilesScanned: codeSummary.scanned,
+          sidecarsIndexed: sidecarSummary.indexed,
+          errors: [...codeSummary.errors, ...sidecarSummary.errors],
+        });
+
+        if (!isJson) {
+          console.log(`  ✓ Indexed ${nodes.length} nodes, ${edges.length} edges, ${communitiesCount} communities`);
+        }
+      } else {
+        if (!isJson) {
+          console.log(`⚠ [1/3] Scan directory "${scanDir}" does not exist, skipping scan.`);
+        }
+        summary.steps.push({
+          step: 'scan',
+          status: 'skipped',
+          reason: `Directory "${scanDir}" does not exist`,
+        });
+      }
+
+      // Step 2: Export to Wiki articles
+      if (!isJson) {
+        console.log(`📝 [2/3] Exporting knowledge graph to Wiki articles...`);
+      }
+      const wikiResult = await exportEngine.toWiki(wikiOut || './wiki');
+      summary.steps.push({
+        step: 'wiki_export',
+        status: 'complete',
+        nodesExported: wikiResult.totalNodesExported,
+        filesGenerated: wikiResult.filesGenerated.length,
+        outputDir: wikiResult.outputDir,
+      });
+      if (!isJson) {
+        console.log(
+          `  ✓ Exported ${wikiResult.totalNodesExported} entities to wiki at "${wikiResult.outputDir}" (${wikiResult.filesGenerated.length} files)`,
+        );
+      }
+
+      // Step 3: Export to Obsidian vault
+      if (!isJson) {
+        console.log(`🗂️  [3/3] Exporting knowledge graph to Obsidian vault...`);
+      }
+      const obsidianResult = await exportEngine.toObsidian(obsidianOut || './obsidian-vault');
+      summary.steps.push({
+        step: 'obsidian_export',
+        status: 'complete',
+        nodesExported: obsidianResult.totalNodesExported,
+        filesGenerated: obsidianResult.filesGenerated.length,
+        outputDir: obsidianResult.outputDir,
+      });
+      if (!isJson) {
+        console.log(
+          `  ✓ Exported ${obsidianResult.totalNodesExported} entities to obsidian at "${obsidianResult.outputDir}" (${obsidianResult.filesGenerated.length} files)`,
+        );
+      }
+
+      summary.status = 'complete';
+      const totalFiles = (wikiResult.filesGenerated?.length || 0) + (obsidianResult.filesGenerated?.length || 0);
+      summary.totalFilesGenerated = totalFiles;
+
+      if (isJson) {
+        console.log(JSON.stringify(summary, null, 2));
+      } else {
+        console.log(`\n✅ Graph mapping pipeline complete!`);
+        console.log(`   Total files generated: ${totalFiles}`);
+        console.log(`   Wiki:     ${wikiResult.outputDir}`);
+        console.log(`   Obsidian: ${obsidianResult.outputDir}`);
+      }
+
+      return 0;
+    } catch (error: any) {
+      summary.status = 'error';
+      summary.error = error.message || String(error);
+      if (isJson) {
+        console.log(JSON.stringify(summary, null, 2));
+      }
+      console.error(`✖ map:auto pipeline failed: ${error.message || error}`);
+      return 1;
+    } finally {
+      await graphEngine.close();
+    }
   }
 
   private printSyncResult(result: SyncResult): void {
@@ -1863,6 +2034,130 @@ Options:
     }
 
     return 0;
+  }
+
+  private async handlePreFlight(ctx: CliContext): Promise<number> {
+    const nonFlagArgs = ctx.args.filter((a) => !a.startsWith('-'));
+    if (nonFlagArgs.length === 0) {
+      console.error('Error: "pre-flight" command requires a target file or symbol name.');
+      console.error('Usage: stubs pre-flight <target> [--guard <level>] [--depth <N>] [--context] [--order <files...>] [--json]');
+      return 1;
+    }
+
+    const target = normalizePosixPath(nonFlagArgs[0]);
+    const isJson = ctx.args.includes('--json');
+    const includeContext = ctx.args.includes('--context');
+    const includeOrder = ctx.args.includes('--order');
+
+    let guardLevel: string | undefined;
+    let depth = 3;
+
+    for (let i = 0; i < ctx.args.length; i++) {
+      if (ctx.args[i] === '--guard' && ctx.args[i + 1]) {
+        guardLevel = ctx.args[i + 1];
+        i++;
+      } else if (ctx.args[i].startsWith('--guard=')) {
+        guardLevel = ctx.args[i].split('=')[1];
+      } else if (ctx.args[i] === '--depth' && ctx.args[i + 1]) {
+        depth = parseInt(ctx.args[i + 1], 10) || 3;
+        i++;
+      } else if (ctx.args[i].startsWith('--depth=')) {
+        depth = parseInt(ctx.args[i].split('=')[1], 10) || 3;
+      }
+    }
+
+    const config = loadConfig(ctx.configPath);
+    const graphEngine = new GraphEngine(config.paths.db_path);
+    await graphEngine.initialize();
+
+    const existingNodes = await graphEngine.getGraphNodes();
+    if (existingNodes.length === 0) {
+      await graphEngine.indexCodeWorkspace(config.paths?.specs_dir || 'src');
+    }
+
+    const topology = await graphEngine.getTopologyEngine();
+    const protocol = new AutonomyProtocol(config);
+
+    const result: Record<string, any> = {
+      target,
+      autonomyLevel: config.autonomy_level,
+    };
+
+    // 1. Blast Guard
+    const validGuardLevel = guardLevel
+      ? ['low', 'medium', 'high', 'critical'].includes(guardLevel.toLowerCase())
+        ? (guardLevel.toLowerCase() as 'low' | 'medium' | 'high' | 'critical')
+        : 'high'
+      : 'high';
+
+    const guardRes = topology.checkBlastGuard(target, validGuardLevel, depth);
+    result.blastGuard = guardRes;
+
+    // 2. Tiered Agent Context (L0/L1/L2)
+    if (includeContext) {
+      const tiered = topology.getTieredAgentContext(target);
+      result.agentContext = tiered ? { formattedSummary: tiered.formattedSummary, l0: tiered.l0_target, l1_deps: tiered.l1_dependencies.length, l1_dependents: tiered.l1_dependents.length, l2_subsystem: tiered.l2_subsystem } : null;
+    }
+
+    // 3. Topological Edit Order
+    if (includeOrder) {
+      const orderFiles = nonFlagArgs.slice(1).map(normalizePosixPath);
+      if (orderFiles.length > 0) {
+        const orderRes = topology.getTopologicalEditOrder(orderFiles, 'dependencies_first');
+        result.editOrder = orderRes;
+      }
+    }
+
+    // 4. Autonomy evaluation for materialize_code action
+    const autonomyCheck = protocol.evaluateAction('materialize_code');
+    result.autonomyCheck = autonomyCheck;
+
+    const allSafe = guardRes.safe && autonomyCheck.allowed;
+
+    if (isJson) {
+      console.log(JSON.stringify(result, null, 2));
+    } else {
+      console.log(`🛫 Pre-Flight Check for "${target}"`);
+      console.log(`  Autonomy Level: ${config.autonomy_level}`);
+      console.log('');
+
+      if (guardRes.safe) {
+        console.log(`✓ Blast Guard [${validGuardLevel}]: PASSED`);
+      } else {
+        console.log(`✖ Blast Guard [${validGuardLevel}]: FAILED`);
+        if (guardRes.reason) {
+          console.log(`  Reason: ${guardRes.reason}`);
+        }
+      }
+      console.log(
+        `  Impact: ${guardRes.impactCount} entities across ${guardRes.domainsAffected.length} domain(s)`,
+      );
+
+      if (autonomyCheck.allowed) {
+        console.log(`✓ Autonomy: ${autonomyCheck.reason}`);
+      } else {
+        console.log(`✖ Autonomy: ${autonomyCheck.reason}`);
+      }
+
+      if (includeContext && result.agentContext) {
+        console.log('');
+        console.log('  Tiered Agent Context:');
+        console.log('  ' + result.agentContext.formattedSummary.replace(/\n/g, '\n  '));
+      }
+
+      if (includeOrder && result.editOrder) {
+        console.log('');
+        console.log('  Topological Edit Order (dependencies first):');
+        result.editOrder.orderedFiles.forEach((f: string, idx: number) => {
+          console.log(`    ${idx + 1}. ${f}`);
+        });
+        if (result.editOrder.hasCycles) {
+          console.log(`  ⚠ Circular dependencies detected: ${result.editOrder.cycleNodes.join(', ')}`);
+        }
+      }
+    }
+
+    return allSafe ? 0 : 2;
   }
 
   private async handlePath(ctx: CliContext): Promise<number> {

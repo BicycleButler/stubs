@@ -8,9 +8,15 @@
 
 `stubs` is a **specification-first AI software development framework**. It enforces an Open Knowledge Format (OKF) intermediate layer between natural language intent and executable TypeScript code.
 
-Every `.ts` production file is paired 1:1 with a `.ts.md` **sidecar specification** in the same directory. The sidecar is the source of truth; the `.ts` file is the materialized output.
+A `.ts` production file may optionally be paired with a `.ts.md` **sidecar specification** in the same directory. When present, the sidecar is the source of truth and the `.ts` file is the materialized output. When absent, the code file is treated as a standard source file in the dependency graph. The framework supports three modes:
 
-**Key workflow:** `Prompt → Sidecar Spec (.ts.md) → Grill → Materialize → Sand → Code (.ts)`
+- **Full sidecar coverage** — Every code file has a paired sidecar; spec-driven workflows (grill, materialize, sand, mock) are fully available.
+- **Partial sidecar coverage** — Some modules have sidecars, others are code-only; the graph engine indexes both.
+- **Code-only workspace** — No sidecars; the graph engine, MCP server, query, explain, and blast tools all work on raw source code alone.
+
+**Spec-driven workflow (when sidecars are present):** `Prompt → Sidecar Spec (.ts.md) → Grill → Materialize → Sand → Code (.ts)`
+
+**Graph-first workflow (no sidecars required):** `stubs scan → stubs query "explain: MySymbol" → stubs blast src/foo.ts`
 
 ---
 

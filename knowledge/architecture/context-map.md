@@ -68,4 +68,4 @@ Each domain in the `stubs` framework has a dedicated deep-dive context map locat
 
 1. **Deep Modules:** Large, simple interface contracts hiding dense implementation details.
 2. **Pulling Complexity Downward:** Consumers should not have to manage low-level details (e.g. `CliRouter` handles CLI parsing cleanly, `SandingEngine` isolates AST hashing).
-3. **Specification as Single Source of Truth:** Code is a derivative artifact materialized from or sanded into sidecar specs (`*.<ext>.md`).
+3. **Optional Specification Layer:** When sidecars exist, code is a derivative artifact materialized from or sanded into sidecar specifications (`*.<ext>.md`). When sidecars are absent, code files are first-class graph nodes that the framework indexes and analyzes without requiring spec pairs.
