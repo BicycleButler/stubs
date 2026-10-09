@@ -73,6 +73,54 @@ npx stubs scan
 npx stubs tree --status
 ```
 
+### Domain-Mapping (CLI‑only)
+
+We provide a CLI‑driven workflow that automatically creates domain maps
+from the codebase. The process is:
+
+1️⃣ **Install the Stubs CLI** (once per repo):
+   ```bash
+   pnpm add -D github:Wiltermoodj/stubs
+   # or: npm i -D github:Wiltermoodj/stubs
+   ```
+   Ensure `pnpm-workspace.yaml` (or root `package.json`) has:
+   ```yaml
+   allowBuilds:
+     stubs@git+https://github.com/Wiltermoodj/stubs.git#15795266c6ca874580ad0305efaf33396cd5f790: true
+   ```
+
+2️⃣ **Run the discovery script** (creates domain maps):
+   ```bash
+   ./scripts/create-domain-maps.sh
+   ```
+   Writes OKF front‑matter + section placeholders to
+   `knowledge/architecture/domains/*.md` using the SQLite graph
+   (`file_path` column), `subsystem-index` type, and adds `description`.
+
+3️⃣ **Fill in the descriptive sections** (agent/LLM task):
+   Edit each `*-domain-map.md` to replace the placeholders for:
+   - `## Key concepts`
+   - `## Decisions (locked)`
+   - `## Open questions (frontier)`
+   - `## Implementation plan`
+
+   Then run the grill to lock decisions and record outcomes:
+   ```bash
+   npx stubs grill knowledge/architecture/domains/<domain>-domain-map.md
+   ```
+
+4️⃣ **Validate** (optional, for index sidecars):
+   ```bash
+   npx stubs validate knowledge/architecture/domains/*.md
+   ```
+
+The script is intentionally dependency‑free (only needs `sqlite3` CLI,
+already present via the stubs post‑install binary) and works with macOS
+bash 3.2. It generates one sidecar per top‑level domain prefix found in the
+graph (`apps/*`, `packages/*`).
+
+---
+
 ### Standard Development Workflow
 
 ```bash
