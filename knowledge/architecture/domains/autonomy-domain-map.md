@@ -15,11 +15,9 @@ tags:
 Parent Context Map: knowledge/architecture/context-map.md
 
 ## Domain Purpose & Responsibilities
-
 The Autonomy Protocol coordinates domain logic, core types, and services for the autonomy subsystem.
 
 ## Key Modules & Files
-
 src/phase/engine.ts.md (Hub) -> deps: none | caps: PhaseEngine, LifecyclePhase, LIFECYCLE_PHASES, PhaseRequirement, PhaseCheckResult, AdvancePhaseResult, WorkspacePhaseMatrix
 src/phase/engine.ts -> deps: src/graph/engine.ts.md, src/parser/okf.ts.md | caps: LifecyclePhase, PhaseRequirement, PhaseCheckResult, AdvancePhaseResult, WorkspacePhaseMatrix, PhaseEngine
 src/autonomy/protocol.ts -> deps: src/config/schema.ts.md, src/graph/engine.ts.md, src/parser/okf.ts.md, src/sanding/engine.ts.md | caps: AutonomyLevel, DriftReport, Proposal, ReconciliationResult, AutonomyProtocol
@@ -30,7 +28,6 @@ src/concept/tree.ts -> deps: src/graph/engine.ts.md, src/parser/okf.ts.md | caps
 src/concept/tree.ts.md -> deps: none | caps: TreeEngine, VisualTreeOptions
 
 ## Domain Invariants
-
 - Downward dependencies only: cross-domain calls must target canonical domain hubs.
 - External consumers must interface through protocol.ts, never private internal helpers.
 - State changes must adhere to lifecycle and containment invariants.

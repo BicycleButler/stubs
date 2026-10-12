@@ -15,11 +15,9 @@ tags:
 Parent Context Map: knowledge/architecture/context-map.md
 
 ## Domain Purpose & Responsibilities
-
 The Verification & Tool Suite coordinates domain logic, core types, and services for the tools subsystem.
 
 ## Key Modules & Files
-
 src/prune/engine.ts (Hub) -> deps: none | caps: PruneIssueType, PruneIssue, PruneAuditSummary, PruneAuditResult, PruneOptions, PruneFixResult, PruneEngine, scanFiles
 src/mock/engine.ts -> deps: none | caps: TestFramework, MockOptions, MockedTestCase, MockedSymbolSuite, MockScaffoldResult, classifyExportedSymbols, MockEngine, generateTestScaffold
 src/changelog/engine.ts -> deps: none | caps: AdrChange, ExportChange, PhaseTransition, SpecDiff, ChangelogSummary, ArchitecturalChangelog, ChangelogOptions, ChangelogEngine
@@ -38,7 +36,6 @@ src/templates/engine.ts.md -> deps: none | caps: TemplateEngine, compileTemplate
 src/templates/molds/planning-map.md.tpl -> deps: none | caps: internal
 
 ## Domain Invariants
-
 - Downward dependencies only: cross-domain calls must target canonical domain hubs.
 - External consumers must interface through engine.ts, never private internal helpers.
 - State changes must adhere to lifecycle and containment invariants.

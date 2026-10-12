@@ -15,16 +15,13 @@ tags:
 Parent Context Map: knowledge/architecture/context-map.md
 
 ## Domain Purpose & Responsibilities
-
 The Materializer Engine coordinates domain logic, core types, and services for the materializer subsystem.
 
 ## Key Modules & Files
-
 src/materializer/engine.ts (Hub) -> deps: src/compiler/typechecker.ts.md, src/config/schema.ts.md, src/graph/engine.ts.md, src/parser/ast.ts.md, src/parser/markdown.ts.md, src/parser/okf.ts.md | caps: MaterializeResult, stringifyOkfSpec, MaterializerEngine
 src/materializer/engine.ts.md -> deps: none | caps: MaterializerEngine, MaterializeResult, stringifyOkfSpec
 
 ## Domain Invariants
-
 - Downward dependencies only: cross-domain calls must target canonical domain hubs.
 - External consumers must interface through engine.ts, never private internal helpers.
 - State changes must adhere to lifecycle and containment invariants.

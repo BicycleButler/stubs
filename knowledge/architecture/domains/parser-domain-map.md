@@ -15,11 +15,9 @@ tags:
 Parent Context Map: knowledge/architecture/context-map.md
 
 ## Domain Purpose & Responsibilities
-
 The Parser Engine coordinates domain logic, core types, and services for the parser subsystem.
 
 ## Key Modules & Files
-
 src/parser/okf.ts.md (Hub) -> deps: none | caps: OkfFrontmatter, ParsedOkfSpec, FileTreeEntry, isCodeSidecar, extractFileTreeBlocks, parseFileTreeEntries, extractMarkdownChecklists, parseOkfSpec
 src/parser/okf.ts -> deps: none | caps: OkfFrontmatter, ParsedOkfSpec, FileTreeEntry, isCodeSidecar, extractFileTreeBlocks, parseFileTreeEntries, extractMarkdownChecklists, parseOkfSpec
 src/parser/ast.ts.md -> deps: none | caps: MarkdownBlock, parseMarkdown, extractImplementationCode, extractDistilledSignatures, extractExportedSymbolNames
@@ -30,7 +28,6 @@ src/parser/markdown.ts.md -> deps: none | caps: extractImplementationCode, repla
 src/parser/markdown.ts -> deps: none | caps: extractImplementationCode, replaceImplementationCode
 
 ## Domain Invariants
-
 - Downward dependencies only: cross-domain calls must target canonical domain hubs.
 - External consumers must interface through okf.ts.md, never private internal helpers.
 - State changes must adhere to lifecycle and containment invariants.

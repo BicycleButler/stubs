@@ -85,6 +85,7 @@ AST dependency graph in `.stubs/graph.sqlite` with Louvain community detection, 
 ## Monorepo Workspaces & Toolchain
 
 The repository is organized as an npm workspaces monorepo:
+
 - `packages/cli` (`@wiltermood/stubs`): Unified interactive CLI & TUI orchestrator.
 - `packages/core` (`@wiltermood/stubs-core`): Graph engine, parser, and sidecar compiler.
 - `packages/tale` (`@wiltermood/tale`): ASD-STE100 technical English linter & skill.
@@ -104,7 +105,3 @@ The repository is organized as an npm workspaces monorepo:
 Binary entry point: `bin/stubs.js` (delegates to `packages/cli/dist/index.cjs`). Invoke via `npx stubs <command>`.
 
 Known CLI bug status: B1 sand path resolution (RESOLVED), B2 non-interactive grill (RESOLVED), B3 materialize parser (RESOLVED).
-
-## Hermes Contextloop Integration
-
-Contextloop skill handles phase-bounded task orchestration. Kanban board: `.kanban/kanban.db`. Orchestrator wrapper: `scripts/run-loop.sh`. Workers spawn as detached OS processes. Submit scripts: `.hermes/skills/contextloop/bin/`.

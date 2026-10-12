@@ -1,0 +1,31 @@
+{
+  "mcpServers": {
+    "stubs": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@wiltermood/stubs",
+        "mcp-serve"
+      ],
+      "env": {}
+    },
+    "tale": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@wiltermood/tale",
+        "mcp-serve"
+      ],
+      "env": {}
+    },
+    "design": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@wiltermood/design",
+        "mcp-serve"
+      ],
+      "env": {}
+    }
+  }
+}
