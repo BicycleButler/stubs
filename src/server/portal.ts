@@ -1303,7 +1303,6 @@ No custom interfaces specified yet.
       // Fallback: Web Dashboard or 404
       // ---------------------------------------------------------
       if (!pathname.startsWith('/api')) {
-        const path = await import('path');
         const pwaIndex = resolveWebPath('index.html');
         let htmlContent = '';
         if (fs.existsSync(pwaIndex)) {

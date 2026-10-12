@@ -361,6 +361,32 @@ func TuneBike(id string) error {
       expect(smells.domainLeaks[0].sourceDomain).toBe('auth');
       expect(smells.domainLeaks[0].targetDomain).toBe('garage');
     });
+
+    test('should compute mathematically valid PageRank scores prioritizing central nodes', () => {
+      const nodes = [
+        { id: 'a.ts', file_path: 'a.ts', kind: 'file' as const },
+        { id: 'b.ts', file_path: 'b.ts', kind: 'file' as const },
+        { id: 'c.ts', file_path: 'c.ts', kind: 'file' as const },
+        { id: 'hub.ts', file_path: 'hub.ts', kind: 'file' as const },
+      ];
+      const edges = [
+        { source_id: 'a.ts', target_id: 'hub.ts', relation: 'imports' as const },
+        { source_id: 'b.ts', target_id: 'hub.ts', relation: 'imports' as const },
+        { source_id: 'c.ts', target_id: 'hub.ts', relation: 'imports' as const },
+      ];
+
+      const topo = new TopologyEngine(nodes, edges);
+      const pageRanks = topo.computePageRank();
+      expect(pageRanks.size).toBe(4);
+
+      // hub.ts receives incoming links from all 3 other nodes, so its PageRank must be highest
+      const hubRank = pageRanks.get('hub.ts') || 0;
+      const aRank = pageRanks.get('a.ts') || 0;
+      expect(hubRank).toBeGreaterThan(aRank);
+
+      const centralities = topo.getNodeCentralities();
+      expect(centralities.get('hub.ts')?.pageRank).toBeCloseTo(hubRank, 5);
+    });
   });
 
   describe('5. OKF Frontmatter Auto-Healing via Sanding', () => {

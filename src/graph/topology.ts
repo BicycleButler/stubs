@@ -73,6 +73,7 @@ export interface NodeCentrality {
   outDegree: number;
   totalDegree: number;
   isHub: boolean;
+  pageRank?: number;
 }
 
 export interface NodeExplanationConnection {
@@ -579,10 +580,69 @@ export class TopologyEngine {
   }
 
   /**
-   * Computes In-Degree and Out-Degree centrality for all nodes in the graph.
+   * Computes PageRank scores across all nodes using the power iteration method.
+   * Damping factor defaults to 0.85, terminating after maxIterations or convergence.
+   */
+  public computePageRank(
+    dampingFactor = 0.85,
+    maxIterations = 30,
+    tolerance = 1e-5,
+  ): Map<string, number> {
+    const nodeIds = Array.from(this.nodes.keys());
+    const n = nodeIds.length;
+    if (n === 0) return new Map();
+
+    let scores = new Map<string, number>();
+    const initialRank = 1.0 / n;
+    for (const id of nodeIds) {
+      scores.set(id, initialRank);
+    }
+
+    const outDegrees = new Map<string, number>();
+    for (const id of nodeIds) {
+      outDegrees.set(id, (this.outgoingEdges.get(id) || []).length);
+    }
+
+    for (let iter = 0; iter < maxIterations; iter++) {
+      const nextScores = new Map<string, number>();
+      let danglingMass = 0;
+
+      for (const id of nodeIds) {
+        if ((outDegrees.get(id) || 0) === 0) {
+          danglingMass += scores.get(id) || 0;
+        }
+      }
+
+      let maxDiff = 0;
+      for (const id of nodeIds) {
+        const incoming = this.incomingEdges.get(id) || [];
+        let inSum = 0;
+        for (const edge of incoming) {
+          const srcOut = outDegrees.get(edge.source_id) || 0;
+          if (srcOut > 0) {
+            inSum += (scores.get(edge.source_id) || 0) / srcOut;
+          }
+        }
+
+        const newRank = (1 - dampingFactor) / n + dampingFactor * (inSum + danglingMass / n);
+        const diff = Math.abs(newRank - (scores.get(id) || 0));
+        if (diff > maxDiff) maxDiff = diff;
+        nextScores.set(id, newRank);
+      }
+
+      scores = nextScores;
+      if (maxDiff < tolerance) break;
+    }
+
+    return scores;
+  }
+
+  /**
+   * Computes In-Degree, Out-Degree, and PageRank centrality for all nodes in the graph.
    */
   public getNodeCentralities(): Map<string, NodeCentrality> {
     const centralities = new Map<string, NodeCentrality>();
+    const pageRanks = this.computePageRank();
 
     for (const id of this.nodes.keys()) {
       const inDeg = (this.incomingEdges.get(id) || []).length;
@@ -593,6 +653,7 @@ export class TopologyEngine {
         outDegree: outDeg,
         totalDegree: inDeg + outDeg,
         isHub: inDeg >= 8 || outDeg >= 12 || inDeg + outDeg >= 15,
+        pageRank: pageRanks.get(id) || 0,
       });
     }
 
@@ -753,7 +814,7 @@ export class TopologyEngine {
   public formatBlastRadiusTree(res: BlastRadiusResult): string {
     const lines: string[] = [];
     lines.push(
-      `🎯 Blast Radius for ${res.target} (${res.maxDepthReached} levels, ${res.totalAffected} affected entities):`,
+      `Blast Radius for ${res.target} (${res.maxDepthReached} levels, ${res.totalAffected} affected entities):`,
     );
 
     const renderChildren = (children: BlastRadiusNode[], prefix: string) => {
@@ -779,7 +840,7 @@ export class TopologyEngine {
    */
   public formatShortestPath(res: ShortestPathResult): string {
     const lines: string[] = [];
-    lines.push(`🔗 Shortest Path: ${res.sourceId} -> ${res.targetId} (${res.totalHops} hops)`);
+    lines.push(`Shortest Path: ${res.sourceId} -> ${res.targetId} (${res.totalHops} hops)`);
 
     if (res.steps.length === 0) {
       lines.push(res.sourceId);
@@ -887,7 +948,7 @@ export class TopologyEngine {
   public formatNodeExplanation(res: NodeExplanationResult): string {
     const lines: string[] = [];
     const entityTitle = res.symbolName ? `${res.filePath}#${res.symbolName}` : res.filePath;
-    lines.push(`🔍 Node Profile: ${entityTitle}`);
+    lines.push(`Node Profile: ${entityTitle}`);
     lines.push(`  Kind:        ${res.kind}`);
     if (res.domain) lines.push(`  Domain:      ${res.domain}`);
     if (res.phase) lines.push(`  Phase:       ${res.phase}`);
@@ -895,7 +956,7 @@ export class TopologyEngine {
       lines.push(`  Location:    Lines ${res.locStart}-${res.locEnd || res.locStart}`);
     lines.push(`  Community:   [#${res.communityId}] ${res.communityLabel}`);
     lines.push(
-      `  Centrality:  Total Degree: ${res.totalDegree} (In: ${res.inDegree}, Out: ${res.outDegree})${res.isHub ? ' ⭐ [CENTRAL HUB]' : ''}`,
+      `  Centrality:  Total Degree: ${res.totalDegree} (In: ${res.inDegree}, Out: ${res.outDegree})${res.isHub ? ' [CENTRAL HUB]' : ''}`,
     );
     lines.push(`  Downstream:  ${res.downstreamImpactCount} entities impacted`);
     lines.push('');
@@ -903,11 +964,11 @@ export class TopologyEngine {
     lines.push(`  Connections (${res.totalDegree}):`);
     for (const out of res.outgoing) {
       const targetLabel = out.symbolName ? `${out.filePath}#${out.symbolName}` : out.filePath;
-      lines.push(`    ──[${out.relation}]──> ${targetLabel} [${out.confidence}]`);
+      lines.push(`    -> [${out.relation}] -> ${targetLabel} [${out.confidence}]`);
     }
     for (const inc of res.incoming) {
       const srcLabel = inc.symbolName ? `${inc.filePath}#${inc.symbolName}` : inc.filePath;
-      lines.push(`    <──[${inc.relation}]── ${srcLabel} [${inc.confidence}]`);
+      lines.push(`    <- [${inc.relation}] <- ${srcLabel} [${inc.confidence}]`);
     }
 
     return lines.join('\n');

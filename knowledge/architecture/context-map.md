@@ -1,71 +1,55 @@
 ---
-title: Stubs Framework — Architecture Context Map
+title: Project Architecture Context Map
 type: context-map
-description: Master architectural context map for the stubs specification framework, indexing core domains and linking to domain-specific context maps.
+description: High-level architectural map of core domains, subsystem responsibilities, and dependency flows.
 tags:
   - architecture
   - context-map
-  - stubs
+  - agent-optimized
 ---
 
-# Stubs Framework — Architecture Context Map
+# Architecture Context Map
 
-`stubs` is an AI agent skill and specification-first software engineering framework. It bridges natural language architecture intent with executable multi-language codebases using **Open Knowledge Format (OKF)** Markdown sidecars (`*.ts.md`, `*.py.md`, `*.go.md`).
+## Routing & Entrypoints
 
----
+Entry (Layer 0): src/context/engine.ts -> domain: core
+Entry (Layer 0): src/INDEX.md -> domain: core
+Entry (Layer 0): src/context/engine.ts.md -> domain: core
 
-## High-Level Subsystem Flow
+## Subsystem Matrix
 
-```
-┌──────────────────────────────────────────────────────────────────┐
-│                   CLI / Developer Entry Point                    │
-│           src/cli.ts  →  src/cli/router.ts ('stubs ...')         │
-└───────────────────────┬──────────────────────────────────────────┘
-                        │ routes to
-     ┌──────────────────┼─────────────────────────┬────────────────┐
-     ▼                  ▼                         ▼                ▼
-┌──────────────┐ ┌──────────────┐          ┌──────────────┐ ┌──────────────┐
-│ GrillEngine  │ │ Materializer │          │SandingEngine │ │ PortalServer │
-│ src/grill/   │ │ src/         │          │ src/sanding/ │ │ src/server/  │
-│              │ │ materializer/│          │              │ │              │
-└──────┬───────┘ └──────┬───────┘          └──────┬───────┘ └──────┬───────┘
-       │                │                         │                │
-       └────────────────┼─────────────────────────┴────────────────┘
-                        │ all query/persist through
-                        ▼
-                 ┌──────────────┐
-                 │ GraphEngine  │ ◄─── Autonomy Protocol (src/autonomy/)
-                 │  src/graph/  │ ◄─── Template Engine (src/templates/)
-                 │(SQLite State)│
-                 └──────────────┘
-```
+Graph Engine (L1): src/graph/engine.ts -> deps: none | caps: normalizePosixPath, resolvePosixPath, fallbackGlob, IndexSummary
+Verification & Tool Suite (L2): src/prune/engine.ts -> deps: none | caps: PruneIssueType, PruneIssue, PruneAuditSummary, PruneAuditResult
+Core Entrypoints & Runtime (L3): src/context/engine.ts -> deps: cli | caps: ContextOptions, Tier0TargetContext, Tier1DependencyContext, Tier1DependentContext
+Server & Live Portal (L4): src/web/shims.ts -> deps: storage | caps: sha256, rightRotate, Hash, update
+Autonomy Protocol (L5): src/phase/engine.ts.md -> deps: core, graph, parser, sanding | caps: PhaseEngine, LifecyclePhase, LIFECYCLE_PHASES, PhaseRequirement
+Parser Engine (L6): src/parser/okf.ts.md -> deps: none | caps: OkfFrontmatter, ParsedOkfSpec, FileTreeEntry, isCodeSidecar
+Storage Layer (L7): src/storage/index.ts -> deps: none | caps: FileStorageDriver, FileSystemDriver, PreparedStatement, DatabaseDriver
+Sanding & Sync Engine (L8): src/sanding/engine.ts -> deps: storage | caps: SyncResult, sha256, stripSyncStateFromYaml, stripSyncStateFromContent
+CLI & Router (L9): src/cli/router.ts -> deps: none | caps: CliContext, CliRouter, route, parseArgs
+Interactive Grill Engine (L10): src/grill/engine.ts -> deps: core, graph, parser | caps: GrillState, GrillEngineOptions, GrillEngine, GrillState
+Materializer Engine (L11): src/materializer/engine.ts -> deps: core, graph, parser, storage | caps: MaterializeResult, stringifyOkfSpec, MaterializerEngine, MaterializerEngine
 
----
+## Domain Maps & Specs
 
-## Core Domains & Domain Map Index
+- graph: knowledge/architecture/domains/graph-domain-map.md (hub: src/graph/engine.ts)
+- tools: knowledge/architecture/domains/tools-domain-map.md (hub: src/prune/engine.ts)
+- core: knowledge/architecture/domains/core-domain-map.md (hub: src/context/engine.ts)
+- server: knowledge/architecture/domains/server-domain-map.md (hub: src/web/shims.ts)
+- autonomy: knowledge/architecture/domains/autonomy-domain-map.md (hub: src/phase/engine.ts.md)
+- parser: knowledge/architecture/domains/parser-domain-map.md (hub: src/parser/okf.ts.md)
+- storage: knowledge/architecture/domains/storage-domain-map.md (hub: src/storage/index.ts)
+- sanding: knowledge/architecture/domains/sanding-domain-map.md (hub: src/sanding/engine.ts)
+- cli: knowledge/architecture/domains/cli-domain-map.md (hub: src/cli/router.ts)
+- grill: knowledge/architecture/domains/grill-domain-map.md (hub: src/grill/engine.ts)
+- materializer: knowledge/architecture/domains/materializer-domain-map.md (hub: src/materializer/engine.ts)
 
-Each domain in the `stubs` framework has a dedicated deep-dive context map located in [`knowledge/architecture/domains/`](domains/).
+## Boundary Invariants
 
-| Domain                       | Subsystem Responsibility                                             | Context Map Link                                              |
-| :--------------------------- | :------------------------------------------------------------------- | :------------------------------------------------------------ |
-| **Graph Engine**             | SQLite-backed dependency graphs, node states, and OKF entity queries | [Graph Domain Map](domains/graph-domain-map.md)               |
-| **Sanding & Sync Engine**    | AST-based bi-directional synchronization and drift reconciliation    | [Sanding Domain Map](domains/sanding-domain-map.md)           |
-| **Materializer Engine**      | Multi-language code extraction, compilation checks, and disk writing | [Materializer Domain Map](domains/materializer-domain-map.md) |
-| **Interactive Grill Engine** | Dynamic spec interrogation, frontier-based Q&A, and design recording | [Grill Domain Map](domains/grill-domain-map.md)               |
-| **Server & Live Portal**     | Local Express/SSE background daemon, file watcher, and dashboard UI  | [Server Domain Map](domains/server-domain-map.md)             |
-| **Autonomy Protocol**        | Permission gates, human-in-the-loop policies, and action proposals   | [Autonomy Domain Map](domains/autonomy-domain-map.md)         |
-| **CLI & Router**             | Argument parsing, sub-command dispatching, and skill installer       | [CLI Domain Map](domains/cli-domain-map.md)                   |
+- Downward dependencies only: consumers depend on lower layers, never higher layers.
+- Cross-domain calls must target the domain canonical hub module, never internal private helpers.
+- Repo-level architectural decisions recorded in knowledge/architecture/ADR/. Module nuances recorded in domain maps and sidecars.
 
----
+## Visual Architecture Map
 
-## Planning Hub & Active Initiatives
-
-- **[Planning Hub & Initiative Map](../planning/planning-map.md)** — Central operational hub tracking active conceptual blueprints, lifecycle phases, and multi-agent task trackers.
-
----
-
-## Architectural Principles
-
-1. **Deep Modules:** Large, simple interface contracts hiding dense implementation details.
-2. **Pulling Complexity Downward:** Consumers should not have to manage low-level details (e.g. `CliRouter` handles CLI parsing cleanly, `SandingEngine` isolates AST hashing).
-3. **Optional Specification Layer:** When sidecars exist, code is a derivative artifact materialized from or sanded into sidecar specifications (`*.<ext>.md`). When sidecars are absent, code files are first-class graph nodes that the framework indexes and analyzes without requiring spec pairs.
+Human visual Mermaid diagrams: knowledge/architecture/visual-map.md (agents: do not read unless requested)

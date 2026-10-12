@@ -12,5 +12,41 @@
   },
   "grill": {
     "default_depth": "standard_drill"
+  },
+  "architecture": {
+    "min_domain_size": 2,
+    "domains": {
+      "autonomy": [
+        "src/autonomy/**",
+        "src/phase/**",
+        "src/concept/**"
+      ],
+      "graph": [
+        "src/graph/**",
+        "src/query/**"
+      ],
+      "parser": [
+        "src/parser/**",
+        "src/compiler/**"
+      ],
+      "server": [
+        "src/server/**",
+        "src/web/**"
+      ],
+      "core": [
+        "src/config/**",
+        "src/context/**"
+      ],
+      "tools": [
+        "src/lint/**",
+        "src/prune/**",
+        "src/mock/**",
+        "src/changelog/**",
+        "src/export/**",
+        "src/templates/**",
+        "src/diagram/**",
+        "src/impact/**"
+      ]
+    }
   }
 }

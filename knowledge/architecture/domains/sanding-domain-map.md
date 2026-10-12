@@ -3,16 +3,16 @@ title: Sanding & Sync Engine — Domain Context Map
 type: domain-context-map
 domain: sanding
 parent_map: ../context-map.md
-description: Deep-dive context map for the AST hashing, bi-directional spec/code synchronization, and drift healing engine.
+description: Deep-dive context map for the sanding domain, subsystem responsibilities, and internal modules.
 tags:
   - domain-map
   - sanding
-  - ast
+  - agent-optimized
 ---
 
 # Sanding & Sync Engine — Domain Context Map
 
-[← Back to Root Context Map](../context-map.md)
+Parent Context Map: knowledge/architecture/context-map.md
 
 ## Domain Purpose & Responsibilities
 
@@ -20,14 +20,12 @@ The **Sanding Engine** is responsible for bi-directional synchronization between
 
 ---
 
-## Key Files & Sidecars
+## Key Modules & Files
 
-| File / Sidecar                                                                                            | Purpose & Exported Symbols                                            | Depends On                                       |
-| :-------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------- | :----------------------------------------------- |
-| [`src/sanding/engine.ts`](../../src/sanding/engine.ts) / [`engine.ts.md`](../../src/sanding/engine.ts.md) | `SandingEngine` executing 5-phase retroactive reconciliation and sync | `ast.ts`, `parser/okf.ts`                        |
-| [`src/sanding/ast.ts`](../../src/sanding/ast.ts) / [`ast.ts.md`](../../src/sanding/ast.ts.md)             | AST parsing, structural normalization, and SHA-256 hashing functions  | `@typescript-eslint/typescript-estree`, `crypto` |
-
----
+src/sanding/engine.ts (Hub) -> deps: src/storage/containment.ts.md | caps: SyncResult, sha256, stripSyncStateFromYaml, stripSyncStateFromContent, healCorruptedFrontmatter, stripSidecarHeader, syncFrontmatterDependencies, SandingEngine
+src/sanding/engine.ts.md -> deps: none | caps: SyncResult, SandingEngine, stripSyncStateFromYaml, stripSyncStateFromContent, healCorruptedFrontmatter
+src/sanding/ast.ts -> deps: none | caps: getAstStructuralHash, visit, typeCheckCode, InterfaceDriftReport, checkInterfaceDrift
+src/sanding/ast.ts.md -> deps: none | caps: TypeCheckResult, getAstStructuralHash, typeCheckCode
 
 ## Domain Invariants
 

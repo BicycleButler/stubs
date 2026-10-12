@@ -1,10 +1,9 @@
 import * as path from 'path';
 import * as ts from 'typescript';
 import { parseOkfSpec, ParsedOkfSpec } from '../parser/okf';
-import { extractDistilledSignatures, extractExportedSymbolNames } from '../parser/ast';
+import { extractExportedSymbolNames } from '../parser/ast';
 import { GraphEngine, normalizePosixPath } from '../graph/engine';
 import { FileStorageDriver, NodeFileSystem } from '../storage';
-import { loadConfig } from '../config/schema';
 
 export type TestFramework = 'jest' | 'vitest' | 'node';
 
@@ -137,7 +136,6 @@ export class MockEngine {
       : parsedSpec?.frontmatter?.exports || [];
 
     const classified = sourceCode ? classifyExportedSymbols(sourceCode, codePath) : new Map();
-    const distilledSignatures = sourceCode ? extractDistilledSignatures(sourceCode, codePath) : '';
 
     // Extract ADR decisions
     const decisions = parsedSpec?.frontmatter?.decisions || [];

@@ -121,4 +121,19 @@ describe('McpServer (Model Context Protocol)', () => {
     expect(res.id).toBe(6);
     expect(res.result.content[0].text).toContain('Blast Radius');
   });
+
+  it('should execute stubs_scan tool call', async () => {
+    const req = {
+      jsonrpc: '2.0',
+      id: 7,
+      method: 'tools/call',
+      params: {
+        name: 'stubs_scan',
+        arguments: {},
+      },
+    };
+    const res = await mcpServer.handleRpcRequest(req);
+    expect(res.id).toBe(7);
+    expect(res.result.content[0].text).toContain('AST scan complete:');
+  });
 });

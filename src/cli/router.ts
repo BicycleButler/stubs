@@ -22,7 +22,9 @@ import { ChangelogEngine } from '../changelog/engine';
 import { QueryEngine } from '../query/engine';
 import { ExportEngine } from '../export/engine';
 import { McpServer } from '../server/mcp';
+import { DomainEngine } from '../graph/domain';
 import { applyGlobalConsoleMasking } from '../storage/credentials';
+import { syncAgentsDoc } from './agents-doc';
 
 export interface CliContext {
   configPath?: string;
@@ -213,11 +215,7 @@ Commands:
   sand [file]         Synchronize sidecars and code files (with auto-healing depends_on).
   reconcile <file>    Execute the 5-phase retroactive reconciliation engine on a sidecar.
   sync [file]         Synchronize sidecars and code files.
-  map [options]       Audit or scaffold architectural context maps (knowledge/architecture/context-map.md).
-                      Use \\x60map auto\\x60 (or \\x60map --auto\\x60) for one-command graph→wiki+obsidian pipeline.
-  map auto [dir]      Automatically scan, export wiki, and export obsidian in one deterministic pass (no LLM).
-                      Options: --wiki-out <dir>, --obsidian-out <dir>, --json
-  map --auto          Alias for \\x60map auto\\x60.
+  map [options]       Generate, audit, or scaffold domain & context maps (--generate, --domains, --domain <name>, --visual).
   template <action>   Manage template molds. Actions: list, render <name> <json_data_or_file>
   evaluate <action>   Evaluate autonomy permission. Actions: draft_template_proposal, scaffold_sidecar, materialize_code
   validate <file>     Parse and validate an OKF specification (*.md) file.
@@ -313,7 +311,10 @@ Options:
         await this.handleMap({ ...ctx, args: ['--scaffold'] });
       }
 
-      // 5. Advise on package.json shortcut
+      // 5. Synchronize and format AGENTS.md according to ADR-001
+      await this.syncAgentsInstructions(targetDir, { force });
+
+      // 6. Advise on package.json shortcut
       const targetPackageJsonPath = path.join(targetDir, 'package.json');
       if (existsSync(targetPackageJsonPath)) {
         try {
@@ -982,6 +983,7 @@ Options:
         isInstall: true,
       });
       await this.updateGitignore(targetDir);
+      await this.syncAgentsInstructions(targetDir, { force: true });
 
       console.log('stubs installation completed successfully!');
       return 0;
@@ -1096,6 +1098,9 @@ Options:
 
     // 5. Run database migrations
     await this.runDatabaseMigrations(targetDir);
+
+    // 6. Synchronize AGENTS.md according to ADR-001
+    await this.syncAgentsInstructions(targetDir, { force });
 
     console.log('stubs update completed successfully!');
     return 0;
@@ -1311,6 +1316,14 @@ export class {{pascalName}} {
     }
 
     return seeded;
+  }
+
+  public async syncAgentsInstructions(
+    targetDir: string,
+    options?: { projectName?: string; force?: boolean },
+  ): Promise<string> {
+    const result = await syncAgentsDoc(targetDir, options);
+    return result.filePath;
   }
 
   public async seedAgentSkills(
@@ -1547,59 +1560,180 @@ This project uses the \`stubs\` architecture-as-code sidecar framework.
       ctx.args.includes('--init') ||
       ctx.args.includes('init') ||
       ctx.args.includes('scaffold');
+    const isGenerate =
+      ctx.args.includes('--generate') ||
+      ctx.args.includes('--refresh') ||
+      ctx.args.includes('--sync') ||
+      ctx.args.includes('-g');
+    const isVisual = ctx.args.includes('--visual') || ctx.args.includes('-v');
+    const isForce = ctx.args.includes('--force') || ctx.args.includes('-f');
+    const isDomainsOnly = ctx.args.includes('--domains');
+
+    let targetDomain: string | undefined;
+    for (let i = 0; i < ctx.args.length; i++) {
+      if (ctx.args[i] === '--domain' && ctx.args[i + 1]) {
+        targetDomain = ctx.args[i + 1];
+        i++;
+      } else if (ctx.args[i].startsWith('--domain=')) {
+        targetDomain = ctx.args[i].split('=')[1];
+      }
+    }
 
     const architectureDir = path.join(process.cwd(), 'knowledge', 'architecture');
     const domainsDir = path.join(architectureDir, 'domains');
     const rootMapFile = path.join(architectureDir, 'context-map.md');
+    const visualMapFile = path.join(architectureDir, 'visual-map.md');
 
-    if (isScaffold) {
-      await fs.mkdir(domainsDir, { recursive: true });
-      if (!existsSync(rootMapFile)) {
-        const skeletonContent = `---
-title: Project Architecture Context Map
-type: context-map
-description: High-level architectural map of core domains, subsystem responsibilities, and data flows.
+    await fs.mkdir(domainsDir, { recursive: true });
+
+    const config = loadConfig(ctx.configPath);
+    let graphEngine: GraphEngine | null = null;
+    if (existsSync(config.paths.db_path)) {
+      graphEngine = new GraphEngine(config.paths.db_path);
+      await graphEngine.initialize();
+    }
+
+    const domainEngine = new DomainEngine(graphEngine, process.cwd(), config);
+
+    // 1. Handle targeted single domain generation: stubs map --domain <name>
+    if (targetDomain) {
+      const domains = await domainEngine.discoverDomains();
+      const dInfo = domains.get(targetDomain) || {
+        name: targetDomain,
+        title: `${targetDomain.charAt(0).toUpperCase() + targetDomain.slice(1)} Domain`,
+        hubFile: `src/${targetDomain}/index.ts`,
+        modules: [],
+        externalDependencies: [],
+        dependents: [],
+      };
+      const outPath = await domainEngine.generateDomainMap(dInfo, domainsDir, { force: isForce });
+      console.log(`✓ Generated domain map for "${targetDomain}": ${outPath}`);
+      return 0;
+    }
+
+    // 2. Handle batch domain generation only: stubs map --domains
+    if (isDomainsOnly) {
+      console.log(`Generating prerequisite domain context maps in ${domainsDir}...`);
+      const domains = await domainEngine.generateAllDomainMaps(domainsDir, { force: isForce });
+      console.log(`✓ Generated ${domains.size} domain maps in ${domainsDir}`);
+      return 0;
+    }
+
+    // 3. Handle --visual flag to synthesize Mermaid diagram
+    if (isVisual && !isGenerate && !isScaffold) {
+      if (graphEngine) {
+        const diagramEngine = new DiagramEngine({ graphEngine });
+        const diagResult = await diagramEngine.generateDiagram(undefined, {
+          type: 'architecture',
+        });
+        const visualContent = `---
+title: Project Architecture Visual Diagram
+type: visual-diagram
+audience: human-developer
 tags:
   - architecture
-  - context-map
+  - visual
+  - mermaid
 ---
 
-# Project Architecture Context Map
+# Architecture Visual Map
 
-## Purpose & Overview
-Describe the primary purpose and execution model of the application.
+<!-- For AI coding agents: read knowledge/architecture/context-map.md or run npx stubs query "map:" -->
 
-## Domain Index
-| Domain | Subsystem / Responsibility | Context Map |
-| :--- | :--- | :--- |
-| Core | Main entry points and routing | [Core Domain Map](domains/core-domain-map.md) |
+${diagResult.mermaidCode}
 `;
-        await fs.writeFile(rootMapFile, skeletonContent, 'utf8');
-        console.log(`Created skeleton context map at ${rootMapFile}`);
+        await fs.writeFile(visualMapFile, visualContent, 'utf8');
+        console.log(`✓ Synthesized visual architecture diagram at ${visualMapFile}`);
       } else {
-        console.log(`Context map already exists at ${rootMapFile}`);
+        console.warn(
+          `⚠️ Warning: Graph database not found at ${config.paths.db_path}. Run 'stubs scan' first to generate visual diagrams.`,
+        );
       }
       return 0;
     }
 
-    // --- map:auto: Fully-automated graph → wiki → obsidian pipeline (no LLM) ---
-    const isAuto = ctx.args.includes('--auto') || ctx.args.includes('auto');
-    if (isAuto) {
-      return await this.handleMapAuto(ctx);
+    // 4. Handle full generation: Domain maps MUST be generated first as prerequisite
+    if (isGenerate || isScaffold) {
+      if (existsSync(rootMapFile) && !isForce && !isGenerate) {
+        console.log(
+          `Context map already exists at ${rootMapFile}. Use --generate to refresh from code graph.`,
+        );
+        return 0;
+      }
+
+      console.log(`Step 1/2: Generating prerequisite domain context maps in ${domainsDir}...`);
+      const domains = await domainEngine.generateAllDomainMaps(domainsDir, { force: isForce });
+      console.log(`✓ Verified and generated ${domains.size} prerequisite domain maps.`);
+
+      console.log(`Step 2/2: Synthesizing root context map from domain maps...`);
+      await domainEngine.generateContextMap(domains, rootMapFile, { force: isForce });
+      console.log(`✓ Synthesized agent-first context map at ${rootMapFile}`);
+
+      // Auto-generate visual-map.md if graph is available
+      if (graphEngine && (isVisual || !existsSync(visualMapFile))) {
+        const diagramEngine = new DiagramEngine({ graphEngine });
+        const diagResult = await diagramEngine.generateDiagram(undefined, {
+          type: 'architecture',
+        });
+        const visualContent = `---
+title: Project Architecture Visual Diagram
+type: visual-diagram
+audience: human-developer
+tags:
+  - architecture
+  - visual
+  - mermaid
+---
+
+# Architecture Visual Map
+
+<!-- For AI coding agents: read knowledge/architecture/context-map.md or run npx stubs query "map:" -->
+
+${diagResult.mermaidCode}
+`;
+        await fs.writeFile(visualMapFile, visualContent, 'utf8');
+        console.log(`✓ Synthesized visual architecture diagram at ${visualMapFile}`);
+      }
+
+      return 0;
     }
 
-    // Default: Audit / Inspect context map files
+    // 5. Default: Audit / Inspect context map files
     if (!existsSync(rootMapFile)) {
       console.warn(
-        `⚠️ Warning: Root context map not found at ${rootMapFile}. Run 'stubs map --scaffold' to create it.`,
+        `⚠️ Warning: Root context map not found at ${rootMapFile}. Run 'stubs map --generate' or 'stubs map --scaffold' to create it.`,
       );
       return 0;
     }
 
-    console.log(`Validating architecture context maps...`);
+    console.log(`Validating architecture context maps against ADR-001...`);
     const rootContent = await fs.readFile(rootMapFile, 'utf8');
     let domainCount = 0;
 
+    // ADR-001 Compliance Lint Checks on root map
+    const adrViolations: string[] = [];
+    if (/\|\s*:?-+:?\s*\|/.test(rootContent)) {
+      adrViolations.push(
+        'Markdown table delimiters (| :--- |) detected in context-map.md. ADR-001 Rule 2 recommends compact delimited records.',
+      );
+    }
+    if (/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}]/u.test(rootContent)) {
+      adrViolations.push(
+        'Multi-byte emojis detected in context-map.md. ADR-001 Rule 1 prohibits decorative emojis.',
+      );
+    }
+    if (/```mermaid/i.test(rootContent)) {
+      adrViolations.push(
+        'Embedded Mermaid diagram detected in context-map.md. ADR-001 Rule 7 requires decoupling visual diagrams to visual-map.md.',
+      );
+    }
+    if (/[┌┐└┘├┤─│]/.test(rootContent)) {
+      adrViolations.push(
+        'Box-drawing ASCII art detected in context-map.md. ADR-001 Rule 1 prohibits decorative line art.',
+      );
+    }
+
+    // Check each domain map
     if (existsSync(domainsDir)) {
       const files = await fs.readdir(domainsDir);
       const domainMapFiles = files.filter((f) => f.endsWith('-domain-map.md') || f.endsWith('.md'));
@@ -1611,7 +1745,24 @@ Describe the primary purpose and execution model of the application.
             `⚠️ Warning: Domain map "${dFile}" exists in ${domainsDir} but is not linked in context-map.md`,
           );
         }
+
+        const dContent = await fs.readFile(path.join(domainsDir, dFile), 'utf8');
+        if (/\|\s*:?-+:?\s*\|/.test(dContent)) {
+          adrViolations.push(
+            `Markdown table delimiters detected in ${dFile}. Run 'stubs map --generate' to convert to ADR-001 format.`,
+          );
+        }
       }
+    }
+
+    if (adrViolations.length > 0) {
+      for (const v of adrViolations) {
+        console.warn(`⚠️ ADR-001 Warning: ${v}`);
+      }
+    } else {
+      console.log(
+        `✓ ADR-001 Agent-First Compliance: PASS (0 emojis, 0 delimiter tables, 0 visual diagrams)`,
+      );
     }
 
     console.log(`✓ Architecture map found: ${rootMapFile}`);
@@ -2753,22 +2904,23 @@ Options:
     const isJson = ctx.args.includes('--json');
     const isDfs = ctx.args.includes('--dfs');
 
-    let budget = 1500;
-    let surgicalKind: 'search' | 'explain' | 'path' | 'blast' | undefined;
+    let budget = 1000;
+    let surgicalKind: 'search' | 'explain' | 'path' | 'blast' | 'map' | 'stub' | undefined;
     let surgicalTarget: string | undefined;
     let surgicalSource: string | undefined;
     let depth: number | undefined;
     let direction: 'upstream' | 'downstream' | 'both' | undefined;
     let relationTypes: string[] | undefined;
+    let packageScope: string | undefined;
     const queryParts: string[] = [];
 
     for (let i = 0; i < ctx.args.length; i++) {
       const arg = ctx.args[i];
       if (arg === '--budget' && ctx.args[i + 1]) {
-        budget = parseInt(ctx.args[i + 1], 10) || 1500;
+        budget = parseInt(ctx.args[i + 1], 10) || 1000;
         i++;
       } else if (arg.startsWith('--budget=')) {
-        budget = parseInt(arg.split('=')[1], 10) || 1500;
+        budget = parseInt(arg.split('=')[1], 10) || 1000;
       } else if (arg === '--depth' && ctx.args[i + 1]) {
         depth = parseInt(ctx.args[i + 1], 10) || 3;
         i++;
@@ -2780,6 +2932,20 @@ Options:
         direction = 'downstream';
       } else if (arg === '--both') {
         direction = 'both';
+      } else if (arg === '--map') {
+        surgicalKind = 'map';
+      } else if (arg === '--stub' && ctx.args[i + 1]) {
+        surgicalKind = 'stub';
+        surgicalTarget = ctx.args[i + 1];
+        i++;
+      } else if (arg.startsWith('--stub=')) {
+        surgicalKind = 'stub';
+        surgicalTarget = arg.split('=')[1];
+      } else if ((arg === '--pkg' || arg === '--package') && ctx.args[i + 1]) {
+        packageScope = ctx.args[i + 1];
+        i++;
+      } else if (arg.startsWith('--pkg=') || arg.startsWith('--package=')) {
+        packageScope = arg.split('=')[1];
       } else if (arg === '--type' && ctx.args[i + 1]) {
         relationTypes = ctx.args[i + 1].split(',').map((r) => r.trim());
         i++;
@@ -2825,10 +2991,8 @@ Options:
 
     const queryText = queryParts.join(' ').trim();
     if (!queryText && !surgicalKind) {
-      console.error(
-        'Error: Query text or surgical flag is required.\nUsage: stubs query "<question or prefix>" [--path A B] [--explain A] [--blast A]',
-      );
-      return 1;
+      // Default to macro map when invoked without args
+      surgicalKind = 'map';
     }
 
     const config = loadConfig(ctx.configPath);
@@ -2844,6 +3008,7 @@ Options:
       depth,
       direction,
       relationTypes,
+      package: packageScope,
     });
 
     if (isJson) {
@@ -2943,15 +3108,8 @@ Options:
       }
 
       if (platform === 'agents' || platform === 'all') {
-        const agentsPath = 'AGENTS.md';
-        let content = '';
-        if (existsSync(agentsPath)) {
-          content = await fs.readFile(agentsPath, 'utf8');
-        }
-        if (!content.includes('stubs-hook-guard')) {
-          await fs.writeFile(agentsPath, content + ruleText);
-          console.log('✓ Added graph guidance to AGENTS.md');
-        }
+        const agentsFile = await this.syncAgentsInstructions(process.cwd());
+        console.log(`✓ Added graph guidance to ${path.basename(agentsFile)}`);
       }
 
       console.log(`✓ Stubs agent hook / rules configuration installed successfully.`);

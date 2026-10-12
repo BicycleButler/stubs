@@ -18,18 +18,18 @@ export const STUBS_MCP_TOOLS: McpTool[] = [
   {
     name: 'stubs_query',
     description:
-      'Unified architectural query and GraphRAG tool. Supports natural language exploration, keyword search, or surgical prefix queries: "explain: <symbol|file>" (inspect callers/callees/community), "path: <source> to <target>" (trace dependency path), and "blast: <target>" (calculate downstream impact radius). Preferred single-call entry point for codebase intelligence.',
+      'Token-optimal architectural search and codebase navigation engine. Supports 3-level progressive zoom: "map:" (Level 0 macro architecture & monorepo packages), "stub: <file|symbol>" (Level 1 interface signatures & contracts), and Level 2 targeted operations: "explain: <symbol>", "path: <A> to <B>", "blast: <target>", or "pkg:<name> <query>". Saves 80-90% tokens compared to raw file reads.',
     inputSchema: {
       type: 'object',
       properties: {
         query: {
           type: 'string',
           description:
-            'The search query, question, or surgical prefix command (e.g. "explain: SandingEngine", "path: GraphEngine to CliRouter", "blast: src/graph/engine.ts", or "How does typechecking work?").',
+            'The search query, question, or surgical prefix command (e.g. "map:", "stub: src/auth/jwt.ts", "explain: SandingEngine", "path: GraphEngine to CliRouter", "blast: src/graph/engine.ts", "pkg:web auth", or natural language question).',
         },
         budget: {
           type: 'number',
-          description: 'Approximate token budget for the response (default: 1500).',
+          description: 'Approximate token budget for the response (default: 1000).',
         },
         mode: {
           type: 'string',
@@ -38,12 +38,12 @@ export const STUBS_MCP_TOOLS: McpTool[] = [
         },
         surgicalKind: {
           type: 'string',
-          enum: ['search', 'explain', 'path', 'blast'],
+          enum: ['search', 'explain', 'path', 'blast', 'map', 'stub'],
           description: 'Optional explicit surgical query kind.',
         },
         target: {
           type: 'string',
-          description: 'Optional target symbol or file for explain or blast operations.',
+          description: 'Optional target symbol or file for explain, blast, or stub operations.',
         },
         source: {
           type: 'string',
@@ -58,8 +58,26 @@ export const STUBS_MCP_TOOLS: McpTool[] = [
           enum: ['upstream', 'downstream', 'both'],
           description: 'Impact direction for blast operations (default: downstream).',
         },
+        package: {
+          type: 'string',
+          description: 'Optional monorepo package name to scope search and traversal.',
+        },
       },
       required: ['query'],
+    },
+  },
+  {
+    name: 'stubs_scan',
+    description:
+      'Trigger an incremental AST graph scan and indexing pass of the workspace, updating .stubs/graph.sqlite with fresh symbols, calls, imports, communities, and PageRank.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        force: {
+          type: 'boolean',
+          description: 'Force re-index all files ignoring filesystem modification time cache.',
+        },
+      },
     },
   },
   {
@@ -303,12 +321,31 @@ export class McpServer {
             source: args.source,
             depth: args.depth,
             direction: args.direction,
+            package: args.package,
           });
           return {
             jsonrpc: '2.0',
             id,
             result: {
               content: [{ type: 'text', text: res.summaryText }],
+            },
+          };
+        }
+
+        case 'stubs_scan': {
+          await this.graphEngine.initialize();
+          const scanRes = await this.graphEngine.indexCodeWorkspace('.', { force: args.force });
+          await this.graphEngine.assignCommunities();
+          return {
+            jsonrpc: '2.0',
+            id,
+            result: {
+              content: [
+                {
+                  type: 'text',
+                  text: `✓ AST scan complete: ${scanRes.indexed} indexed, ${scanRes.skipped} skipped, ${scanRes.scanned} scanned.`,
+                },
+              ],
             },
           };
         }

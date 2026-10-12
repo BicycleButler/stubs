@@ -3,30 +3,34 @@ title: Autonomy Protocol — Domain Context Map
 type: domain-context-map
 domain: autonomy
 parent_map: ../context-map.md
-description: Deep-dive context map for the AutonomyProtocol, human-in-the-loop permission evaluation, and policy enforcement.
+description: Deep-dive context map for the autonomy domain, subsystem responsibilities, and internal modules.
 tags:
   - domain-map
   - autonomy
+  - agent-optimized
 ---
 
 # Autonomy Protocol — Domain Context Map
 
-[← Back to Root Context Map](../context-map.md)
+Parent Context Map: knowledge/architecture/context-map.md
 
 ## Domain Purpose & Responsibilities
 
-The **Autonomy Protocol** enforces safety and permission boundaries on actions proposed by AI agents. It evaluates proposed actions (e.g. `scaffold_sidecar`, `materialize_code`, `draft_template_proposal`) against configured autonomy levels and human-in-the-loop policies stored in `.stubs/config.json`.
+The Autonomy Protocol coordinates domain logic, core types, and services for the autonomy subsystem.
 
----
+## Key Modules & Files
 
-## Key Files & Sidecars
-
-| File / Sidecar                                                                                                       | Purpose & Exported Symbols                                            | Depends On                            |
-| :------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------- | :------------------------------------ |
-| [`src/autonomy/protocol.ts`](../../src/autonomy/protocol.ts) / [`protocol.ts.md`](../../src/autonomy/protocol.ts.md) | `AutonomyProtocol` managing permission levels and proposal evaluation | `graph/engine.ts`, `config/schema.ts` |
-
----
+src/phase/engine.ts.md (Hub) -> deps: none | caps: PhaseEngine, LifecyclePhase, LIFECYCLE_PHASES, PhaseRequirement, PhaseCheckResult, AdvancePhaseResult, WorkspacePhaseMatrix
+src/phase/engine.ts -> deps: src/graph/engine.ts.md, src/parser/okf.ts.md | caps: LifecyclePhase, PhaseRequirement, PhaseCheckResult, AdvancePhaseResult, WorkspacePhaseMatrix, PhaseEngine
+src/autonomy/protocol.ts -> deps: src/config/schema.ts.md, src/graph/engine.ts.md, src/parser/okf.ts.md, src/sanding/engine.ts.md | caps: AutonomyLevel, DriftReport, Proposal, ReconciliationResult, AutonomyProtocol
+src/concept/engine.ts -> deps: src/graph/engine.ts.md, src/parser/okf.ts.md | caps: CreateConceptOptions, CreateConceptResult, ScaffoldResult, ConceptInfo, ConceptEngine
+src/autonomy/protocol.ts.md -> deps: none | caps: AutonomyLevel, DriftReport, Proposal, ReconciliationResult, AutonomyProtocol
+src/concept/engine.ts.md -> deps: none | caps: ConceptEngine, CreateConceptOptions, CreateConceptResult, ScaffoldResult, ConceptInfo
+src/concept/tree.ts -> deps: src/graph/engine.ts.md, src/parser/okf.ts.md | caps: VisualTreeOptions, TreeNode, TreeEngine
+src/concept/tree.ts.md -> deps: none | caps: TreeEngine, VisualTreeOptions
 
 ## Domain Invariants
 
-- Destructive or high-impact actions (like overwriting existing human code without an approved sidecar) require explicit evaluation and approval.
+- Downward dependencies only: cross-domain calls must target canonical domain hubs.
+- External consumers must interface through protocol.ts, never private internal helpers.
+- State changes must adhere to lifecycle and containment invariants.

@@ -1,88 +1,107 @@
 # stubs — Agent Instructions
 
-This document outlines the conventions and tooling rules AI agents must follow when operating in the `stubs` repository.
+Agent conventions and tooling rules for `stubs` repository.
+
+<!-- stubs-instructions-start -->
 
 ## Planning Hub & 5-Phase Lifecycle
 
-All repository initiatives, conceptual blueprints, and multi-agent task trackers live under **[`knowledge/planning/`](knowledge/planning/)**:
+Planning hub index: knowledge/planning/planning-map.md
+Lifecycle phases:
 
-- **[`knowledge/planning/planning-map.md`](knowledge/planning/planning-map.md)** — Master Planning Hub index and active initiative map.
-- **5-Phase Lifecycle:**
-  1. `Conceptualize` (Problem framing, file tree blueprint: `stubs concept`)
-  2. `Grill` (Stress-testing decisions & ADRs: `stubs grill`)
-  3. `Spec / Scaffold` (OKF sidecar definitions & types: `stubs concept scaffold`)
-  4. `Materialize` (Executable code extraction: `stubs materialize`)
-  5. `Sand & Audit` (AST drift sync & health check: `stubs sand`, `stubs phase check`)
+1. Conceptualize: problem framing, filetree blueprint (`stubs concept`)
+2. Grill: stress-test decisions & ADRs (`stubs grill`)
+3. Spec / Scaffold: OKF sidecar definitions & types (`stubs concept scaffold`)
+4. Materialize: extract executable code (`stubs materialize`)
+5. Sand & Audit: AST drift sync & health check (`stubs sand`, `stubs phase check`)
 
-## Context Map — Read First
+## Architecture Context Maps — Read First
 
-Before making any code changes, read the architecture context map to understand the module structure, dependency layers, and core concepts:
-
-- **[`knowledge/architecture/context-map.md`](knowledge/architecture/context-map.md)** — Master application context map linking to all domain-specific maps under `knowledge/architecture/domains/`.
-- **[`knowledge/ARCHITECTURE.md`](knowledge/ARCHITECTURE.md)** — Repository layout, dependency layer map, core concepts, CLI quick reference, and module sidecar index.
+Agent entry point: knowledge/architecture/context-map.md (human visual map: knowledge/architecture/visual-map.md; agents ignore unless requested).
+Repo ADRs: knowledge/architecture/ADR/ (ADR-001 agent-first format, ADR-002 domain clustering).
+Subsystem index: src/INDEX.md.
+Module specs: co-located `*.ts.md` sidecars in `src/`.
 
 ### Domain Context Maps
 
-Domain-specific context maps live under [`knowledge/architecture/domains/`](knowledge/architecture/domains/). Each domain map deep-dives into that domain's purpose, design invariants, and lists all key source files and sidecar specs:
+Domain-specific maps in knowledge/architecture/domains/:
 
-- **Graph Engine:** [`knowledge/architecture/domains/graph-domain-map.md`](knowledge/architecture/domains/graph-domain-map.md)
-- **Sanding & Sync Engine:** [`knowledge/architecture/domains/sanding-domain-map.md`](knowledge/architecture/domains/sanding-domain-map.md)
-- **Materializer Engine:** [`knowledge/architecture/domains/materializer-domain-map.md`](knowledge/architecture/domains/materializer-domain-map.md)
-- **Interactive Grill Engine:** [`knowledge/architecture/domains/grill-domain-map.md`](knowledge/architecture/domains/grill-domain-map.md)
-- **Server & Live Portal:** [`knowledge/architecture/domains/server-domain-map.md`](knowledge/architecture/domains/server-domain-map.md)
-- **Autonomy Protocol:** [`knowledge/architecture/domains/autonomy-domain-map.md`](knowledge/architecture/domains/autonomy-domain-map.md)
-- **CLI & Router:** [`knowledge/architecture/domains/cli-domain-map.md`](knowledge/architecture/domains/cli-domain-map.md)
-
-For a detailed module status matrix and full OKF subsystem index, see [`src/INDEX.md`](src/INDEX.md).
-
-For individual module sidecar specs (interface contracts, design decisions, dependency graphs), find the `*.ts.md` file co-located with each `*.ts` source file in `src/`.
-
----
-
-## Toolchain & Conventions
-
-- **Package Manager:** `npm` (or `npx` for executing binaries).
-- **Testing Framework:** `jest`.
-- **Linter:** `eslint`.
-- **Formatter:** `prettier`.
-- **Design Principles:** All code changes must adhere strictly to the rules outlined in `DESIGN_PHILOSOPHY.md` (e.g., Deep Modules, Pulling Complexity Downward, Code Cohesion).
+- autonomy: knowledge/architecture/domains/autonomy-domain-map.md
+- cli: knowledge/architecture/domains/cli-domain-map.md
+- core: knowledge/architecture/domains/core-domain-map.md
+- graph: knowledge/architecture/domains/graph-domain-map.md
+- grill: knowledge/architecture/domains/grill-domain-map.md
+- materializer: knowledge/architecture/domains/materializer-domain-map.md
+- parser: knowledge/architecture/domains/parser-domain-map.md
+- sanding: knowledge/architecture/domains/sanding-domain-map.md
+- server: knowledge/architecture/domains/server-domain-map.md
+- storage: knowledge/architecture/domains/storage-domain-map.md
+- tools: knowledge/architecture/domains/tools-domain-map.md
 
 ## Architecture Graph & GraphRAG Intelligence
 
-The repository maintains an AST-extracted dependency graph in `.stubs/graph.sqlite` with Louvain community detection and edge confidence tagging (`EXTRACTED`, `DECLARED`, `INFERRED`, `AMBIGUOUS`).
+AST dependency graph in `.stubs/graph.sqlite` with Louvain community detection, PageRank centrality, FTS5 BM25 hybrid search.
 
-- **Querying Knowledge & GraphRAG (Preferred Single Call):** Run `npx stubs query "<query>"` as the default entry point for all architectural intelligence. It supports both natural language questions and prefix-based surgical operations in a single invocation (saving ~50% tool calls and up to 90% tokens):
-  - `npx stubs query "explain: <symbol or file>"` — Inspect callers, callees, confidence tags, degree centralities, and subsystem community clusters (replaces standalone `stubs explain`).
-  - `npx stubs query "path: <source> to <target>"` — Trace shortest dependency path chain between modules (replaces standalone `stubs path`).
-  - `npx stubs query "blast: <target>"` — Calculate downstream impact radius and affected dependents (replaces standalone `stubs blast`).
-  - `npx stubs query "<question or concept>"` (or `--budget 1500 --dfs`) — Multi-hop token-budgeted GraphRAG context retrieval.
-- **Model Context Protocol (MCP):** Connect your IDE/agent to `npx stubs mcp` for live stdio JSON-RPC tool access. The `stubs_query` tool accepts the same surgical prefixes (`explain:`, `path:`, `blast:`) to minimize tool calls.
-- **Automatic Graph Maintenance:** Whenever files (source code or markdown sidecars) are created, deleted, or structurally modified, agents **MUST automatically run `npx stubs scan`** to refresh `.stubs/graph.sqlite`.
+- Querying GraphRAG: `npx stubs query "<query>"` (preferred single call, 3-tier progressive disclosure):
+  - `npx stubs query "map:"`: Level 0 Macro Map (subsystem communities, hubs, domains)
+  - `npx stubs query "stub: <target>"`: Level 1 Interface Skeleton Stubs (stripped signatures, types, line links)
+  - `npx stubs query "explain: <target>"`: Level 2 Symbol Profile (callers, callees, PageRank)
+  - `npx stubs query "path: <A> to <B>"`: Level 2 Shortest dependency path chain
+  - `npx stubs query "blast: <target>"`: Level 2 Downstream impact radius and dependents
+  - `npx stubs query "pkg:<package> <query>"`: Monorepo package-scoped query
+  - `npx stubs query "<concept>"`: Multi-hop token-budgeted GraphRAG context retrieval
+- Model Context Protocol (MCP): connect via standard JSON-RPC 2.0 stdio:
+  ```json
+  {
+    "mcpServers": {
+      "stubs": {
+        "command": "node",
+        "args": [".agents/skills/stubs/dist/cli.cjs", "mcp"]
+      }
+    }
+  }
+  ```
+  (or `"command": "npx", "args": ["stubs", "mcp"]`). Ultra-lean suite exposes `stubs_query` and `stubs_scan`.
+- Monorepo & workspace boundary resolution:
+  - Discovers package boundaries via `package.json` (`workspaces`), `pnpm-workspace.yaml`, `Cargo.toml` (`[workspace]`), `go.work`.
+  - Path aliases in `tsconfig.json` (`compilerOptions.paths`) and package exports map directly to canonical source files.
+  - Monorepo query prefix: `pkg:<package>` (e.g. `npx stubs query "pkg:billing invoice"`).
+- Automatic graph maintenance: auto-checks file mtime (<30ms) for 0% staleness. Refresh manually via `npx stubs scan`.
 
 ## CLI Commands
 
-Agents should use the following commands to execute repository tasks:
+- Scan & Index Code Graph: `npx stubs scan`
+- Query GraphRAG Subgraph: `npx stubs query "<question>"`
+- Unified Surgical Query: `npx stubs query "explain: <target>"` | `path: <A> to <B>` | `blast: <target>`
+- Architecture Mapping: `npx stubs map --generate` (refreshes prerequisite domain maps + root context-map.md)
+- Domain Maps Only: `npx stubs map --domains` | `npx stubs map --domain <name>`
+- Visual Diagram: `npx stubs map --visual`
+- Export Knowledge Graph: `npx stubs export <obsidian|wiki> [--out <dir>]`
+- Start MCP Stdio Server: `npx stubs mcp`
+- Install Assistant Rules: `npx stubs hook install`
 
-- **Scan & Index Code Graph:** `npx stubs scan` (or `node .agents/skills/stubs/dist/cli.cjs scan`)
-- **Query GraphRAG Subgraph:** `npx stubs query "<question>"`
-- **Unified Surgical Query:** `npx stubs query "explain: <target>"` | `path: <A> to <B>` | `blast: <target>`
-- **Explain Symbol / Node (Alias):** `npx stubs explain <target>`
-- **Export Knowledge Graph:** `npx stubs export <obsidian|wiki> [--out <dir>]`
-- **Start MCP Stdio Server:** `npx stubs mcp`
-- **Install Assistant Rules:** `npx stubs hook install`
-- **Install Dependencies:** `npm install`
-- **Build Project:** `npm run build`
-- **Run Tests:** `npm test`
-- **Lint Code:** `npm run lint`
-- **Format Code:** `npm run format`
-- **Start Local Server:** `npm start`
+<!-- stubs-instructions-end -->
 
-## stubs CLI
+## Toolchain & Conventions
 
-The `stubs` CLI binary is at `.agents/skills/stubs/dist/cli.cjs`. Invoke via `npx stubs <command>` or `node .agents/skills/stubs/dist/cli.cjs <command>`.
+- Package manager: npm (npx for binaries)
+- Testing framework: jest
+- Linter: eslint
+- Formatter: prettier
+- Design principles: adhere to DESIGN_PHILOSOPHY.md (deep modules, pull complexity downward, code cohesion)
+- Install Dependencies: `npm install`
+- Build Project: `npm run build`
+- Run Tests: `npm test`
+- Lint Code: `npm run lint`
+- Format Code: `npm run format`
+- Start Local Server: `npm start`
 
-Known CLI bugs (see STUBS_CLI_ASSESSMENT.md): B1 sand path resolution & pure spec handling (RESOLVED), B2 non-interactive grind, B3 materialize parser, B4 audit flags, B5 grind command missing. Phase 1 work targets B1/B2/B3.
+## stubs CLI Binary
 
-## Hermes contextloop integration
+Binary location: `.agents/skills/stubs/dist/cli.cjs`. Invoke via `npx stubs <command>` or `node .agents/skills/stubs/dist/cli.cjs <command>`.
 
-This repo uses the contextloop skill for phase-bounded task orchestration. The board lives in `.kanban/kanban.db`. The orchestrator wrapper is at `scripts/run-loop.sh`. Workers are spawned as detached OS processes (not delegate_task). Submit scripts are at `.hermes/skills/contextloop/bin/`.
+Known CLI bug status: B1 sand path resolution (RESOLVED), B2 non-interactive grill (RESOLVED), B3 materialize parser (RESOLVED).
+
+## Hermes Contextloop Integration
+
+Contextloop skill handles phase-bounded task orchestration. Kanban board: `.kanban/kanban.db`. Orchestrator wrapper: `scripts/run-loop.sh`. Workers spawn as detached OS processes. Submit scripts: `.hermes/skills/contextloop/bin/`.

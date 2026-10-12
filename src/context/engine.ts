@@ -1,5 +1,5 @@
 import * as path from 'path';
-import { GraphEngine, TieredNeighborhood, normalizePosixPath } from '../graph/engine';
+import { GraphEngine, normalizePosixPath } from '../graph/engine';
 import { parseOkfSpec, ParsedOkfSpec } from '../parser/okf';
 import { extractDistilledSignatures, extractExportedSymbolNames } from '../parser/ast';
 import { FileStorageDriver, NodeFileSystem } from '../storage';

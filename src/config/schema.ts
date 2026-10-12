@@ -21,6 +21,10 @@ export interface StubsConfig {
     forbidden_target_domain: string;
     reason?: string;
   }>;
+  architecture?: {
+    min_domain_size?: number;
+    domains?: Record<string, string[]>;
+  };
   github_token?: string;
   remote?: {
     provider: 'github' | string;
@@ -129,6 +133,29 @@ function sanitizeConfig(raw: any): StubsConfig {
       }));
   }
 
+  let architecture: StubsConfig['architecture'] = undefined;
+  if (raw.architecture && typeof raw.architecture === 'object') {
+    const min_domain_size =
+      typeof raw.architecture.min_domain_size === 'number'
+        ? raw.architecture.min_domain_size
+        : undefined;
+
+    let domains: Record<string, string[]> | undefined = undefined;
+    if (raw.architecture.domains && typeof raw.architecture.domains === 'object') {
+      domains = {};
+      for (const [dom, patterns] of Object.entries(raw.architecture.domains)) {
+        if (Array.isArray(patterns)) {
+          domains[dom] = patterns.filter((p): p is string => typeof p === 'string');
+        }
+      }
+    }
+
+    architecture = {
+      ...(min_domain_size !== undefined ? { min_domain_size } : {}),
+      ...(domains !== undefined ? { domains } : {}),
+    };
+  }
+
   let remote: StubsConfig['remote'] = undefined;
   if (raw.remote && typeof raw.remote === 'object') {
     remote = {
@@ -146,6 +173,7 @@ function sanitizeConfig(raw: any): StubsConfig {
     search,
     grill,
     architecture_rules,
+    architecture,
     github_token,
     remote,
   };

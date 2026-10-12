@@ -49,6 +49,8 @@ describe('GitHub Client API and Auth Credentials Manager', () => {
   beforeEach(() => {
     jest.resetModules();
     process.env = { ...originalEnv };
+    delete process.env.STUBS_GITHUB_PAT;
+    delete process.env.GITHUB_TOKEN;
     // Clear credentials file before each test
     if (fs.existsSync(mockCredsPath)) {
       fs.unlinkSync(mockCredsPath);

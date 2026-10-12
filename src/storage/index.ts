@@ -305,10 +305,15 @@ export class VirtualFileSystem implements FileSystemDriver {
   private files = new Map<string, string>();
   private bufferFiles = new Map<string, Uint8Array>();
 
+  private mtimes = new Map<string, number>();
+  private clock = 1000;
+
   constructor(initialFiles?: Record<string, string>) {
     if (initialFiles) {
       for (const [p, content] of Object.entries(initialFiles)) {
-        this.files.set(this.normalizePath(p), content);
+        const norm = this.normalizePath(p);
+        this.files.set(norm, content);
+        this.mtimes.set(norm, this.clock);
       }
     }
   }
@@ -334,6 +339,8 @@ export class VirtualFileSystem implements FileSystemDriver {
     const norm = this.normalizePath(filePath);
     this.files.set(norm, content);
     this.bufferFiles.delete(norm);
+    this.clock += 10;
+    this.mtimes.set(norm, this.clock);
   }
 
   public async readFileBuffer(filePath: string): Promise<Uint8Array> {
@@ -354,6 +361,8 @@ export class VirtualFileSystem implements FileSystemDriver {
     const copy = new Uint8Array(content.buffer, content.byteOffset, content.byteLength);
     this.bufferFiles.set(norm, copy);
     this.files.delete(norm);
+    this.clock += 10;
+    this.mtimes.set(norm, this.clock);
   }
 
   public async exists(filePath: string): Promise<boolean> {
@@ -397,10 +406,10 @@ export class VirtualFileSystem implements FileSystemDriver {
 
   public async stat(filePath: string): Promise<{ mtimeMs: number } | null> {
     const norm = this.normalizePath(filePath);
-    if (!this.files.has(norm)) {
+    if (!this.files.has(norm) && !this.bufferFiles.has(norm)) {
       return null;
     }
-    return { mtimeMs: 1000 };
+    return { mtimeMs: this.mtimes.get(norm) ?? 1000 };
   }
 
   public async glob(pattern: string): Promise<string[]> {

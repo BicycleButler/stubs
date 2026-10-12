@@ -83,8 +83,11 @@ stale_details: null
 | [parser/ast.ts.md](./parser/ast.ts.md)                     | `parser/ast.ts`           | `spec` | `clean`     |
 | [storage/index.ts.md](./storage/index.ts.md)               | `storage/index.ts`        | `spec` | `clean`     |
 | [storage/containment.ts.md](./storage/containment.ts.md)   | `storage/containment.ts`  | `spec` | `clean`     |
-| [storage/credentials.ts.md](./storage/credentials.ts.md)   | `storage/credentials.ts`  | `spec` | `clean`     |
 | [graph/engine.ts.md](./graph/engine.ts.md)                 | `graph/engine.ts`         | `spec` | `clean`     |
+| [graph/workspace.ts.md](./graph/workspace.ts.md)           | `graph/workspace.ts`      | `spec` | `clean`     |
+| [graph/skeleton.ts.md](./graph/skeleton.ts.md)             | `graph/skeleton.ts`       | `spec` | `clean`     |
+| [graph/domain.ts.md](./graph/domain.ts.md)                 | `graph/domain.ts`         | `spec` | `clean`     |
+| [query/engine.ts.md](./query/engine.ts.md)                 | `query/engine.ts`         | `spec` | `clean`     |
 | [grill/engine.ts.md](./grill/engine.ts.md)                 | `grill/engine.ts`         | `spec` | `clean`     |
 | [materializer/engine.ts.md](./materializer/engine.ts.md)   | `materializer/engine.ts`  | `spec` | `clean`     |
 | [sanding/engine.ts.md](./sanding/engine.ts.md)             | `sanding/engine.ts`       | `spec` | `clean`     |

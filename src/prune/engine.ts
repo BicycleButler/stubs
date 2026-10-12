@@ -3,7 +3,6 @@ import * as path from 'path';
 import * as yaml from 'js-yaml';
 import { GraphEngine, normalizePosixPath } from '../graph/engine';
 import { parseOkfSpec } from '../parser/okf';
-import { extractExportedSymbolNames } from '../parser/ast';
 import { FileStorageDriver, NodeFileSystem } from '../storage';
 import { loadConfig } from '../config/schema';
 

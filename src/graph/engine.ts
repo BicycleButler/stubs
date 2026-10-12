@@ -17,7 +17,7 @@ import {
   VirtualFileSystem,
   WasmSqliteDriver,
 } from '../storage';
-import { GraphNode, GraphEdge, EdgeConfidence, extractFileGraph } from './extractor';
+import { GraphNode, GraphEdge, extractFileGraph } from './extractor';
 import { TopologyEngine } from './topology';
 
 export { GraphNode, GraphEdge, EdgeConfidence, extractFileGraph } from './extractor';
@@ -1102,10 +1102,18 @@ Decisions: ${decisionsText}
    * Persists detected communities and labels onto sidecar rows.
    */
   public async assignCommunities(
-    communities: Record<number, string[]>,
+    communities?: Record<number, string[]>,
     labels: Record<number, string> = {},
   ): Promise<void> {
     await this.ensureInitialized();
+    if (!communities) {
+      const topo = await this.getTopologyEngine();
+      const commRes = topo.getCommunities();
+      communities = commRes.communities;
+      for (const ci of commRes.communityInfo) {
+        labels[ci.id] = ci.label;
+      }
+    }
     for (const [commIdStr, nodeIds] of Object.entries(communities)) {
       const commId = parseInt(commIdStr, 10);
       const label = labels[commId] || `Community ${commId}`;

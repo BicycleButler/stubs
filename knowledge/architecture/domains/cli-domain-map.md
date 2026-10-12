@@ -3,15 +3,16 @@ title: CLI & Router — Domain Context Map
 type: domain-context-map
 domain: cli
 parent_map: ../context-map.md
-description: Deep-dive context map for the CliRouter, command dispatching, argument parsing, and skill installation.
+description: Deep-dive context map for the cli domain, subsystem responsibilities, and internal modules.
 tags:
   - domain-map
   - cli
+  - agent-optimized
 ---
 
 # CLI & Router — Domain Context Map
 
-[← Back to Root Context Map](../context-map.md)
+Parent Context Map: knowledge/architecture/context-map.md
 
 ## Domain Purpose & Responsibilities
 
@@ -19,14 +20,11 @@ The **CLI & Router** domain serves as the primary command-line interface for hum
 
 ---
 
-## Key Files & Sidecars
+## Key Modules & Files
 
-| File / Sidecar                                                                                | Purpose & Exported Symbols                                                           | Depends On                                                            |
-| :-------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------- | :-------------------------------------------------------------------- |
-| [`src/cli/router.ts`](../../src/cli/router.ts) / [`router.ts.md`](../../src/cli/router.ts.md) | `CliRouter` class handling command parsing, execution, and exit codes                | Subsystem engines (`graph`, `grill`, `sanding`, `materializer`, etc.) |
-| [`src/cli.ts`](../../src/cli.ts) / [`cli.ts.md`](../../src/cli.ts.md)                         | Executable entry point instantiating `CliRouter` and invoking `.route(process.argv)` | `cli/router.ts`                                                       |
-
----
+src/cli/router.ts (Hub) -> deps: none | caps: CliContext, CliRouter, route, parseArgs, printHelp, handleInit, printVersion, handleGrill
+src/cli/router.ts.md -> deps: none | caps: CliContext, CliRouter
+src/cli/auth.ts -> deps: none | caps: askTokenMasked, handleLogin
 
 ## Domain Invariants
 

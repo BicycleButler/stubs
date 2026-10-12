@@ -671,7 +671,6 @@ function extractRustGraph(
 ): void {
   const lines = code.split('\n');
   let currentImplTarget: string | null = null;
-  let currentScopeId: string = fileNodeId;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
@@ -723,7 +722,6 @@ function extractRustGraph(
       const structName = implMatch[2];
       const structId = `${filePath}#${structName}`;
       currentImplTarget = structId;
-      currentScopeId = structId;
 
       if (traitName) {
         edges.push({
@@ -745,7 +743,6 @@ function extractRustGraph(
       const fnName = fnMatch[1];
       const isMethod = currentImplTarget !== null;
       const fnId = isMethod ? `${currentImplTarget}.${fnName}` : `${filePath}#${fnName}`;
-      currentScopeId = fnId;
 
       nodes.push({
         id: fnId,
@@ -773,7 +770,6 @@ function extractRustGraph(
       const name = structMatch[2];
       const id = `${filePath}#${name}`;
       currentImplTarget = null;
-      currentScopeId = id;
 
       nodes.push({
         id,

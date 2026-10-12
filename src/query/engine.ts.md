@@ -25,9 +25,13 @@ exports:
   - QuerySubGraphNode
   - QuerySubGraphEdge
   - SurgicalQueryKind
+  - MacroMapResult
+  - MacroMapCommunity
 depends_on:
   - ../graph/engine
   - ../graph/topology
+  - ../graph/skeleton
+  - ../graph/workspace
   - ../storage
   - ../config/schema
 used_by:
