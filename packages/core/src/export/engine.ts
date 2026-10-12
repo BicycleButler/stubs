@@ -1,0 +1,316 @@
+import { GraphEngine, normalizePosixPath } from '../graph/engine';
+import { FileStorageDriver, NodeFileSystem } from '../storage';
+import { loadConfig } from '../config/schema';
+
+export interface ExportOptions {
+  outputDir?: string;
+  configPath?: string;
+}
+
+export interface ExportResult {
+  format: 'obsidian' | 'wiki';
+  outputDir: string;
+  filesGenerated: string[];
+  totalNodesExported: number;
+}
+
+export class ExportEngine {
+  private graphEngine: GraphEngine;
+  private fsDriver: FileStorageDriver;
+
+  constructor(options?: { graphEngine?: GraphEngine; fsDriver?: FileStorageDriver }) {
+    if (options?.graphEngine) {
+      this.graphEngine = options.graphEngine;
+    } else {
+      const config = loadConfig();
+      this.graphEngine = new GraphEngine(config.paths.db_path);
+    }
+    this.fsDriver = options?.fsDriver || new NodeFileSystem();
+  }
+
+  /**
+   * Exports the knowledge graph as an Obsidian Vault with [[wikilinks]].
+   */
+  public async toObsidian(outputDir: string = './obsidian-vault'): Promise<ExportResult> {
+    await this.graphEngine.initialize();
+    const topology = await this.graphEngine.getTopologyEngine();
+    const allNodes = topology.getAllNodes();
+    const allEdges = topology.getAllEdges();
+    const communities = topology.getCommunities();
+
+    const normOut = normalizePosixPath(outputDir);
+    await this.fsDriver.mkdir(normOut, { recursive: true });
+
+    const filesGenerated: string[] = [];
+
+    // Map of nodeId -> clean filename (truncated to filesystem-safe length)
+    const nodeFileMap = new Map<string, string>();
+    for (const node of allNodes) {
+      const cleanName = node.id.replace(/[/\\#:]/g, '_').replace(/\.[^/.]+$/, '');
+      const truncated =
+        cleanName.length > 240
+          ? cleanName.substring(0, 240) +
+            '_' +
+            require('crypto').createHash('sha1').update(node.id).digest('hex').substring(0, 8)
+          : cleanName;
+      nodeFileMap.set(node.id, truncated);
+    }
+
+    const writeTasks: { path: string; content: string }[] = [];
+
+    // 1. Generate node markdown notes
+    for (const node of allNodes) {
+      const cleanName = nodeFileMap.get(node.id) || 'node';
+      const filePath = `${normOut}/${cleanName}.md`;
+
+      const outgoing = topology.getOutgoingEdges(node.id);
+      const incoming = topology.getIncomingEdges(node.id);
+
+      const lines: string[] = [];
+      lines.push('---');
+      lines.push(`id: "${node.id}"`);
+      lines.push(`kind: "${node.kind}"`);
+      if (node.domain) lines.push(`domain: "${node.domain}"`);
+      if (node.lifecycle_phase) lines.push(`phase: "${node.lifecycle_phase}"`);
+      lines.push(`file_path: "${node.file_path}"`);
+      lines.push('tags:');
+      lines.push(`  - type/${node.kind}`);
+      if (node.domain) lines.push(`  - domain/${node.domain}`);
+      lines.push('---');
+      lines.push('');
+
+      lines.push(`# ${node.symbol_name || node.file_path}`);
+      lines.push(`**File:** \`${node.file_path}\` | **Kind:** \`${node.kind}\``);
+      lines.push('');
+
+      if (outgoing.length > 0) {
+        lines.push('## 📤 Outgoing Connections');
+        for (const edge of outgoing) {
+          const targetName = nodeFileMap.get(edge.target_id) || edge.target_id;
+          lines.push(
+            `- **${edge.relation}** → [[${targetName}|${edge.target_id}]] *(${edge.confidence || 'EXTRACTED'})*`,
+          );
+        }
+        lines.push('');
+      }
+
+      if (incoming.length > 0) {
+        lines.push('## 📥 Incoming Connections');
+        for (const edge of incoming) {
+          const srcName = nodeFileMap.get(edge.source_id) || edge.source_id;
+          lines.push(
+            `- **${edge.relation}** ← [[${srcName}|${edge.source_id}]] *(${edge.confidence || 'EXTRACTED'})*`,
+          );
+        }
+        lines.push('');
+      }
+
+      writeTasks.push({ path: filePath, content: lines.join('\n') });
+      filesGenerated.push(filePath);
+    }
+
+    // Write notes in concurrent chunks
+    const CHUNK_SIZE = 50;
+    for (let i = 0; i < writeTasks.length; i += CHUNK_SIZE) {
+      const chunk = writeTasks.slice(i, i + CHUNK_SIZE);
+      await Promise.all(chunk.map((t) => this.fsDriver.writeFile(t.path, t.content)));
+    }
+
+    // 2. Generate Master Index.md
+    const indexLines: string[] = [];
+    indexLines.push('# 🏛️ Architecture Knowledge Graph Index');
+    indexLines.push(`Generated: ${new Date().toISOString()}`);
+    indexLines.push(
+      `Total Nodes: **${allNodes.length}** | Total Relationships: **${allEdges.length}**`,
+    );
+    indexLines.push('');
+
+    indexLines.push('## 🧩 Subsystems & Communities');
+    for (const comm of communities.communityInfo) {
+      indexLines.push(`### [#${comm.id}] ${comm.label}`);
+      indexLines.push(
+        `- **Hub Node:** [[${nodeFileMap.get(comm.hubNode) || comm.hubNode}|${comm.hubNode}]]`,
+      );
+      indexLines.push(
+        `- **Cohesion:** ${(comm.cohesion * 100).toFixed(0)}% (${comm.nodes.length} members)`,
+      );
+      indexLines.push('- **Members:**');
+      for (const member of comm.nodes.slice(0, 10)) {
+        const cleanName = nodeFileMap.get(member) || member;
+        indexLines.push(`  - [[${cleanName}|${member}]]`);
+      }
+      if (comm.nodes.length > 10) {
+        indexLines.push(`  - *... and ${comm.nodes.length - 10} more*`);
+      }
+      indexLines.push('');
+    }
+
+    const indexFile = `${normOut}/Index.md`;
+    await this.fsDriver.writeFile(indexFile, indexLines.join('\n'));
+    filesGenerated.push(indexFile);
+
+    return {
+      format: 'obsidian',
+      outputDir: normOut,
+      filesGenerated,
+      totalNodesExported: allNodes.length,
+    };
+  }
+
+  /**
+   * Exports the knowledge graph as structured, Wikipedia-style modular articles.
+   */
+  public async toWiki(outputDir: string = './wiki'): Promise<ExportResult> {
+    await this.graphEngine.initialize();
+    const topology = await this.graphEngine.getTopologyEngine();
+    const allNodes = topology.getAllNodes();
+    const allEdges = topology.getAllEdges();
+    const communities = topology.getCommunities();
+    const smells = topology.detectArchitecturalSmells();
+    const questions = topology.suggestArchitectureQuestions();
+
+    const normOut = normalizePosixPath(outputDir);
+    const commDir = `${normOut}/subsystems`;
+    await this.fsDriver.mkdir(commDir, { recursive: true });
+
+    const filesGenerated: string[] = [];
+    const writeTasks: { path: string; content: string }[] = [];
+
+    // 1. Generate subsystem community articles
+    for (const comm of communities.communityInfo) {
+      const commSlug = comm.label
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '');
+      const filePath = `${commDir}/${comm.id}-${commSlug || 'subsystem'}.md`;
+
+      const lines: string[] = [];
+      lines.push('---');
+      lines.push(`title: "Subsystem: ${comm.label.replace(/"/g, '\\"')}"`);
+      lines.push('type: wiki-subsystem');
+      lines.push(
+        `description: "Architecture subsystem documentation for ${comm.label.replace(/"/g, '\\"')}"`,
+      );
+      lines.push('status: active');
+      lines.push('version: 1');
+      lines.push('status_flag: clean');
+      lines.push(`community_id: ${comm.id}`);
+      if (comm.dominantDomain) lines.push(`domain: "${comm.dominantDomain}"`);
+      lines.push(`hub_node: "${comm.hubNode}"`);
+      lines.push(`cohesion: ${comm.cohesion}`);
+      lines.push(`members_count: ${comm.nodes.length}`);
+      lines.push('tags:');
+      lines.push('  - wiki');
+      lines.push('  - subsystem');
+      if (comm.dominantDomain) lines.push(`  - domain/${comm.dominantDomain}`);
+      lines.push('---');
+      lines.push('');
+      lines.push(`# Subsystem: ${comm.label}`);
+      lines.push(
+        `**Community ID:** \`#${comm.id}\` | **Dominant Domain:** \`${comm.dominantDomain || 'General'}\``,
+      );
+      lines.push(
+        `**Cohesion Score:** \`${(comm.cohesion * 100).toFixed(0)}%\` | **Members:** \`${comm.nodes.length}\``,
+      );
+      lines.push('');
+
+      lines.push('## 🎯 Central Architectural Hub');
+      lines.push(`The primary coordinator for this subsystem is **\`${comm.hubNode}\`**.`);
+      lines.push('');
+
+      lines.push('## 📦 Subsystem Members');
+      for (const node of comm.nodes) {
+        const gNode = topology.getNode(node);
+        const kindTag = gNode ? `*(${gNode.kind})*` : '';
+        lines.push(`- **\`${node}\`** ${kindTag}`);
+      }
+      lines.push('');
+
+      // Cross-boundary connections with Set lookup
+      const commNodeSet = new Set(comm.nodes);
+      const crossEdges = allEdges.filter(
+        (e) =>
+          (commNodeSet.has(e.source_id) && !commNodeSet.has(e.target_id)) ||
+          (!commNodeSet.has(e.source_id) && commNodeSet.has(e.target_id)),
+      );
+
+      if (crossEdges.length > 0) {
+        lines.push('## 🌐 Cross-Subsystem Interfaces');
+        for (const e of crossEdges.slice(0, 20)) {
+          lines.push(
+            `- \`${e.source_id}\` ──[${e.relation}]──> \`${e.target_id}\` *(${e.confidence || 'EXTRACTED'})*`,
+          );
+        }
+        lines.push('');
+      }
+
+      writeTasks.push({ path: filePath, content: lines.join('\n') });
+      filesGenerated.push(filePath);
+    }
+
+    // Write subsystem files concurrently
+    const CHUNK_SIZE = 50;
+    for (let i = 0; i < writeTasks.length; i += CHUNK_SIZE) {
+      const chunk = writeTasks.slice(i, i + CHUNK_SIZE);
+      await Promise.all(chunk.map((t) => this.fsDriver.writeFile(t.path, t.content)));
+    }
+
+    // 2. Generate Main index.md Wiki Portal
+    const indexLines: string[] = [];
+    indexLines.push('---');
+    indexLines.push('title: "Codebase Architecture Wiki"');
+    indexLines.push('type: wiki-portal');
+    indexLines.push('description: "Master architecture portal and subsystem directory"');
+    indexLines.push('status: active');
+    indexLines.push('version: 1');
+    indexLines.push('status_flag: clean');
+    indexLines.push('tags:');
+    indexLines.push('  - wiki');
+    indexLines.push('  - architecture');
+    indexLines.push('---');
+    indexLines.push('');
+    indexLines.push('# 📖 Codebase Architecture Wiki');
+    indexLines.push(`*Generated from AST Knowledge Graph on ${new Date().toLocaleDateString()}*`);
+    indexLines.push('');
+
+    indexLines.push('## 🗺️ Subsystems Map');
+    for (const comm of communities.communityInfo) {
+      const commSlug = comm.label
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '');
+      const link = `./subsystems/${comm.id}-${commSlug || 'subsystem'}.md`;
+      indexLines.push(
+        `- [**${comm.label}**](${link}) — Hub: \`${comm.hubNode}\` (${comm.nodes.length} entities, ${(comm.cohesion * 100).toFixed(0)}% cohesion)`,
+      );
+    }
+    indexLines.push('');
+
+    indexLines.push('## 🌟 Critical God Nodes (Central Bottlenecks)');
+    for (const god of smells.godNodes.slice(0, 5)) {
+      indexLines.push(
+        `- **\`${god.id}\`** — Total Degree: ${god.totalDegree} (In: ${god.inDegree}, Out: ${god.outDegree})`,
+      );
+    }
+    indexLines.push('');
+
+    if (questions.length > 0) {
+      indexLines.push('## ❓ Key Architecture Questions');
+      for (const q of questions) {
+        indexLines.push(`- **${q.entity}**: ${q.question} (*${q.rationale}*)`);
+      }
+      indexLines.push('');
+    }
+
+    const indexFile = `${normOut}/index.md`;
+    await this.fsDriver.writeFile(indexFile, indexLines.join('\n'));
+    filesGenerated.push(indexFile);
+
+    return {
+      format: 'wiki',
+      outputDir: normOut,
+      filesGenerated,
+      totalNodesExported: allNodes.length,
+    };
+  }
+}

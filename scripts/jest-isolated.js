@@ -25,8 +25,14 @@ async function runIsolated(file) {
   const tmpStubs = path.join(tmpHome, '.stubs');
   fs.mkdirSync(tmpStubs, { recursive: true });
 
-  await new Promise((resolve) => {
-    const child = spawn(process.execPath, [path.join(root, 'node_modules/jest/bin/jest.js'), abs], {
+  let jestBin = path.join(root, 'node_modules/jest/bin/jest.js');
+  try {
+    const jestPkg = require.resolve('jest/package.json', { paths: [root, process.cwd()] });
+    jestBin = path.join(path.dirname(jestPkg), 'bin/jest.js');
+  } catch {}
+
+  return await new Promise((resolve) => {
+    const child = spawn(process.execPath, [jestBin, abs], {
       cwd: root,
       stdio: 'inherit',
       env: {

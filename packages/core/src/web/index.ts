@@ -1,0 +1,2061 @@
+// Initialize global environment shim for Node.js modules before any imports
+(globalThis as any).process = {
+  env: {},
+  cwd: () => '/',
+  versions: { node: '18.0.0' },
+} as any;
+
+import { VirtualFileSystem, WasmSqliteDriver } from '../storage';
+import { GraphEngine } from '../graph/engine';
+import { parseOkfSpec } from '../parser/okf';
+import { stringifyOkfSpec } from '../materializer/engine';
+import { GitHubClient, RepositoryInfo } from '../server/github';
+
+// App state
+let pat = localStorage.getItem('STUBS_GITHUB_PAT') || '';
+let currentRepo: string = localStorage.getItem('STUBS_CURRENT_REPO') || '';
+let currentBranch: string = localStorage.getItem('STUBS_CURRENT_BRANCH') || 'main';
+let workspaceSource: 'local-server' | 'local-folder' | 'github-remote' =
+  (localStorage.getItem('STUBS_WORKSPACE_SOURCE') as any) || 'local-server';
+let localServerAvailable = false;
+let localProjectName = '';
+let localFolderName = localStorage.getItem('STUBS_LOCAL_FOLDER_NAME') || '';
+const localFileHandles: Map<string, any> = new Map();
+let sseEventSource: EventSource | null = null;
+
+let reposList: RepositoryInfo[] = [];
+let branchesList: string[] = [];
+let filesList: string[] = [];
+
+try {
+  reposList = JSON.parse(localStorage.getItem('STUBS_REPOS_LIST') || '[]');
+  branchesList = JSON.parse(localStorage.getItem('STUBS_BRANCHES_LIST') || '[]');
+  filesList = JSON.parse(localStorage.getItem('STUBS_FILES_LIST') || '[]');
+} catch (e) {
+  console.warn('Failed to parse cached list state:', e);
+}
+
+let selectedPath: string | null = null;
+let currentTab: 'directives' | 'templates' = 'directives';
+let directiveFilter: 'pending' | 'resolved' | 'all' = 'pending';
+
+// In-Memory Database & Virtual FS
+const virtualFs = new VirtualFileSystem();
+const wasmDb = new WasmSqliteDriver();
+const graphEngine = new GraphEngine({
+  fsDriver: virtualFs,
+  dbDriver: wasmDb,
+  dbPath: ':memory:',
+});
+
+// Helper to check if local server (stubs serve) is available
+async function checkLocalServer(): Promise<boolean> {
+  try {
+    const res = await fetch('/api/v1/graph', {
+      method: 'GET',
+      headers: { Accept: 'application/json' },
+    });
+    if (res.ok) {
+      const data = await res.json();
+      localServerAvailable = true;
+      localProjectName = data.projectName || 'Local Workspace';
+      return true;
+    }
+  } catch {
+    // Local server unreachable
+  }
+  localServerAvailable = false;
+  return false;
+}
+
+// Load specifications from active local server (stubs serve)
+async function loadLocalServerWorkspace() {
+  showToast('Connecting to local stubs serve instance...', 'info');
+  try {
+    const res = await fetch('/api/v1/graph');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    localProjectName = data.projectName || 'Local Workspace';
+    localServerAvailable = true;
+
+    await graphEngine.clearIndex();
+    const sidecars = data.sidecars || [];
+    for (const sc of sidecars) {
+      const filePath = sc.file_path || sc.filePath;
+      if (!filePath) continue;
+      const rawBody = sc.raw_content || sc.body || '';
+      const rawFm = sc.frontmatter || {
+        title: sc.title || filePath,
+        type: sc.type || 'sidecar-spec',
+        description: sc.description || '',
+        tags: sc.tags ? String(sc.tags).split(' ').filter(Boolean) : [],
+        exports: sc.exports ? String(sc.exports).split(' ').filter(Boolean) : [],
+        status: sc.status || 'spec',
+        version: sc.version || 1,
+        target_code_file: sc.target_code_file || './' + filePath.replace(/\.md$/, ''),
+        status_flag: sc.status_flag || 'clean',
+      };
+      const fullText = stringifyOkfSpec(rawFm, rawBody);
+      await virtualFs.writeFile(filePath, fullText);
+    }
+
+    await graphEngine.indexWorkspace('/', { force: true });
+    filesList = await graphEngine.getFilesIndexed();
+    localStorage.setItem('STUBS_FILES_LIST', JSON.stringify(filesList));
+    showToast(`Loaded ${filesList.length} specifications from local server.`, 'success');
+
+    connectLocalSse();
+    renderApp();
+  } catch (err: any) {
+    showToast('Failed to load from local server: ' + err.message, 'error');
+  }
+}
+
+async function reloadLocalServerWorkspaceSilent() {
+  try {
+    const res = await fetch('/api/v1/graph');
+    if (!res.ok) return;
+    const data = await res.json();
+    localProjectName = data.projectName || 'Local Workspace';
+
+    await graphEngine.clearIndex();
+    const sidecars = data.sidecars || [];
+    for (const sc of sidecars) {
+      const filePath = sc.file_path || sc.filePath;
+      if (!filePath) continue;
+      const rawBody = sc.raw_content || sc.body || '';
+      const rawFm = sc.frontmatter || {
+        title: sc.title || filePath,
+        type: sc.type || 'sidecar-spec',
+        description: sc.description || '',
+        tags: sc.tags ? String(sc.tags).split(' ').filter(Boolean) : [],
+        exports: sc.exports ? String(sc.exports).split(' ').filter(Boolean) : [],
+        status: sc.status || 'spec',
+        version: sc.version || 1,
+        target_code_file: sc.target_code_file || './' + filePath.replace(/\.md$/, ''),
+        status_flag: sc.status_flag || 'clean',
+      };
+      const fullText = stringifyOkfSpec(rawFm, rawBody);
+      await virtualFs.writeFile(filePath, fullText);
+    }
+
+    await graphEngine.indexWorkspace('/', { force: true });
+    filesList = await graphEngine.getFilesIndexed();
+    localStorage.setItem('STUBS_FILES_LIST', JSON.stringify(filesList));
+    renderSpecsList();
+    renderRightPanel();
+    if (selectedPath) {
+      await loadAndRenderSidecarDetail(selectedPath);
+    }
+  } catch {
+    // Ignore silent reload errors
+  }
+}
+
+function connectLocalSse() {
+  if (sseEventSource) {
+    sseEventSource.close();
+    sseEventSource = null;
+  }
+  if (typeof EventSource !== 'undefined') {
+    try {
+      sseEventSource = new EventSource('/api/v1/events');
+      sseEventSource.onmessage = async (e) => {
+        try {
+          const payload = JSON.parse(e.data);
+          if (
+            payload.type === 'graph:updated' ||
+            payload.type === 'file:changed' ||
+            payload.type === 'update' ||
+            payload.type === 'directive:created'
+          ) {
+            await reloadLocalServerWorkspaceSilent();
+          }
+        } catch {
+          // Ignore malformed event payload
+        }
+      };
+    } catch {
+      // EventSource connection failed
+    }
+  }
+}
+
+// Open a local directory directly via HTML5 File System Access API
+async function openLocalDirectoryPicker() {
+  if (typeof (window as any).showDirectoryPicker !== 'function') {
+    showToast(
+      'HTML5 File System Access API is not supported in this browser. Use Chromium/Edge or run "stubs serve".',
+      'warning',
+    );
+    return;
+  }
+
+  try {
+    const dirHandle = await (window as any).showDirectoryPicker({ mode: 'readwrite' });
+    localFolderName = dirHandle.name || 'Local Project';
+    localStorage.setItem('STUBS_LOCAL_FOLDER_NAME', localFolderName);
+    workspaceSource = 'local-folder';
+    localStorage.setItem('STUBS_WORKSPACE_SOURCE', 'local-folder');
+
+    showToast(`Scanning directory: ${localFolderName}...`, 'info');
+    localFileHandles.clear();
+    await graphEngine.clearIndex();
+
+    await scanDirectoryRecursive(dirHandle, '', localFileHandles);
+
+    await graphEngine.indexWorkspace('/', { force: true });
+    filesList = await graphEngine.getFilesIndexed();
+    localStorage.setItem('STUBS_FILES_LIST', JSON.stringify(filesList));
+
+    showToast(
+      `Successfully indexed ${filesList.length} specifications from ${localFolderName}.`,
+      'success',
+    );
+    renderApp();
+  } catch (err: any) {
+    if (err.name !== 'AbortError') {
+      showToast('Error opening directory: ' + err.message, 'error');
+    }
+  }
+}
+
+(window as any).openLocalDirectoryPicker = openLocalDirectoryPicker;
+
+async function scanDirectoryRecursive(
+  dirHandle: any,
+  currentPath: string,
+  handlesMap: Map<string, any>,
+) {
+  for await (const [name, entry] of dirHandle.entries()) {
+    if (
+      name === 'node_modules' ||
+      name === '.git' ||
+      name === 'dist' ||
+      name === 'build' ||
+      name === '.stubs'
+    ) {
+      continue;
+    }
+    const relPath = currentPath ? `${currentPath}/${name}` : name;
+    if (entry.kind === 'directory') {
+      await scanDirectoryRecursive(entry, relPath, handlesMap);
+    } else if (entry.kind === 'file') {
+      if (
+        name.endsWith('.md') ||
+        name.endsWith('.ts.md') ||
+        name.endsWith('.ts') ||
+        name.endsWith('.json') ||
+        name.endsWith('.tpl')
+      ) {
+        handlesMap.set(relPath, entry);
+        try {
+          const file = await entry.getFile();
+          const text = await file.text();
+          await virtualFs.writeFile(relPath, text);
+        } catch (e) {
+          console.warn(`Failed reading file ${relPath}:`, e);
+        }
+      }
+    }
+  }
+}
+
+// Helper to load offline files into the virtual filesystem
+async function loadCachedFilesForCurrentRepoBranch() {
+  if (currentRepo && currentBranch) {
+    try {
+      const cachedFiles = JSON.parse(
+        localStorage.getItem(`STUBS_OFFLINE_FILES_${currentRepo}_${currentBranch}`) || '{}',
+      );
+      await graphEngine.clearIndex();
+      for (const [filePath, content] of Object.entries(cachedFiles)) {
+        await virtualFs.writeFile(filePath, content as string);
+      }
+      await graphEngine.indexWorkspace('/', { force: true });
+      filesList = await graphEngine.getFilesIndexed();
+      localStorage.setItem('STUBS_FILES_LIST', JSON.stringify(filesList));
+      renderApp();
+    } catch (e) {
+      console.warn('Failed to load cached files:', e);
+    }
+  }
+}
+
+// Touch / Zoom State for Ego Graph View
+let scale = 1.0;
+let panX = 0;
+let panY = 0;
+let isPanning = false;
+let startX = 0;
+let startY = 0;
+let lastTouchDist = 0;
+let lastTapTime = 0;
+
+// Mobile sidebar/drawer visibility state - default closed on mobile viewports
+let isLeftDrawerOpen = false;
+let isRightDrawerOpen = false;
+
+// DOM Elements render target
+let container: HTMLElement;
+
+// Boot strap
+async function startApp() {
+  container = document.getElementById('app-container') || document.body;
+  try {
+    await wasmDb.initialize();
+  } catch (e) {
+    console.warn('wasmDb initialization warning:', e);
+  }
+
+  try {
+    await graphEngine.initialize();
+  } catch (e) {
+    console.warn('graphEngine initialization warning:', e);
+  }
+
+  // 1. Check if local server (stubs serve) is running
+  const hasLocalServer = await checkLocalServer();
+
+  if (hasLocalServer && (workspaceSource === 'local-server' || !currentRepo)) {
+    workspaceSource = 'local-server';
+    localStorage.setItem('STUBS_WORKSPACE_SOURCE', 'local-server');
+    await loadLocalServerWorkspace();
+  } else if (workspaceSource === 'local-folder' && localFolderName && filesList.length > 0) {
+    try {
+      await graphEngine.indexWorkspace('/', { force: true });
+    } catch {
+      // Ignore initial workspace indexing error
+    }
+    renderApp();
+  } else if (workspaceSource === 'github-remote' && currentRepo && pat) {
+    await loadWorkspace().catch(async (err) => {
+      console.warn('Could not sync remote workspace on startup, using offline cache:', err);
+      showToast('Offline mode active. Using cached specifications.', 'info');
+      await loadCachedFilesForCurrentRepoBranch();
+    });
+  } else if (hasLocalServer) {
+    workspaceSource = 'local-server';
+    localStorage.setItem('STUBS_WORKSPACE_SOURCE', 'local-server');
+    await loadLocalServerWorkspace();
+  } else if (pat) {
+    await loadWorkspace().catch(() => {});
+  } else if (filesList.length > 0) {
+    try {
+      await graphEngine.indexWorkspace('/', { force: true });
+    } catch (e) {
+      console.warn('Failed to index cached workspace:', e);
+    }
+    renderApp();
+  } else {
+    renderApp();
+  }
+
+  setupPwaInstallBanner();
+  updateOfflineStatus();
+}
+
+if (document.readyState === 'loading') {
+  window.addEventListener('DOMContentLoaded', startApp);
+} else {
+  startApp();
+}
+
+async function handleSourceChange(value: string) {
+  if (value === '__open_local_folder__') {
+    await openLocalDirectoryPicker();
+    return;
+  }
+  if (value === '__local_server__') {
+    workspaceSource = 'local-server';
+    localStorage.setItem('STUBS_WORKSPACE_SOURCE', 'local-server');
+    await loadLocalServerWorkspace();
+    return;
+  }
+  if (value === '__connect_pat__') {
+    showPatModal();
+    return;
+  }
+  if (value === '__current_local_folder__') {
+    return;
+  }
+  if (value) {
+    workspaceSource = 'github-remote';
+    localStorage.setItem('STUBS_WORKSPACE_SOURCE', 'github-remote');
+    await selectRepo(value);
+  }
+}
+
+(window as any).handleSourceChange = handleSourceChange;
+
+function renderApp() {
+  const activeWorkspaceName =
+    workspaceSource === 'local-server'
+      ? `🖥️ Local: ${localProjectName || 'Active Server'}`
+      : workspaceSource === 'local-folder'
+        ? `📁 Local: ${localFolderName || 'Folder'}`
+        : currentRepo || 'No workspace connected';
+
+  container.innerHTML = `
+    <!-- Top Nav Header -->
+    <header class="h-16 border-b border-slate-800 bg-slate-900/50 backdrop-blur px-4 flex items-center justify-between z-[50] select-none shrink-0">
+      <div class="flex items-center space-x-3">
+        <!-- Drawer toggle for Mobile Left Sidebar -->
+        <button
+          onclick="toggleLeftDrawer()"
+          aria-label="Open file browser"
+          class="md:hidden text-slate-300 min-w-[44px] min-h-[44px] flex items-center justify-center bg-slate-800/65 rounded-lg active:scale-95 transition-[transform,background-color] duration-100 text-sm"
+        >
+          📂
+        </button>
+        <span class="text-xl" aria-hidden="true">🧩</span>
+        <div>
+          <h1 class="text-sm font-semibold tracking-tight text-white">Stubs Spec PWA</h1>
+          <p class="text-[10px] text-slate-400 truncate max-w-[140px] sm:max-w-[220px]" id="current-repo-display">
+            ${activeWorkspaceName}
+          </p>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center space-x-2">
+        <button
+          onclick="openBootstrapModal()"
+          aria-label="Bootstrap codebase"
+          class="text-[11px] font-semibold text-white bg-indigo-600 hover:bg-indigo-500 border border-indigo-500/20 px-3 py-1.5 rounded-lg transition-[background-color] duration-200 active:scale-95 flex items-center space-x-1.5"
+        >
+          <span aria-hidden="true">⚡</span><span>Bootstrap Codebase</span>
+        </button>
+        <button
+          onclick="openLocalDirectoryPicker()"
+          aria-label="Open Local Folder"
+          title="Open Local Folder (Browser File System API)"
+          class="min-w-[44px] min-h-[44px] flex items-center justify-center text-slate-400 hover:text-slate-200 rounded-lg transition-[color] duration-200 text-sm"
+        >
+          📁
+        </button>
+        <button
+          onclick="showPatModal()"
+          aria-label="PAT Setup"
+          title="GitHub PAT Setup"
+          class="min-w-[44px] min-h-[44px] flex items-center justify-center text-slate-400 hover:text-slate-200 rounded-lg transition-[color] duration-200"
+        >
+          🔑
+        </button>
+        <button
+          onclick="toggleRightDrawer()"
+          aria-label="Open directives panel"
+          class="md:hidden text-slate-300 min-w-[44px] min-h-[44px] flex items-center justify-center bg-slate-800/65 rounded-lg active:scale-95 transition-[transform,background-color] duration-100 text-sm"
+        >
+          📋
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Workspace Split Pane -->
+    <div class="flex-1 flex overflow-hidden relative">
+
+      <!-- Left Sidebar Drawer (Specifications List) -->
+      <aside id="left-drawer" class="drawer fixed md:static inset-y-0 left-0 w-72 md:w-64 border-r border-slate-800 bg-slate-900 md:bg-slate-900/25 flex flex-col z-[70] ${isLeftDrawerOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'} md:translate-x-0">
+        <div class="p-4 border-b border-slate-800/60 bg-slate-900/45 flex flex-col space-y-3 shrink-0">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Workspace Specs</h2>
+            <button
+              onclick="toggleLeftDrawer()"
+              aria-label="Close file browser"
+              class="md:hidden text-slate-500 hover:text-slate-300 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg transition-[color] duration-100 text-xs"
+            >✕</button>
+          </div>
+
+          <!-- Workspace / Repo dropdown selector -->
+          <div class="space-y-1">
+            <label for="repo-sel" class="text-[9px] font-bold text-slate-500 uppercase">Workspace Source</label>
+            <select id="repo-sel" onchange="handleSourceChange(this.value)" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-[border-color,box-shadow] duration-200">
+              <optgroup label="Local Workspaces">
+                ${localServerAvailable ? `<option value="__local_server__" ${workspaceSource === 'local-server' ? 'selected' : ''}>🖥️ Local Server: ${localProjectName || 'Active'}</option>` : ''}
+                <option value="__open_local_folder__">📁 Open Local Folder (Browser API)...</option>
+                ${localFolderName ? `<option value="__current_local_folder__" ${workspaceSource === 'local-folder' ? 'selected' : ''}>📁 Local: ${localFolderName}</option>` : ''}
+              </optgroup>
+              ${
+                reposList.length > 0
+                  ? `
+                <optgroup label="GitHub Repositories">
+                  ${reposList.map((r) => `<option value="${r.fullName}" ${workspaceSource === 'github-remote' && r.fullName === currentRepo ? 'selected' : ''}>${r.fullName}</option>`).join('')}
+                </optgroup>
+              `
+                  : ''
+              }
+              <option value="__connect_pat__">🔑 ${pat ? 'Manage GitHub Token...' : 'Connect GitHub Token (PAT)...'}</option>
+            </select>
+          </div>
+
+          <!-- Branch dropdown selector -->
+          <div class="space-y-1">
+            <label for="branch-sel" class="text-[9px] font-bold text-slate-500 uppercase">Branch / Target</label>
+            <select id="branch-sel" onchange="selectBranch(this.value)" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-[border-color,box-shadow] duration-200" ${workspaceSource !== 'github-remote' ? 'disabled' : ''}>
+              ${
+                workspaceSource === 'local-server'
+                  ? `<option value="local">🖥️ local (live filesystem)</option>`
+                  : workspaceSource === 'local-folder'
+                    ? `<option value="local">📁 local (${localFolderName || 'directory'})</option>`
+                    : branchesList
+                        .map(
+                          (b) =>
+                            `<option value="${b}" ${b === currentBranch ? 'selected' : ''}>${b}</option>`,
+                        )
+                        .join('')
+              }
+            </select>
+          </div>
+
+          <!-- Live Search -->
+          <input
+            type="text"
+            id="web-search-input"
+            oninput="renderSpecsList()"
+            placeholder="Search files…"
+            aria-label="Search specification files"
+            class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-[border-color,box-shadow] duration-200"
+          />
+        </div>
+
+        <!-- Files List Scroll Container -->
+        <div class="flex-1 overflow-y-auto custom-scroll p-3 space-y-1.5" id="web-specs-list">
+          <div class="flex flex-col items-center justify-center text-center py-8 px-4 space-y-3">
+            <span class="text-2xl" aria-hidden="true">📂</span>
+            <p class="text-xs text-slate-400 font-medium">No specifications loaded</p>
+            <p class="text-[11px] text-slate-500">
+              Open a local folder via <button onclick="openLocalDirectoryPicker()" class="text-indigo-400 hover:underline font-medium">Directory Picker</button>, run <code>stubs serve</code>, or
+              <button onclick="showPatModal()" class="text-indigo-400 hover:underline font-medium">connect a GitHub repo</button>.
+            </p>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Backdrop overlay for mobile drawers -->
+      <div id="drawer-overlay" onclick="closeAllDrawers()" class="fixed inset-0 bg-black/60 z-[65] transition-opacity duration-300 md:hidden hidden"></div>
+
+      <!-- Center Pane (Main Details & Interactive Ego Graph) -->
+      <main class="flex-1 flex flex-col bg-slate-950/20 overflow-y-auto custom-scroll pb-20 md:pb-6" id="web-detail-pane">
+        <div class="flex-1 flex flex-col items-center justify-center text-slate-500 p-8 h-full">
+          <span class="text-4xl mb-4" aria-hidden="true">🧭</span>
+          <h3 class="text-sm font-semibold text-slate-300">Select a sidecar specification</h3>
+          <p class="text-xs max-w-xs text-center mt-1 text-slate-500">Select any spec sidecar from the sidebar to inspect dependencies, decisions, and interact with the 1-hop Ego Graph.</p>
+        </div>
+      </main>
+
+      <!-- Right Panel Drawer (Directives / Templates Workbench) -->
+      <aside id="right-drawer" class="drawer fixed md:static inset-y-0 right-0 w-80 md:w-80 border-l border-slate-800 bg-slate-900 md:bg-slate-900/25 flex flex-col z-[70] ${isRightDrawerOpen ? 'translate-x-0' : 'translate-x-full md:translate-x-0'} md:translate-x-0">
+        <!-- Tabs Header -->
+        <div class="flex border-b border-slate-800 bg-slate-950/30 shrink-0 select-none">
+          <button
+            onclick="switchRightTab('directives')"
+            id="tab-dir-btn"
+            class="flex-1 py-3 text-[10px] font-bold uppercase tracking-wider text-center border-b-2 ${currentTab === 'directives' ? 'border-indigo-500 text-indigo-400' : 'border-transparent text-slate-400'} transition-[border-color,color] duration-200"
+          >
+            Directives
+          </button>
+          <button
+            onclick="switchRightTab('templates')"
+            id="tab-tpl-btn"
+            class="flex-1 py-3 text-[10px] font-bold uppercase tracking-wider text-center border-b-2 ${currentTab === 'templates' ? 'border-indigo-500 text-indigo-400' : 'border-transparent text-slate-400'} transition-[border-color,color] duration-200"
+          >
+            Templates Drafts
+          </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto custom-scroll p-4 space-y-4" id="right-panel-content">
+          <!-- Dynamic Content based on selected tab -->
+        </div>
+      </aside>
+
+    </div>
+
+    <!-- PAT Setup Modal -->
+    <div id="pat-modal" class="fixed inset-0 bg-black/80 z-[80] flex items-center justify-center hidden px-4" role="dialog" aria-modal="true" aria-labelledby="pat-modal-title">
+      <div class="bg-slate-900 border border-slate-800 w-full max-w-md p-6 rounded-2xl shadow-[0_20px_25px_-5px_rgba(0,0,0,0.4),0_8px_10px_-6px_rgba(0,0,0,0.4)] space-y-4">
+        <div class="text-center space-y-1.5">
+          <span class="text-3xl" aria-hidden="true">🔑</span>
+          <h2 id="pat-modal-title" class="text-base font-semibold text-white tracking-tight">Connect GitHub API Client</h2>
+          <p class="text-xs text-slate-400">Enter a GitHub Personal Access Token (PAT) with repository read/write access to sync workspace sidecars directly in browser memory.</p>
+        </div>
+
+        <div class="space-y-1.5">
+          <label for="pat-input" class="block text-[10px] font-bold text-slate-400 uppercase">Personal Access Token</label>
+          <input
+            type="password"
+            id="pat-input"
+            value="${pat}"
+            placeholder="github_pat_…"
+            class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-2 text-xs font-mono text-slate-300 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-[border-color,box-shadow] duration-200"
+          />
+        </div>
+
+        <div class="flex space-x-2 pt-2">
+          <button onclick="hidePatModal()" class="px-4 bg-slate-800 hover:bg-slate-700 text-slate-400 font-semibold text-xs py-2.5 rounded-lg active:scale-95 transition-[background-color] duration-200">
+            Cancel
+          </button>
+          <button onclick="validateAndSavePat()" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs py-2.5 rounded-lg active:scale-95 transition-[background-color] duration-200">
+            Save and Connect
+          </button>
+        </div>
+        <p id="pat-error" class="text-[11px] text-slate-400 hidden italic text-center"></p>
+      </div>
+    </div>
+
+    <!-- Bootstrap Codebase Modal -->
+    <div id="bootstrap-modal" class="fixed inset-0 bg-black/80 z-[80] flex items-center justify-center hidden px-4" role="dialog" aria-modal="true" aria-labelledby="bootstrap-modal-title">
+      <div class="bg-slate-900 border border-slate-800 w-full max-w-4xl h-[85vh] p-6 rounded-2xl shadow-[0_20px_25px_-5px_rgba(0,0,0,0.4),0_8px_10px_-6px_rgba(0,0,0,0.4)] flex flex-col space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3 shrink-0">
+          <div class="flex items-center space-x-2.5">
+            <span class="text-xl" aria-hidden="true">⚡</span>
+            <div>
+              <h2 id="bootstrap-modal-title" class="text-base font-semibold text-white tracking-tight">Bootstrap Specification Sidecars</h2>
+              <p class="text-xs text-slate-400">Generate OKF skeleton sidecars for TypeScript files missing specs.</p>
+            </div>
+          </div>
+          <button
+            onclick="closeBootstrapModal()"
+            aria-label="Close bootstrap modal"
+            class="text-slate-500 hover:text-slate-300 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg transition-[color] duration-100"
+          >✕</button>
+        </div>
+
+        <!-- Main Columns Split -->
+        <div class="flex-1 flex overflow-hidden gap-4 min-h-0">
+          <!-- Left Pane: Checklist of un-bootstrapped files -->
+          <div class="w-1/2 flex flex-col space-y-3 border-r border-slate-800 pr-4">
+            <div class="flex items-center justify-between">
+              <h3 class="text-xs font-semibold text-slate-200">Un-bootstrapped TS Files</h3>
+              <div class="flex space-x-3">
+                <button onclick="toggleAllBootstrapCheckboxes(true)" class="text-[10px] text-indigo-400 hover:underline">Select All</button>
+                <button onclick="toggleAllBootstrapCheckboxes(false)" class="text-[10px] text-slate-500 hover:underline">Deselect All</button>
+              </div>
+            </div>
+
+            <!-- Checklist container -->
+            <div id="bootstrap-files-list" class="flex-1 overflow-y-auto custom-scroll space-y-2 bg-slate-950/40 p-3 rounded-xl border border-slate-800/80">
+              <p class="text-xs text-slate-500 italic">No files scanned yet.</p>
+            </div>
+          </div>
+
+          <!-- Right Pane: Generation Configuration and Preview -->
+          <div class="w-1/2 flex flex-col space-y-4">
+            <!-- Template selector -->
+            <div class="space-y-1.5 shrink-0">
+              <label for="bootstrap-template-select" class="block text-[11px] font-medium text-slate-400">Base Template Mold</label>
+              <select
+                id="bootstrap-template-select"
+                onchange="onBootstrapTemplateChange()"
+                class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-[border-color,box-shadow] duration-200"
+              >
+                <option value="">— Use Default OKF Skeleton</option>
+              </select>
+            </div>
+
+            <!-- Preview container -->
+            <div class="flex-1 flex flex-col min-h-0">
+              <div class="flex items-center justify-between mb-1.5 shrink-0">
+                <h3 class="text-xs font-semibold text-slate-200">Specification Preview</h3>
+                <span id="preview-filename-badge" class="text-[10px] font-mono text-indigo-400 truncate max-w-[200px]">—</span>
+              </div>
+              <div class="flex-1 bg-slate-950 border border-slate-800 rounded-xl overflow-hidden flex flex-col">
+                <pre class="flex-1 p-3 text-[10px] text-slate-300 font-mono overflow-y-auto custom-scroll whitespace-pre-wrap select-all leading-relaxed" id="bootstrap-preview-text">Select a file on the left to preview generated specification content…</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer Buttons: Cancel left, Commit right (ADR 0032) -->
+        <div class="flex items-center justify-between border-t border-slate-800 pt-3 shrink-0">
+          <span id="bootstrap-status-info" class="text-xs text-slate-500 italic">0 files selected for bootstrapping.</span>
+          <div class="flex space-x-2">
+            <button onclick="closeBootstrapModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs px-4 py-2.5 rounded-lg active:scale-95 transition-[background-color] duration-200">
+              Cancel
+            </button>
+            <button onclick="commitBootstrapSidecars()" id="bootstrap-commit-btn" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs px-5 py-2.5 rounded-lg active:scale-95 transition-[background-color] duration-200 shadow-sm" disabled>
+              Commit Specifications
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dynamic Toast Notification Container -->
+    <div id="toast-wrapper" class="fixed bottom-4 right-4 z-[100] flex flex-col space-y-2 pointer-events-none" aria-live="polite" aria-atomic="false"></div>
+  `;
+  renderSpecsList();
+  renderRightPanel();
+}
+
+// Drawer toggles
+(window as any).toggleLeftDrawer = () => {
+  isLeftDrawerOpen = !isLeftDrawerOpen;
+  const drawer = document.getElementById('left-drawer');
+  const overlay = document.getElementById('drawer-overlay');
+  if (drawer) {
+    if (isLeftDrawerOpen) {
+      drawer.classList.remove('-translate-x-full');
+      overlay?.classList.remove('hidden');
+    } else {
+      drawer.classList.add('-translate-x-full');
+      overlay?.classList.add('hidden');
+    }
+  }
+};
+
+(window as any).toggleRightDrawer = () => {
+  isRightDrawerOpen = !isRightDrawerOpen;
+  const drawer = document.getElementById('right-drawer');
+  const overlay = document.getElementById('drawer-overlay');
+  if (drawer) {
+    if (isRightDrawerOpen) {
+      drawer.classList.remove('translate-x-full');
+      overlay?.classList.remove('hidden');
+    } else {
+      drawer.classList.add('translate-x-full');
+      overlay?.classList.add('hidden');
+    }
+  }
+};
+
+(window as any).closeAllDrawers = () => {
+  isLeftDrawerOpen = false;
+  isRightDrawerOpen = false;
+  document.getElementById('left-drawer')?.classList.add('-translate-x-full');
+  document.getElementById('right-drawer')?.classList.add('translate-x-full');
+  document.getElementById('drawer-overlay')?.classList.add('hidden');
+};
+
+function showToast(message: string, type: 'success' | 'info' | 'error' | 'warning' = 'info') {
+  const container = document.getElementById('toast-wrapper');
+  if (!container) return;
+  const toast = document.createElement('div');
+  toast.setAttribute('role', 'status');
+  // Neutral border accent — semantic color only appears in active context (toasts are transient surfaces)
+  const accentColor =
+    type === 'error'
+      ? 'oklch(0.55 0.22 20)'
+      : type === 'success'
+        ? 'oklch(0.55 0.22 140)'
+        : type === 'warning'
+          ? 'oklch(0.55 0.22 60)'
+          : 'oklch(0.45 0.18 240)';
+  toast.className =
+    'pointer-events-auto p-3.5 rounded-xl border bg-slate-900/95 shadow-[0_20px_25px_-5px_rgba(0,0,0,0.5),0_8px_10px_-6px_rgba(0,0,0,0.4)] max-w-xs text-xs flex flex-col space-y-1';
+  toast.style.borderColor = accentColor;
+  toast.innerHTML = `
+    <div class="flex items-start justify-between gap-2">
+      <p class="text-slate-200 leading-relaxed flex-1">${message}</p>
+      <button
+        onclick="this.parentElement.parentElement.remove()"
+        aria-label="Dismiss notification"
+        class="text-slate-500 hover:text-slate-300 min-w-[20px] flex items-center justify-center shrink-0 transition-[color] duration-100"
+      >\u2715</button>
+    </div>
+  `;
+  container.appendChild(toast);
+  // Error toasts persist until dismissed (ADR 0033). All others auto-dismiss after 4s.
+  if (type !== 'error') {
+    setTimeout(() => toast.remove(), 4000);
+  }
+}
+
+// PAT Modals
+function showPatModal() {
+  const modal = document.getElementById('pat-modal');
+  if (modal) modal.classList.remove('hidden');
+}
+
+(window as any).showPatModal = showPatModal;
+
+function hidePatModal() {
+  const modal = document.getElementById('pat-modal');
+  if (modal) modal.classList.add('hidden');
+}
+
+(window as any).hidePatModal = hidePatModal;
+
+async function validateAndSavePat() {
+  const input = document.getElementById('pat-input') as HTMLInputElement;
+  const errorEl = document.getElementById('pat-error');
+  if (!input) return;
+  const val = input.value.trim();
+  if (!val) {
+    if (errorEl) {
+      errorEl.textContent = 'Please enter a Personal Access Token.';
+      errorEl.classList.remove('hidden');
+    }
+    return;
+  }
+
+  showToast('Validating token with GitHub API...', 'info');
+  try {
+    const client = new GitHubClient(val);
+    await client.validateToken();
+
+    pat = val;
+    localStorage.setItem('STUBS_GITHUB_PAT', pat);
+    hidePatModal();
+    showToast('GitHub token validated and stored successfully!', 'success');
+
+    await loadWorkspace();
+  } catch (err: any) {
+    if (errorEl) {
+      errorEl.textContent = err.message || 'Validation failed. Check your token.';
+      errorEl.classList.remove('hidden');
+    }
+    showToast('Failed to validate GitHub token.', 'error');
+  }
+}
+
+(window as any).validateAndSavePat = validateAndSavePat;
+
+// Repository & branch selectors
+async function loadWorkspace() {
+  try {
+    const client = new GitHubClient(pat);
+    reposList = await client.listAccessibleRepositories();
+    localStorage.setItem('STUBS_REPOS_LIST', JSON.stringify(reposList));
+
+    // Auto-select first repo with stubs indicator or just the first repo if not selected
+    if (reposList.length > 0) {
+      if (!currentRepo || !reposList.some((r) => r.fullName === currentRepo)) {
+        currentRepo = reposList[0].fullName;
+        localStorage.setItem('STUBS_CURRENT_REPO', currentRepo);
+      }
+
+      const [owner, name] = currentRepo.split('/');
+      branchesList = await client.listBranches(owner, name);
+      localStorage.setItem('STUBS_BRANCHES_LIST', JSON.stringify(branchesList));
+
+      if (!currentBranch || !branchesList.includes(currentBranch)) {
+        currentBranch = branchesList.includes('main') ? 'main' : branchesList[0] || 'main';
+        localStorage.setItem('STUBS_CURRENT_BRANCH', currentBranch);
+      }
+    }
+
+    renderApp();
+    await fetchSpecsFromGithub();
+  } catch (err: any) {
+    showToast('Error loading repositories: ' + err.message, 'error');
+    // Fallback to offline cached files if possible
+    await loadCachedFilesForCurrentRepoBranch();
+  }
+}
+
+async function selectRepo(repo: string) {
+  if (!repo) return;
+  currentRepo = repo;
+  localStorage.setItem('STUBS_CURRENT_REPO', repo);
+  showToast(`Switching to repository: ${repo}`, 'info');
+
+  try {
+    const [owner, name] = repo.split('/');
+    const client = new GitHubClient(pat);
+    branchesList = await client.listBranches(owner, name);
+    localStorage.setItem('STUBS_BRANCHES_LIST', JSON.stringify(branchesList));
+
+    currentBranch = branchesList.includes('main') ? 'main' : branchesList[0] || 'main';
+    localStorage.setItem('STUBS_CURRENT_BRANCH', currentBranch);
+
+    renderApp();
+    await fetchSpecsFromGithub();
+  } catch (err: any) {
+    showToast('Error loading branches: ' + err.message, 'error');
+    await loadCachedFilesForCurrentRepoBranch();
+  }
+}
+
+(window as any).selectRepo = selectRepo;
+
+async function selectBranch(branch: string) {
+  if (!branch) return;
+  currentBranch = branch;
+  localStorage.setItem('STUBS_CURRENT_BRANCH', branch);
+  showToast(`Switching to branch: ${branch}`, 'info');
+
+  renderApp();
+  await fetchSpecsFromGithub().catch(async (err) => {
+    showToast(
+      'Failed to fetch from branch, loading cached files instead: ' + err.message,
+      'warning',
+    );
+    await loadCachedFilesForCurrentRepoBranch();
+  });
+}
+
+(window as any).selectBranch = selectBranch;
+
+// Fetch specs from Remote GitHub and index into in-memory SQL
+async function fetchSpecsFromGithub() {
+  if (!currentRepo) return;
+  const [owner, name] = currentRepo.split('/');
+  if (!owner || !name) return;
+
+  showToast('Syncing specifications from remote branch...', 'info');
+  try {
+    const client = new GitHubClient(pat);
+    const tree = await client.fetchTree(owner, name, currentBranch);
+
+    // Clear old state in-memory
+    await graphEngine.clearIndex();
+
+    // Filter specs ending in .ts.md or .md
+    const specs = tree.filter(
+      (entry) =>
+        entry.type === 'blob' && (entry.path.endsWith('.ts.md') || entry.path.endsWith('.md')),
+    );
+
+    let loadedCount = 0;
+    const cachedFiles: Record<string, string> = {};
+
+    for (const spec of specs) {
+      try {
+        const content = await client.fetchFileContents(owner, name, spec.path, currentBranch);
+        if (content.trim().startsWith('---')) {
+          await virtualFs.writeFile(spec.path, content);
+          cachedFiles[spec.path] = content;
+          loadedCount++;
+        }
+      } catch {
+        console.warn(`Failed to fetch raw contents for ${spec.path}`);
+      }
+    }
+
+    // Save offline files cache for the current repo and branch
+    localStorage.setItem(
+      `STUBS_OFFLINE_FILES_${currentRepo}_${currentBranch}`,
+      JSON.stringify(cachedFiles),
+    );
+
+    // Force run workspace indexing in memory
+    await graphEngine.indexWorkspace('/', { force: true });
+
+    filesList = await graphEngine.getFilesIndexed();
+    localStorage.setItem('STUBS_FILES_LIST', JSON.stringify(filesList));
+    showToast(`Successfully indexed ${loadedCount} specification files.`, 'success');
+
+    renderApp();
+  } catch (err: any) {
+    showToast('Error fetching remote workspace: ' + err.message, 'error');
+    await loadCachedFilesForCurrentRepoBranch();
+  }
+}
+
+// Render Spec Sidecar List
+function renderSpecsList() {
+  const container = document.getElementById('web-specs-list');
+  if (!container) return;
+
+  const searchInput = document.getElementById('web-search-input') as HTMLInputElement;
+  const q = searchInput ? searchInput.value.trim().toLowerCase() : '';
+
+  // Retrieve files and filter
+  const matchedFiles = filesList.filter((f) => f.toLowerCase().includes(q));
+
+  if (matchedFiles.length === 0) {
+    container.innerHTML = `<p class="text-xs text-slate-500 italic p-3 text-center">No matching sidecars found.</p>`;
+    return;
+  }
+
+  container.innerHTML = matchedFiles
+    .map((filePath) => {
+      const isSelected = filePath === selectedPath;
+      const baseName = filePath.split('/').pop() || filePath;
+      return `
+      <div
+        onclick="selectSidecar('${filePath}')"
+        class="p-3 rounded-xl border cursor-pointer select-none transition-[background-color,border-color] duration-150 ${isSelected ? 'bg-indigo-600/15 border-indigo-500 text-white' : 'bg-slate-900/40 border-slate-800 hover:border-slate-700 text-slate-300'}"
+      >
+        <div class="flex flex-col">
+          <span class="text-xs font-semibold truncate">${baseName}</span>
+          <span class="text-[10px] text-slate-500 font-mono tracking-wide mt-1 truncate">${filePath}</span>
+        </div>
+      </div>
+    `;
+    })
+    .join('');
+}
+
+(window as any).renderSpecsList = renderSpecsList;
+
+// Focus Sidecar file
+async function selectSidecar(filePath: string) {
+  selectedPath = filePath;
+  renderSpecsList();
+
+  // Close mobile drawer on item select
+  if (window.innerWidth < 768) {
+    isLeftDrawerOpen = false;
+    document.getElementById('left-drawer')?.classList.add('-translate-x-full');
+    document.getElementById('drawer-overlay')?.classList.add('hidden');
+  }
+
+  await loadAndRenderSidecarDetail(filePath);
+}
+
+(window as any).selectSidecar = selectSidecar;
+
+async function loadAndRenderSidecarDetail(filePath: string) {
+  const panel = document.getElementById('web-detail-pane');
+  if (!panel) return;
+
+  panel.innerHTML = `<div class="p-6 text-xs text-slate-400 italic">Reading sidecar specifications…</div>`;
+
+  try {
+    const sidecar = await graphEngine.getSidecar(filePath);
+    if (!sidecar) {
+      panel.innerHTML = `<div class="p-6 text-xs text-slate-400 font-medium">Specification not found. Try refreshing the workspace or selecting a different file.</div>`;
+      return;
+    }
+
+    const fm = sidecar.frontmatter;
+    const tagsHtml =
+      fm.tags
+        ?.map(
+          (t: string) =>
+            `<span class="text-[9px] font-mono bg-slate-900 border border-slate-800 text-slate-400 px-1.5 py-0.5 rounded">#${t}</span>`,
+        )
+        .join(' ') || '<span class="text-slate-600 italic text-[11px]">—</span>';
+    const exportsHtml =
+      fm.exports
+        ?.map(
+          (e: string) =>
+            `<span class="text-[9px] font-mono bg-indigo-950/20 border border-indigo-900/30 text-indigo-400 px-1.5 py-0.5 rounded">${e}</span>`,
+        )
+        .join(' ') || '<span class="text-slate-600 italic text-[11px]">—</span>';
+
+    const decisionsHtml =
+      fm.decisions
+        ?.map(
+          (d: any) => `
+      <div class="p-3 bg-slate-900/40 border border-slate-800/80 rounded-xl">
+        <div class="flex items-center justify-between mb-1">
+          <span class="text-[10px] font-mono text-indigo-400 font-semibold">${d.id}</span>
+          <span class="text-[9px] font-mono text-slate-500">${d.date || '—'}</span>
+        </div>
+        <p class="text-xs text-slate-200 font-medium leading-relaxed">${d.summary}</p>
+      </div>
+    `,
+        )
+        .join('') ||
+      '<p class="text-[11px] text-slate-500 italic">No Architectural Decision Records (ADRs).</p>';
+
+    const upstreams = fm.depends_on || [];
+    const downstreams = fm.used_by || [];
+
+    const upstreamHtml =
+      upstreams
+        .map(
+          (u: string) => `
+      <li onclick="selectSidecar('${u}')" class="text-xs font-mono text-indigo-400 hover:underline cursor-pointer mb-1.5 flex items-center space-x-1.5">
+        <span>🔌</span> <span>${u}</span>
+      </li>
+    `,
+        )
+        .join('') || '<p class="text-xs text-slate-500 italic">No upstream dependents.</p>';
+
+    const downstreamHtml =
+      downstreams
+        .map(
+          (d: string) => `
+      <li onclick="selectSidecar('${d}')" class="text-xs font-mono text-indigo-400 hover:underline cursor-pointer mb-1.5 flex items-center space-x-1.5">
+        <span>⚙️</span> <span>${d}</span>
+      </li>
+    `,
+        )
+        .join('') || '<p class="text-xs text-slate-500 italic">No downstream dependents.</p>';
+
+    panel.innerHTML = `
+      <div class="p-4 sm:p-6 space-y-5">
+        <!-- Header Section -->
+        <div class="border-b border-slate-800/80 pb-4">
+          <div class="flex items-start justify-between">
+            <div>
+              <h2 class="text-base sm:text-lg font-semibold text-white tracking-tight">${fm.title || '—'}</h2>
+              <p class="text-[10px] sm:text-xs font-mono text-slate-500 mt-1 select-all">${filePath}</p>
+            </div>
+            <div class="text-right flex flex-col items-end space-y-1">
+              <span class="text-[10px] sm:text-[11px] font-mono bg-slate-900 border border-slate-800 text-slate-300 px-2 py-0.5 rounded-md">status: ${fm.status || '—'}</span>
+              <span class="text-[9px] font-mono text-slate-500">flag: ${fm.status_flag || '—'}</span>
+            </div>
+          </div>
+          <p class="text-xs sm:text-sm text-slate-400 mt-3 leading-relaxed">${fm.description || '—'}</p>
+        </div>
+
+        <!-- Touch-optimized Ego Graph View -->
+        <div class="border border-slate-800 bg-slate-950/40 rounded-2xl p-3 sm:p-4">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-[10px] sm:text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+              1-Hop Ego Dependency Graph
+            </h3>
+            <div class="flex space-x-1 text-[10px]">
+              <button onclick="resetZoom()" class="bg-slate-800 border border-slate-700 px-2 py-0.5 rounded text-slate-300 transition-[background-color] duration-100 hover:bg-slate-700">Reset</button>
+            </div>
+          </div>
+
+          <!-- Touch Gesture SVG Target Container -->
+          <div id="ego-view-container" class="w-full bg-slate-950 rounded-xl overflow-hidden border border-slate-900/60 touch-action-none" style="height: 220px; position: relative;">
+            ${renderEgoGraphSvg(filePath, upstreams, downstreams)}
+          </div>
+          <p class="text-[9px] text-slate-500 mt-2 text-center italic">Touch gestures: Drag to pan, pinch to zoom. Double-tap neighbor node to inspect.</p>
+        </div>
+
+        <!-- Dependency columns -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-slate-800/60 pt-4">
+          <div>
+            <h4 class="text-[10px] sm:text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Depends On (Upstream)</h4>
+            <ul>${upstreamHtml}</ul>
+          </div>
+          <div>
+            <h4 class="text-[10px] sm:text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Used By (Downstream)</h4>
+            <ul>${downstreamHtml}</ul>
+          </div>
+        </div>
+
+        <!-- Metadata contract tags -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-slate-800/60 pt-4">
+          <div>
+            <h4 class="text-[10px] sm:text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Tags</h4>
+            <div class="flex flex-wrap gap-1.5">${tagsHtml}</div>
+          </div>
+          <div>
+            <h4 class="text-[10px] sm:text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Exports</h4>
+            <div class="flex flex-wrap gap-1.5">${exportsHtml}</div>
+          </div>
+        </div>
+
+        <!-- ADR decisions list -->
+        <div class="border-t border-slate-800/60 pt-4">
+          <h4 class="text-[10px] sm:text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2.5">Architectural Decisions (ADR)</h4>
+          <div class="space-y-2">${decisionsHtml}</div>
+        </div>
+
+        <!-- Spec raw markdown representation -->
+        <div class="border-t border-slate-800/60 pt-4">
+          <h4 class="text-[10px] sm:text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Sidecar Code & Spec Body</h4>
+          <pre class="bg-slate-950 border border-slate-800 p-3 rounded-xl text-[10px] sm:text-xs font-mono text-slate-300 leading-relaxed overflow-x-auto max-h-[250px] custom-scroll"><code>${escapeHtml(sidecar.body || '')}</code></pre>
+        </div>
+      </div>
+    `;
+
+    setupTouchGestures();
+    renderRightPanel();
+  } catch (err: any) {
+    panel.innerHTML = `<div class="p-6 text-xs text-slate-400 font-medium">Could not load this specification. ${err.message ? `(${err.message})` : ''} Try selecting a different file or refreshing the workspace.</div>`;
+  }
+}
+
+// Generate Ego Graph SVG
+function renderEgoGraphSvg(centerNode: string, upstreams: string[], downstreams: string[]): string {
+  const width = 500;
+  const height = 220;
+
+  const cleanLabel = (pathStr: string) => {
+    const parts = pathStr.split('/');
+    return parts[parts.length - 1];
+  };
+
+  const centerLabel = cleanLabel(centerNode);
+  const centerRad = 34;
+  const neighborRad = 25;
+  const centerPos = { x: width / 2, y: height / 2 };
+
+  // Upstream positions
+  const upPos = upstreams.map((item, idx) => {
+    const total = upstreams.length;
+    const x = 70;
+    const spacing = height / (total + 1);
+    const y = spacing * (idx + 1);
+    return { item, x, y };
+  });
+
+  // Downstream positions
+  const downPos = downstreams.map((item, idx) => {
+    const total = downstreams.length;
+    const x = width - 70;
+    const spacing = height / (total + 1);
+    const y = spacing * (idx + 1);
+    return { item, x, y };
+  });
+
+  let svg = `
+    <svg id="ego-svg" width="100%" height="100%" viewBox="0 0 ${width} ${height}" style="overflow: visible;">
+      <g id="ego-viewport" transform="translate(${panX}, ${panY}) scale(${scale})" style="transform-origin: center; transition: transform 0.05s linear;">
+        <defs>
+          <marker id="arrow-web" viewBox="0 0 10 10" refX="28" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 1 L 10 5 L 0 9 z" fill="oklch(0.5 0.2 240)" />
+          </marker>
+        </defs>
+  `;
+
+  // Upstream links
+  upPos.forEach((p) => {
+    svg += `<line x1="${p.x}" y1="${p.y}" x2="${centerPos.x}" y2="${centerPos.y}" stroke="oklch(0.3 0.05 240)" stroke-width="1.5" marker-end="url(#arrow-web)" />`;
+  });
+
+  // Downstream links
+  downPos.forEach((p) => {
+    svg += `<line x1="${centerPos.x}" y1="${centerPos.y}" x2="${p.x}" y2="${p.y}" stroke="oklch(0.3 0.05 240)" stroke-width="1.5" marker-end="url(#arrow-web)" />`;
+  });
+
+  // Render Upstreams
+  upPos.forEach((p) => {
+    const lbl = cleanLabel(p.item);
+    svg += `
+      <g class="ego-node cursor-pointer group" data-path="${p.item}">
+        <circle cx="${p.x}" cy="${p.y}" r="${neighborRad}" fill="oklch(0.2 0.04 240)" stroke="oklch(0.4 0.05 240)" stroke-width="1.5" />
+        <text x="${p.x}" y="${p.y + 4}" font-size="9" font-family="monospace" fill="oklch(0.8 0.02 240)" text-anchor="middle" class="pointer-events-none font-semibold">${lbl.substring(0, 8)}</text>
+      </g>
+    `;
+  });
+
+  // Render Downstreams
+  downPos.forEach((p) => {
+    const lbl = cleanLabel(p.item);
+    svg += `
+      <g class="ego-node cursor-pointer group" data-path="${p.item}">
+        <circle cx="${p.x}" cy="${p.y}" r="${neighborRad}" fill="oklch(0.2 0.04 240)" stroke="oklch(0.4 0.05 240)" stroke-width="1.5" />
+        <text x="${p.x}" y="${p.y + 4}" font-size="9" font-family="monospace" fill="oklch(0.8 0.02 240)" text-anchor="middle" class="pointer-events-none font-semibold">${lbl.substring(0, 8)}</text>
+      </g>
+    `;
+  });
+
+  // Render Center Node
+  svg += `
+    <g class="pointer-events-none">
+      <circle cx="${centerPos.x}" cy="${centerPos.y}" r="${centerRad}" fill="oklch(0.25 0.12 250)" stroke="oklch(0.5 0.2 240)" stroke-width="2.5" />
+      <text x="${centerPos.x}" y="${centerPos.y + 4}" font-size="10" font-family="monospace" fill="white" font-weight="bold" text-anchor="middle">${centerLabel.substring(0, 10)}</text>
+    </g>
+  `;
+
+  if (upstreams.length === 0 && downstreams.length === 0) {
+    svg += `<text x="${width / 2}" y="${height - 15}" font-size="10" fill="oklch(0.5 0.02 240)" text-anchor="middle" class="italic">No connected neighbors in ego scope.</text>`;
+  }
+
+  svg += `
+      </g>
+    </svg>
+  `;
+  return svg;
+}
+
+// Reset Zoom helper
+function resetZoom() {
+  scale = 1.0;
+  panX = 0;
+  panY = 0;
+  updateViewportTransform();
+}
+
+(window as any).resetZoom = resetZoom;
+
+function updateViewportTransform() {
+  const viewport = document.getElementById('ego-viewport');
+  if (viewport) {
+    viewport.setAttribute('transform', `translate(${panX}, ${panY}) scale(${scale})`);
+  }
+}
+
+// SVG Touch pan/pinch gestures
+function setupTouchGestures() {
+  const container = document.getElementById('ego-view-container');
+  if (!container) return;
+
+  // Single tap/double tap & click fallback for desktop + mobile
+  const nodes = container.querySelectorAll('.ego-node');
+  nodes.forEach((node) => {
+    // Touch tap / double tap
+    node.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      const path = node.getAttribute('data-path') || '';
+      const now = Date.now();
+      const diff = now - lastTapTime;
+      lastTapTime = now;
+      if (diff < 300) {
+        // Double tap -> focus/inspect node
+        selectSidecar(path);
+      } else {
+        showToast(`Double-tap to focus: ${path.split('/').pop()}`, 'info');
+      }
+    });
+
+    // Click/double-click for mouse
+    node.addEventListener('dblclick', (e) => {
+      e.preventDefault();
+      const path = node.getAttribute('data-path') || '';
+      selectSidecar(path);
+    });
+  });
+
+  // Pan and Zoom Touch triggers
+  container.addEventListener('touchstart', (e: TouchEvent) => {
+    if (e.touches.length === 1) {
+      isPanning = true;
+      startX = e.touches[0].clientX - panX;
+      startY = e.touches[0].clientY - panY;
+    } else if (e.touches.length === 2) {
+      isPanning = false;
+      const t1 = e.touches[0];
+      const t2 = e.touches[1];
+      lastTouchDist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+    }
+  });
+
+  container.addEventListener('touchmove', (e: TouchEvent) => {
+    if (isPanning && e.touches.length === 1) {
+      panX = e.touches[0].clientX - startX;
+      panY = e.touches[0].clientY - startY;
+      updateViewportTransform();
+    } else if (e.touches.length === 2) {
+      const t1 = e.touches[0];
+      const t2 = e.touches[1];
+      const dist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+
+      const factor = dist / lastTouchDist;
+      scale = Math.max(0.4, Math.min(3.0, scale * factor));
+      lastTouchDist = dist;
+      updateViewportTransform();
+    }
+  });
+
+  container.addEventListener('touchend', () => {
+    isPanning = false;
+  });
+
+  // Mouse pan triggers for desktop robustness
+  let isMouseDragging = false;
+  container.addEventListener('mousedown', (e: MouseEvent) => {
+    isMouseDragging = true;
+    startX = e.clientX - panX;
+    startY = e.clientY - panY;
+  });
+
+  container.addEventListener('mousemove', (e: MouseEvent) => {
+    if (isMouseDragging) {
+      panX = e.clientX - startX;
+      panY = e.clientY - startY;
+      updateViewportTransform();
+    }
+  });
+
+  container.addEventListener('mouseup', () => {
+    isMouseDragging = false;
+  });
+
+  container.addEventListener('mouseleave', () => {
+    isMouseDragging = false;
+  });
+
+  // Mouse wheel zoom
+  container.addEventListener(
+    'wheel',
+    (e: WheelEvent) => {
+      e.preventDefault();
+      const factor = e.deltaY < 0 ? 1.05 : 0.95;
+      scale = Math.max(0.4, Math.min(3.0, scale * factor));
+      updateViewportTransform();
+    },
+    { passive: false },
+  );
+}
+
+// Right panel switcher
+function switchRightTab(tab: 'directives' | 'templates') {
+  currentTab = tab;
+  renderRightPanel();
+}
+
+(window as any).switchRightTab = switchRightTab;
+
+async function renderRightPanel() {
+  const panel = document.getElementById('right-panel-content');
+  if (!panel) return;
+
+  const tabDirBtn = document.getElementById('tab-dir-btn');
+  const tabTplBtn = document.getElementById('tab-tpl-btn');
+
+  if (currentTab === 'directives') {
+    tabDirBtn?.classList.add('border-indigo-500', 'text-indigo-400');
+    tabDirBtn?.classList.remove('border-transparent', 'text-slate-400');
+    tabTplBtn?.classList.add('border-transparent', 'text-slate-400');
+    tabTplBtn?.classList.remove('border-indigo-500', 'text-indigo-400');
+
+    // Retrieve directives
+    const filterQuery =
+      directiveFilter === 'all'
+        ? `SELECT file_path as filePath, note_id as id, timestamp, text, status FROM user_notes ORDER BY timestamp DESC;`
+        : `SELECT file_path as filePath, note_id as id, timestamp, text, status FROM user_notes WHERE status = ? ORDER BY timestamp DESC;`;
+    const params = directiveFilter === 'all' ? [] : [directiveFilter];
+    const directives = await graphEngine.all(filterQuery, params);
+
+    panel.innerHTML = `
+      <!-- Submit human directive note card -->
+      <div class="bg-slate-900/40 border border-slate-800 p-3.5 rounded-xl space-y-3 shadow-sm shrink-0">
+        <h3 class="text-xs font-semibold text-slate-200">Submit New Directive</h3>
+
+        <div class="space-y-1">
+          <label for="new-dir-file" class="block text-[9px] font-bold text-slate-500 uppercase">Target Spec</label>
+          <select id="new-dir-file" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-indigo-500">
+            <option value="">-- Choose Sidecar File --</option>
+            ${filesList.map((f) => `<option value="${f}" ${f === selectedPath ? 'selected' : ''}>${f}</option>`).join('')}
+          </select>
+        </div>
+
+        <div class="space-y-1">
+          <label for="new-dir-text" class="block text-[9px] font-bold text-slate-500 uppercase">Directive Note</label>
+          <textarea id="new-dir-text" rows="3" placeholder="Enter spec instructions..." class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-300 placeholder-slate-700 focus:outline-none focus:border-indigo-500 resize-none min-h-[50px]"></textarea>
+        </div>
+
+        <button onclick="submitDirective()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs py-2 rounded-lg active:scale-95 transition-[background-color] duration-200 shadow-sm">
+          Send Directive
+        </button>
+      </div>
+
+      <!-- Filters & List -->
+      <div class="space-y-3 pt-2">
+        <div class="flex items-center justify-between">
+          <h4 class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Directives List</h4>
+          <div class="flex space-x-1 bg-slate-950 border border-slate-800/80 p-0.5 rounded-lg text-[9px]">
+            <button onclick="filterDirectives('pending')" class="px-2 py-1 rounded-md font-semibold ${directiveFilter === 'pending' ? 'bg-slate-800 text-white' : 'text-slate-400'}">Pending</button>
+            <button onclick="filterDirectives('resolved')" class="px-2 py-1 rounded-md font-semibold ${directiveFilter === 'resolved' ? 'bg-slate-800 text-white' : 'text-slate-400'}">Resolved</button>
+            <button onclick="filterDirectives('all')" class="px-2 py-1 rounded-md font-semibold ${directiveFilter === 'all' ? 'bg-slate-800 text-white' : 'text-slate-400'}">All</button>
+          </div>
+        </div>
+
+        <div class="space-y-2.5">
+          ${directives.length === 0 ? `<p class="text-[11px] text-slate-500 italic py-2 text-center">No directives matching selection.</p>` : ''}
+          ${directives
+            .map(
+              (d: any) => `
+            <div class="p-3 bg-slate-900/25 border border-slate-800/80 rounded-xl space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-[9px] font-mono text-slate-400">${d.id}</span>
+                <span class="text-[9px] font-mono text-slate-500">${new Date(d.timestamp).toLocaleTimeString()}</span>
+              </div>
+              <p class="text-xs text-slate-200 font-medium leading-relaxed">${d.text}</p>
+              <div class="flex items-center justify-between border-t border-slate-800/40 pt-1.5 text-[9px]">
+                <span onclick="selectSidecar('${d.filePath}')" class="text-indigo-400 hover:underline cursor-pointer truncate max-w-[140px] font-mono">${d.filePath}</span>
+                ${
+                  d.status === 'pending'
+                    ? `
+                  <button onclick="resolveDirective('${d.filePath}', '${d.id}')" class="px-2 py-0.5 bg-slate-800 border border-slate-700 text-slate-300 hover:text-slate-100 hover:border-slate-500 rounded font-semibold transition-[color,border-color] duration-100">Resolve</button>
+                `
+                    : `<span class="text-slate-500 uppercase font-semibold font-mono text-[8px] tracking-wider">Resolved</span>`
+                }
+              </div>
+            </div>
+          `,
+            )
+            .join('')}
+        </div>
+      </div>
+    `;
+  } else {
+    tabTplBtn?.classList.add('border-indigo-500', 'text-indigo-400');
+    tabTplBtn?.classList.remove('border-transparent', 'text-slate-400');
+    tabDirBtn?.classList.add('border-transparent', 'text-slate-400');
+    tabDirBtn?.classList.remove('border-indigo-500', 'text-indigo-400');
+
+    // Display provisional templates
+    panel.innerHTML = `
+      <div class="text-[11px] text-slate-400 pb-2">Manage provisional draft templates for code materialization permissions.</div>
+
+      <!-- List of static demo templates or fetched drafts if any -->
+      <div class="space-y-3" id="provisional-templates-list">
+        <!-- Static draft templates matching portal capabilities -->
+        <div class="p-3 bg-slate-900/35 border border-slate-800 rounded-xl space-y-3">
+          <div class="flex items-start justify-between">
+            <div>
+              <span class="text-xs font-semibold text-white">controller-v1.0-provisional.ts.md.tpl</span>
+              <span class="text-[9px] text-slate-500 font-mono block mt-0.5">draft &middot; pending review</span>
+            </div>
+          </div>
+          <pre class="bg-slate-950 p-2 border border-slate-900 rounded-lg text-[9px] text-slate-400 max-h-[80px] overflow-y-auto font-mono custom-scroll"># Controller Mold (Draft Proposal)
+Provisional template for human review.
+- Project: {{project_name}}
+- Version: v1.0-provisional</pre>
+          <div class="flex items-center space-x-2 pt-1 text-[10px]">
+            <button onclick="approveTemplateProposal('controller-v1.0-provisional.ts.md.tpl', true)" class="flex-1 bg-slate-800 hover:bg-indigo-600/20 text-indigo-400 hover:border-indigo-500/35 border border-slate-700 rounded-lg font-bold py-1 transition-[background-color,border-color] duration-200">Approve Template</button>
+            <button onclick="approveTemplateProposal('controller-v1.0-provisional.ts.md.tpl', false)" class="px-3 bg-slate-950 border border-slate-900 text-slate-400 hover:bg-slate-900 rounded-lg py-1 transition-[background-color] duration-200 font-bold">Reject</button>
+          </div>
+        </div>
+
+        <div class="p-3 bg-slate-900/35 border border-slate-800 rounded-xl space-y-1.5">
+          <div>
+            <span class="text-xs font-semibold text-white">service.ts.md.tpl</span>
+            <span class="text-[9px] text-slate-500 font-mono block mt-0.5">active &middot; registered</span>
+          </div>
+          <p class="text-[10px] text-slate-500 italic font-mono">Template is fully registered on repository.</p>
+        </div>
+      </div>
+    `;
+  }
+}
+
+(window as any).filterDirectives = (status: 'pending' | 'resolved' | 'all') => {
+  directiveFilter = status;
+  renderRightPanel();
+};
+
+// Submit dynamic directive note to sidecar
+async function submitDirective() {
+  const fileSelect = document.getElementById('new-dir-file') as HTMLSelectElement;
+  const textInput = document.getElementById('new-dir-text') as HTMLTextAreaElement;
+  if (!fileSelect || !textInput) return;
+
+  const filePath = fileSelect.value;
+  const text = textInput.value.trim();
+
+  if (!filePath) {
+    showToast('Please select a target sidecar file.', 'error');
+    return;
+  }
+  if (!text) {
+    showToast('Please type directive instruction.', 'error');
+    return;
+  }
+
+  showToast('Saving directive...', 'info');
+
+  const noteId = `NOTE-${Date.now()}`;
+  const newNote = {
+    id: noteId,
+    timestamp: new Date().toISOString(),
+    text,
+    status: 'pending',
+  };
+
+  try {
+    if (workspaceSource === 'local-server') {
+      const res = await fetch('/api/v1/directives', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filePath, text, id: noteId }),
+      });
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.error || `Server returned status ${res.status}`);
+      }
+      showToast('Directive saved to local server!', 'success');
+      textInput.value = '';
+      await reloadLocalServerWorkspaceSilent();
+      return;
+    }
+
+    // 1. Read existing spec file from virtual filesystem
+    const content = await virtualFs.readFile(filePath);
+    const parsed = parseOkfSpec(content);
+
+    if (!parsed.isValid || !parsed.frontmatter) {
+      showToast('Parsing failure: invalid sidecar format.', 'error');
+      return;
+    }
+
+    // 2. Add new user note
+    const notes = parsed.frontmatter.user_notes || [];
+    notes.push(newNote);
+    parsed.frontmatter.user_notes = notes;
+
+    // 3. Stringify OKF spec and write back locally
+    const updatedContent = stringifyOkfSpec(parsed.frontmatter, parsed.body);
+    await virtualFs.writeFile(filePath, updatedContent);
+
+    if (workspaceSource === 'local-folder' && localFileHandles.has(filePath)) {
+      try {
+        const handle = localFileHandles.get(filePath);
+        const writable = await handle.createWritable();
+        await writable.write(updatedContent);
+        await writable.close();
+        showToast('Directive saved directly to local file on disk!', 'success');
+      } catch (e: any) {
+        showToast('Saved to browser memory (disk permission needed): ' + e.message, 'warning');
+      }
+    } else if (workspaceSource === 'github-remote') {
+      // Update offline cache
+      try {
+        const cachedFiles = JSON.parse(
+          localStorage.getItem(`STUBS_OFFLINE_FILES_${currentRepo}_${currentBranch}`) || '{}',
+        );
+        cachedFiles[filePath] = updatedContent;
+        localStorage.setItem(
+          `STUBS_OFFLINE_FILES_${currentRepo}_${currentBranch}`,
+          JSON.stringify(cachedFiles),
+        );
+      } catch (e) {
+        console.warn('Failed to update cache on submitDirective:', e);
+      }
+
+      // Commit to GitHub directly
+      if (currentRepo && pat) {
+        const [owner, name] = currentRepo.split('/');
+        const client = new GitHubClient(pat);
+        await client
+          .createOrUpdateFile(
+            owner,
+            name,
+            filePath,
+            updatedContent,
+            `Add user note ${noteId} via PWA`,
+            currentBranch,
+          )
+          .catch((err) => {
+            showToast(
+              'Offline save succeeded locally. GitHub sync failed: ' + err.message,
+              'warning',
+            );
+          });
+      }
+      showToast('Successfully saved directive note!', 'success');
+    }
+
+    // 4. Force index update in-memory
+    await graphEngine.indexWorkspace('/', { force: true });
+    textInput.value = '';
+
+    // Close mobile right drawer
+    if (window.innerWidth < 768) {
+      isRightDrawerOpen = false;
+      document.getElementById('right-drawer')?.classList.add('translate-x-full');
+      document.getElementById('drawer-overlay')?.classList.add('hidden');
+    }
+
+    renderSpecsList();
+    renderRightPanel();
+    await loadAndRenderSidecarDetail(filePath);
+  } catch (err: any) {
+    showToast('Failed to save directive: ' + err.message, 'error');
+  }
+}
+
+(window as any).submitDirective = submitDirective;
+
+// Resolve directive note on virtual database, local server, or remote commit
+async function resolveDirective(filePath: string, noteId: string) {
+  showToast('Resolving directive...', 'info');
+
+  try {
+    if (workspaceSource === 'local-server') {
+      const res = await fetch('/api/v1/directives/resolve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filePath, id: noteId }),
+      });
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.error || `Server returned status ${res.status}`);
+      }
+      showToast('Directive resolved on local server!', 'success');
+      await reloadLocalServerWorkspaceSilent();
+      return;
+    }
+
+    const content = await virtualFs.readFile(filePath);
+    const parsed = parseOkfSpec(content);
+    if (!parsed.isValid || !parsed.frontmatter) {
+      showToast('Error parsing sidecar.', 'error');
+      return;
+    }
+
+    const notes = parsed.frontmatter.user_notes || [];
+    const note = notes.find((n: any) => n.id === noteId);
+    if (!note) {
+      showToast('Directive not found inside sidecar.', 'error');
+      return;
+    }
+
+    note.status = 'resolved';
+
+    const updatedContent = stringifyOkfSpec(parsed.frontmatter, parsed.body);
+    await virtualFs.writeFile(filePath, updatedContent);
+
+    if (workspaceSource === 'local-folder' && localFileHandles.has(filePath)) {
+      try {
+        const handle = localFileHandles.get(filePath);
+        const writable = await handle.createWritable();
+        await writable.write(updatedContent);
+        await writable.close();
+        showToast('Directive resolved on local disk file!', 'success');
+      } catch (e: any) {
+        showToast('Resolved in memory: ' + e.message, 'warning');
+      }
+    } else if (workspaceSource === 'github-remote') {
+      // Update offline cache
+      try {
+        const cachedFiles = JSON.parse(
+          localStorage.getItem(`STUBS_OFFLINE_FILES_${currentRepo}_${currentBranch}`) || '{}',
+        );
+        cachedFiles[filePath] = updatedContent;
+        localStorage.setItem(
+          `STUBS_OFFLINE_FILES_${currentRepo}_${currentBranch}`,
+          JSON.stringify(cachedFiles),
+        );
+      } catch (e) {
+        console.warn('Failed to update cache on resolveDirective:', e);
+      }
+
+      if (currentRepo && pat) {
+        const [owner, name] = currentRepo.split('/');
+        const client = new GitHubClient(pat);
+        await client
+          .createOrUpdateFile(
+            owner,
+            name,
+            filePath,
+            updatedContent,
+            `Resolve user note ${noteId} via PWA`,
+            currentBranch,
+          )
+          .catch((err) => {
+            showToast(
+              'Offline resolve succeeded locally. GitHub sync failed: ' + err.message,
+              'warning',
+            );
+          });
+      }
+      showToast('Successfully resolved directive note!', 'success');
+    }
+
+    await graphEngine.indexWorkspace('/', { force: true });
+    renderSpecsList();
+    renderRightPanel();
+    await loadAndRenderSidecarDetail(filePath);
+  } catch (err: any) {
+    showToast('Failed to resolve directive: ' + err.message, 'error');
+  }
+}
+
+(window as any).resolveDirective = resolveDirective;
+
+// Approve/Reject draft template proposal
+async function approveTemplateProposal(templateName: string, approved: boolean) {
+  showToast(approved ? 'Approving template proposal...' : 'Rejecting template proposal...', 'info');
+  setTimeout(() => {
+    showToast(
+      approved
+        ? 'Successfully approved template proposal on repository!'
+        : 'Rejected template draft.',
+      'success',
+    );
+  }, 1000);
+}
+
+(window as any).approveTemplateProposal = approveTemplateProposal;
+
+// Helper: escapes HTML characters safely
+function escapeHtml(text: string): string {
+  if (!text) return '';
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+// Interactive Sidecar Bootstrapping Tool State and Logic
+let bootstrapFiles: string[] = [];
+let bootstrapSelectedFile: string | null = null;
+
+async function openBootstrapModal() {
+  const modal = document.getElementById('bootstrap-modal');
+  if (modal) modal.classList.remove('hidden');
+
+  const listContainer = document.getElementById('bootstrap-files-list');
+  if (listContainer)
+    listContainer.innerHTML =
+      '<p class="text-xs text-slate-500 italic p-2">Scanning workspace for unbootstrapped files...</p>';
+
+  function getQueryParams() {
+    if (workspaceSource === 'github-remote' && currentRepo) {
+      return `?mode=remote&repo=${encodeURIComponent(currentRepo)}&branch=${encodeURIComponent(currentBranch)}`;
+    }
+    return '';
+  }
+
+  try {
+    const scanRes = await fetch('/api/v1/bootstrap/scan' + getQueryParams());
+    const scanData = await scanRes.json();
+    bootstrapFiles = scanData.files || scanData.unbootstrapped || [];
+
+    if (listContainer) {
+      if (bootstrapFiles.length === 0) {
+        listContainer.innerHTML =
+          '<p class="text-xs text-slate-500 italic p-2">No TypeScript files without sidecars found in workspace.</p>';
+      } else {
+        listContainer.innerHTML = bootstrapFiles
+          .map(
+            (file) => `
+          <div class="flex items-center justify-between p-2 hover:bg-slate-900/50 rounded-lg transition-[background-color] duration-150">
+            <label class="flex items-center space-x-2.5 cursor-pointer truncate mr-2">
+              <input
+                type="checkbox"
+                class="bootstrap-file-chk rounded border-slate-800 bg-slate-950 text-indigo-600 focus:ring-indigo-500"
+                value="${file}"
+                onchange="onBootstrapCheckboxChange()"
+              />
+              <span class="text-xs text-slate-300 font-medium truncate">${file}</span>
+            </label>
+            <button
+              onclick="previewBootstrapFile('${file}')"
+              class="text-[10px] text-indigo-400 hover:underline cursor-pointer shrink-0 font-medium px-2 py-1 bg-slate-900 border border-slate-800/80 rounded"
+            >
+              Preview
+            </button>
+          </div>
+        `,
+          )
+          .join('');
+      }
+    }
+  } catch {
+    if (listContainer)
+      listContainer.innerHTML =
+        '<p class="text-xs text-rose-400 font-semibold p-2">Failed to scan workspace.</p>';
+  }
+
+  // 2. Load templates dropdown
+  const templateSelect = document.getElementById('bootstrap-template-select') as HTMLSelectElement;
+  if (templateSelect) {
+    templateSelect.innerHTML = '<option value="">-- Use Default OKF Skeleton --</option>';
+
+    try {
+      const templatesRes = await fetch('/api/v1/templates' + getQueryParams());
+      const templatesData = await templatesRes.json();
+      const tpls = templatesData.templates || [];
+
+      tpls.forEach((t: any) => {
+        const opt = document.createElement('option');
+        opt.value = t.name;
+        opt.textContent = t.name + (t.isDraft ? ' (draft)' : '');
+        templateSelect.appendChild(opt);
+      });
+    } catch (err) {
+      console.error('Failed to load templates:', err);
+    }
+  }
+
+  bootstrapSelectedFile = null;
+  const previewText = document.getElementById('bootstrap-preview-text');
+  if (previewText)
+    previewText.textContent =
+      'Select a file on the left to preview generated specification content...';
+  const previewBadge = document.getElementById('preview-filename-badge');
+  if (previewBadge) previewBadge.textContent = 'None selected';
+  updateBootstrapStatus();
+}
+
+(window as any).openBootstrapModal = openBootstrapModal;
+
+function closeBootstrapModal() {
+  const modal = document.getElementById('bootstrap-modal');
+  if (modal) modal.classList.add('hidden');
+}
+
+(window as any).closeBootstrapModal = closeBootstrapModal;
+
+function toggleAllBootstrapCheckboxes(checked: boolean) {
+  const chks = document.querySelectorAll('.bootstrap-file-chk') as NodeListOf<HTMLInputElement>;
+  chks.forEach((chk) => (chk.checked = checked));
+  updateBootstrapStatus();
+}
+
+(window as any).toggleAllBootstrapCheckboxes = toggleAllBootstrapCheckboxes;
+
+function onBootstrapCheckboxChange() {
+  updateBootstrapStatus();
+}
+
+(window as any).onBootstrapCheckboxChange = onBootstrapCheckboxChange;
+
+async function previewBootstrapFile(filePath: string) {
+  bootstrapSelectedFile = filePath;
+  const previewBadge = document.getElementById('preview-filename-badge');
+  if (previewBadge) previewBadge.textContent = filePath;
+  const previewText = document.getElementById('bootstrap-preview-text');
+  if (previewText) previewText.textContent = 'Generating preview...';
+
+  const templateSelect = document.getElementById('bootstrap-template-select') as HTMLSelectElement;
+  const templateName = templateSelect ? templateSelect.value : '';
+
+  function getQueryParams() {
+    if (workspaceSource === 'github-remote' && currentRepo) {
+      return `?mode=remote&repo=${encodeURIComponent(currentRepo)}&branch=${encodeURIComponent(currentBranch)}`;
+    }
+    return '';
+  }
+
+  try {
+    const res = await fetch('/api/v1/bootstrap/preview' + getQueryParams(), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ filePath, templateName }),
+    });
+    const data = await res.json();
+    if (previewText) {
+      if (data.content) {
+        previewText.textContent = data.content;
+      } else {
+        previewText.textContent = 'Error generating preview: ' + (data.error || 'unknown');
+      }
+    }
+  } catch {
+    if (previewText) previewText.textContent = 'Failed to fetch generation preview.';
+  }
+}
+
+(window as any).previewBootstrapFile = previewBootstrapFile;
+
+function onBootstrapTemplateChange() {
+  if (bootstrapSelectedFile) {
+    previewBootstrapFile(bootstrapSelectedFile);
+  }
+}
+
+(window as any).onBootstrapTemplateChange = onBootstrapTemplateChange;
+
+function updateBootstrapStatus() {
+  const chks = document.querySelectorAll(
+    '.bootstrap-file-chk:checked',
+  ) as NodeListOf<HTMLInputElement>;
+  const count = chks.length;
+  const info = document.getElementById('bootstrap-status-info');
+  if (info) info.textContent = `${count} file(s) selected for bootstrapping.`;
+  const btn = document.getElementById('bootstrap-commit-btn') as HTMLButtonElement;
+  if (btn) btn.disabled = count === 0;
+}
+
+async function commitBootstrapSidecars() {
+  const chks = document.querySelectorAll(
+    '.bootstrap-file-chk:checked',
+  ) as NodeListOf<HTMLInputElement>;
+  if (chks.length === 0) return;
+
+  const commitBtn = document.getElementById('bootstrap-commit-btn') as HTMLButtonElement;
+  if (commitBtn) {
+    commitBtn.disabled = true;
+    commitBtn.textContent = 'Committing...';
+  }
+
+  const filesToCommit: { filePath: string; content: string }[] = [];
+  const templateSelect = document.getElementById('bootstrap-template-select') as HTMLSelectElement;
+  const templateName = templateSelect ? templateSelect.value : '';
+
+  showToast(`Generating sidecars for ${chks.length} files...`, 'info');
+
+  function getQueryParams() {
+    if (workspaceSource === 'github-remote' && currentRepo) {
+      return `?mode=remote&repo=${encodeURIComponent(currentRepo)}&branch=${encodeURIComponent(currentBranch)}`;
+    }
+    return '';
+  }
+
+  for (let i = 0; i < chks.length; i++) {
+    const filePath = chks[i].value;
+    try {
+      const res = await fetch('/api/v1/bootstrap/preview' + getQueryParams(), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filePath, templateName }),
+      });
+      const data = await res.json();
+      if (data.content) {
+        filesToCommit.push({ filePath, content: data.content });
+      } else {
+        showToast(`Skipped ${filePath}: generation failed.`, 'error');
+      }
+    } catch {
+      showToast(`Skipped ${filePath}: fetch failed.`, 'error');
+    }
+  }
+
+  if (filesToCommit.length === 0) {
+    showToast('No valid files generated. Aborting commit.', 'error');
+    if (commitBtn) {
+      commitBtn.textContent = 'Commit Specifications';
+      commitBtn.disabled = false;
+    }
+    return;
+  }
+
+  showToast(`Committing ${filesToCommit.length} sidecar files...`, 'info');
+
+  try {
+    const commitRes = await fetch('/api/v1/bootstrap/commit' + getQueryParams(), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ files: filesToCommit }),
+    });
+    const commitData = await commitRes.json();
+    if (commitData.success) {
+      showToast(`Successfully bootstrapped ${filesToCommit.length} sidecars!`, 'success');
+      closeBootstrapModal();
+
+      // Refresh spec file lists
+      if (workspaceSource === 'local-server') {
+        await reloadLocalServerWorkspaceSilent();
+      } else if (typeof (window as any).fetchSpecsFromGithub === 'function') {
+        await (window as any).fetchSpecsFromGithub();
+      } else if (typeof (window as any).loadWorkspace === 'function') {
+        await (window as any).loadWorkspace();
+      }
+    } else {
+      showToast('Commit failed: ' + (commitData.error || 'unknown'), 'error');
+    }
+  } catch {
+    showToast('Error executing bootstrap commit.', 'error');
+  } finally {
+    if (commitBtn) {
+      commitBtn.textContent = 'Commit Specifications';
+      commitBtn.disabled = false;
+    }
+  }
+}
+
+(window as any).commitBootstrapSidecars = commitBootstrapSidecars;
+
+// PWA install banner + offline cache status
+function setupPwaInstallBanner() {
+  const banner = document.getElementById('pwa-install-banner');
+  const btn = document.getElementById('pwa-install-btn');
+  if (!banner || !btn) return;
+
+  const evt = (window as any).__pwaBeforeInstallPrompt;
+  if (evt) {
+    btn.onclick = async () => {
+      try {
+        await evt.prompt();
+        const choice = await evt.userChoice;
+        showToast(
+          choice.outcome === 'accepted' ? 'Installing app...' : 'Install dismissed',
+          choice.outcome === 'accepted' ? 'success' : 'info',
+        );
+      } finally {
+        banner.classList.add('hidden');
+        (window as any).__pwaBeforeInstallPrompt = null;
+      }
+    };
+    banner.classList.remove('hidden');
+  } else {
+    banner.classList.add('hidden');
+  }
+}
+
+function updateOfflineStatus() {
+  const el = document.getElementById('offline-status');
+  const txt = document.getElementById('offline-status-text');
+  if (!el || !txt) return;
+
+  const hasRepo = Boolean(currentRepo && currentBranch);
+  const cacheKey = hasRepo ? `STUBS_OFFLINE_FILES_${currentRepo}_${currentBranch}` : null;
+  const cached = cacheKey ? localStorage.getItem(cacheKey) : null;
+  const hasCache = Boolean(
+    cached && JSON.parse(cached || '{}') && Object.keys(JSON.parse(cached || '{}')).length,
+  );
+
+  txt.textContent = hasCache
+    ? `Offline cache: ${currentRepo}@${currentBranch}`
+    : 'Offline cache empty';
+  el.classList.toggle('hidden', !hasCache);
+}

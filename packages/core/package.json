@@ -1,0 +1,48 @@
+{
+  "name": "@wiltermood/stubs-core",
+  "version": "1.2.4",
+  "description": "stubs AST graph engine, OKF parser, and architecture sidecar compiler",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/",
+    "src/",
+    "public/",
+    "scripts/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "esbuild src/index.ts --bundle --platform=node --target=node18 --outfile=dist/index.js && esbuild src/cli.ts --bundle --platform=node --target=node18 --outfile=dist/cli.cjs --banner:js=\"#!/usr/bin/env node\" --external:sqlite3 && node scripts/copy-runtime-assets.js",
+    "test": "node scripts/jest-isolated.js tests/*.test.ts",
+    "lint": "eslint ."
+  },
+  "keywords": [
+    "stubs",
+    "sidecar",
+    "architecture",
+    "okf",
+    "ast",
+    "graph"
+  ],
+  "author": "Wiltermood",
+  "license": "ISC",
+  "dependencies": {
+    "esbuild": "^0.24.0",
+    "js-yaml": "^5.2.3",
+    "sql.js": "^1.14.1",
+    "typescript": "^5.5.4"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^26.1.2",
+    "@types/sql.js": "^1.4.11",
+    "@types/sqlite3": "^3.1.11",
+    "jest": "^30.4.2",
+    "ts-jest": "^29.4.12"
+  },
+  "optionalDependencies": {
+    "sqlite3": "^6.0.1"
+  }
+}

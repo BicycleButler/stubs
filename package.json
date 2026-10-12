@@ -1,35 +1,32 @@
 {
   "name": "stubs",
-  "version": "1.2.4",
-  "description": "stubs AI Agent Skill",
-  "main": "dist/cli.cjs",
+  "version": "1.3.0",
+  "description": "Unified central hub for AI Agent Skills, Rules, CLI, and MCP servers",
+  "main": "packages/cli/dist/index.cjs",
   "bin": {
     "stubs": "bin/stubs.js"
   },
+  "workspaces": [
+    "packages/*"
+  ],
   "files": [
     "bin/",
-    "dist/",
-    ".agents/skills/stubs/",
-    ".stubs/templates/",
-    "src/",
-    "scripts/",
-    "public/",
+    "packages/",
     "README.md",
     "AGENTS.md",
     "LICENSE"
   ],
   "scripts": {
-    "postinstall": "npm run build",
-    "prepare": "npm run build",
-    "prepack": "npm run build",
-    "build": "npm run build:web && esbuild src/cli.ts --bundle --platform=node --target=node18 --outfile=.agents/skills/stubs/dist/cli.cjs --banner:js=\"#!/usr/bin/env node\" --external:sqlite3 && node scripts/copy-runtime-assets.js",
-    "build:web": "node scripts/build-web.js",
-    "predeploy:pages": "npm run build:web",
-    "deploy:pages": "gh-pages -d dist/web",
-    "test": "jest",
-    "lint": "eslint .",
+    "build": "npm run build --workspaces --if-present",
+    "build:cli": "npm run build --workspace=@wiltermood/stubs",
+    "build:core": "npm run build --workspace=@wiltermood/stubs-core",
+    "test": "npm run test:tale && npm run test:core",
+    "test:tale": "npm run test --workspace=@wiltermood/tale",
+    "test:core": "npm run test --workspace=@wiltermood/stubs-core",
+    "lint": "eslint packages/core/src packages/cli/src",
+    "lint:tale": "node packages/tale/src/tale-lint.mjs packages/tale packages/cli",
     "format": "prettier --write .",
-    "start": "node .agents/skills/stubs/dist/cli.cjs"
+    "start": "node bin/stubs.js"
   },
   "repository": {
     "type": "git",
@@ -37,44 +34,33 @@
   },
   "keywords": [
     "stubs",
+    "skills",
+    "tale",
+    "design",
     "agent",
-    "sidecar",
+    "mcp",
     "architecture",
-    "okf",
-    "specification"
+    "cli"
   ],
-  "author": "",
+  "author": "Wiltermood",
   "license": "ISC",
-  "type": "commonjs",
-  "bugs": {
-    "url": "https://github.com/Wiltermoodj/stubs/issues"
-  },
-  "homepage": "https://github.com/Wiltermoodj/stubs#readme",
   "dependencies": {
-    "esbuild": "^0.24.0",
-    "js-yaml": "^5.2.3",
-    "sql.js": "^1.14.1",
-    "typescript": "^5.5.4"
+    "@wiltermood/design": "^1.0.0",
+    "@wiltermood/stubs": "^1.3.0",
+    "@wiltermood/stubs-core": "^1.2.4",
+    "@wiltermood/tale": "^1.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@types/jest": "^30.0.0",
-    "@types/js-yaml": "^4.0.9",
     "@types/node": "^26.1.2",
-    "@types/sql.js": "^1.4.11",
-    "@types/sqlite3": "^3.1.11",
     "@typescript-eslint/eslint-plugin": "^8.66.0",
     "@typescript-eslint/parser": "^8.66.0",
+    "esbuild": "^0.24.0",
     "eslint": "^10.8.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.6",
-    "gh-pages": "^6.3.0",
-    "jest": "^30.4.2",
     "prettier": "^3.9.6",
-    "ts-jest": "^29.4.12",
+    "typescript": "^5.5.4",
     "typescript-eslint": "^8.66.0"
-  },
-  "optionalDependencies": {
-    "sqlite3": "^6.0.1"
   }
 }

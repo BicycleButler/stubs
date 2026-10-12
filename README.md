@@ -1,46 +1,60 @@
-# `stubs` — Specification-First AI Software Development
+# `stubs` — Specification-First AI Software Development & Agent Skills Hub
 
-AI has changed how we write code, but it shouldn't change the way we engineer it. `stubs` is an architectural framework, local execution engine, and AI agent protocol for building, maintaining, and evolving complex codebases.
+`stubs` is the central repository and development hub for AI Agent Skills, Rules, CLI tools, and Model Context Protocol (MCP) servers.
 
-Standard agent prompting often leads to architectural drift, broken types, and token-heavy refactoring loops. `stubs` offers an intermediate **sidecar specification & architecture planning phase**.
+It provides a unified, interactive installer (`@clack/prompts` TUI) and modular npm packages for:
+- **`stubs`**: Architecture sidecars, OKF specifications, and bidirectional AST graph engine.
+- **`tale`**: ASD-STE100 Issue 9 Simplified Technical English governance and automated linter.
+- **`design`**: Codebase-agnostic UI/UX design tokens, ADRs, compliance audits, and remediation scripts.
+- **`mcp`**: Modular Model Context Protocol server suite for agent tool invocation.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                           CORE DUAL-FILE PARADIGM                           │
+│                       CENTRAL AGENT CAPABILITIES HUB                         │
 ├──────────────────────────────────────┬──────────────────────────────────────┤
-│    Specification Layer (*.<ext>.md)  │     Executable Source Layer (*.<ext>)│
+│    Unified TUI & CLI Orchestrator    │     Modular Scoped Packages          │
 ├──────────────────────────────────────┼──────────────────────────────────────┤
-│ • Open Knowledge Format (OKF) sidecar│ • Production-ready executable code   │
-│ • YAML frontmatter & graph links     │ • Generated/materialized from spec   │
-│ • Defines interfaces, ADRs, & types  │ • Header-linked via @sidecar comment │
-│ • Holds human notes & directives     │ • Kept in sync via Code Sanding      │
+│ • npx stubs (interactive TUI)        │ • @wiltermood/stubs (CLI & Manager)  │
+│ • npx stubs init                     │ • @wiltermood/stubs-core (AST Engine)│
+│ • npx stubs add <tale|design|stubs>  │ • @wiltermood/tale (STE Linter)      │
+│ • npx stubs mcp add <server>         │ • @wiltermood/design (UI Guidelines) │
 └──────────────────────────────────────┴──────────────────────────────────────┘
 ```
 
 ---
 
-## Installation & Updating
+## Quickstart & Interactive TUI Installation
 
-### 1. Install via `npx` / `npm` (Recommended)
+### 1. Launch Interactive Installer (TUI)
 
-Install `stubs` into your project workspace or global environment:
-
-```Bash
-npm i -D github:Wiltermoodj/stubs && npx stubs init && npx stubs map --scaffold && npx stubs scan && npx stubs tree --graph
-```
-
-Alternative (no local node_modules install):
-
-```Bash
-npx -y github:Wiltermoodj/stubs install && stubs init && stubs map --scaffold && stubs scan && stubs tree --graph
-```
-
-### 2. Standalone Install (curl)
-
-For standalone CI/CD environments or quick setup without npm packages:
+Run `npx stubs` without arguments to launch the interactive terminal interface:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Wiltermoodj/stubs/main/bin/stubs.js -o /usr/local/bin/stubs && chmod +x /usr/local/bin/stubs
+npx stubs
+```
+
+Select any combination of skills (`tale`, `design`, `stubs`), target destination (local workspace `./.agents` or global `~/.gemini/config`), and optional MCP servers.
+
+### 2. Install Specific Skills (Non-Interactive / CI)
+
+```bash
+# Install tale and design into current project
+npx stubs add tale design
+
+# Install all skills and configure workspace hooks
+npx stubs add all
+
+# Install globally for all repositories
+npx stubs add --global all
+```
+
+### 3. Register MCP Servers
+
+```bash
+# Register an MCP server into .agents/mcp_config.json
+npx stubs mcp add stubs
+npx stubs mcp add tale
+npx stubs mcp add design
 ```
 
 ### Updating `stubs`

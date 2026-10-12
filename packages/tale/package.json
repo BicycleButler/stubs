@@ -1,0 +1,29 @@
+{
+  "name": "@wiltermood/tale",
+  "version": "1.0.0",
+  "description": "ASD-STE100 Simplified Technical English (STE) governance, rules, and linter for AI coding agents",
+  "main": "src/tale-lint.mjs",
+  "bin": {
+    "tale-lint": "src/tale-lint.mjs"
+  },
+  "files": [
+    "skill/",
+    "rules/",
+    "src/",
+    "README.md"
+  ],
+  "scripts": {
+    "lint:tale": "node src/tale-lint.mjs",
+    "test": "node skill/scripts/test-linter.mjs"
+  },
+  "keywords": [
+    "asd-ste100",
+    "ste",
+    "simplified-technical-english",
+    "ai-agent",
+    "linter",
+    "governance"
+  ],
+  "author": "Wiltermood",
+  "license": "MIT"
+}

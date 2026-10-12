@@ -1,0 +1,180 @@
+import * as fs from 'fs';
+import * as path from 'path';
+
+export interface StubsConfig {
+  project_name: string;
+  autonomy_level: 'strict_gate' | 'guided_execution' | 'autonomous';
+  paths: {
+    specs_dir: string;
+    templates_dir: string;
+    db_path: string;
+  };
+  search: {
+    engine: 'sqlite-fts5' | 'plugin-level-2' | 'plugin-level-3';
+    vector_plugin: string | null;
+  };
+  grill: {
+    default_depth: 'light_probe' | 'standard_drill' | 'deep_interrogation';
+  };
+  architecture_rules?: Array<{
+    source_domain: string;
+    forbidden_target_domain: string;
+    reason?: string;
+  }>;
+  architecture?: {
+    min_domain_size?: number;
+    domains?: Record<string, string[]>;
+  };
+  github_token?: string;
+  remote?: {
+    provider: 'github' | string;
+    repo: string;
+    default_branch: string;
+  };
+}
+
+export const DEFAULT_CONFIG: StubsConfig = {
+  project_name: 'stubs-project',
+  autonomy_level: 'strict_gate',
+  paths: {
+    specs_dir: 'src',
+    templates_dir: '.stubs/templates',
+    db_path: '.stubs/graph.sqlite',
+  },
+  search: {
+    engine: 'sqlite-fts5',
+    vector_plugin: null,
+  },
+  grill: {
+    default_depth: 'standard_drill',
+  },
+};
+
+/**
+ * Loads and validates stubs configuration.
+ * Pulls parsing, validation, and default-fallback complexity downward.
+ */
+export function loadConfig(configPath?: string): StubsConfig {
+  const resolvedPath = path.resolve(configPath || '.stubs/config.json');
+
+  try {
+    if (!fs.existsSync(resolvedPath)) {
+      return { ...DEFAULT_CONFIG };
+    }
+
+    const content = fs.readFileSync(resolvedPath, 'utf8');
+    const parsed = JSON.parse(content);
+
+    // Validate and sanitize config
+    return sanitizeConfig(parsed);
+  } catch {
+    // Return default config silently, defining errors out of existence for callers
+    return { ...DEFAULT_CONFIG };
+  }
+}
+
+function sanitizeConfig(raw: any): StubsConfig {
+  if (!raw || typeof raw !== 'object') {
+    return { ...DEFAULT_CONFIG };
+  }
+
+  const project_name =
+    typeof raw.project_name === 'string' ? raw.project_name : DEFAULT_CONFIG.project_name;
+
+  let autonomy_level: StubsConfig['autonomy_level'] = 'strict_gate';
+  if (raw.autonomy_level === 'guided_execution' || raw.autonomy_level === 'autonomous') {
+    autonomy_level = raw.autonomy_level;
+  }
+
+  const rawPaths = raw.paths || {};
+  const paths = {
+    specs_dir:
+      typeof rawPaths.specs_dir === 'string' ? rawPaths.specs_dir : DEFAULT_CONFIG.paths.specs_dir,
+    templates_dir:
+      typeof rawPaths.templates_dir === 'string'
+        ? rawPaths.templates_dir
+        : DEFAULT_CONFIG.paths.templates_dir,
+    db_path: typeof rawPaths.db_path === 'string' ? rawPaths.db_path : DEFAULT_CONFIG.paths.db_path,
+  };
+
+  const rawSearch = raw.search || {};
+  let engine: StubsConfig['search']['engine'] = 'sqlite-fts5';
+  if (rawSearch.engine === 'plugin-level-2' || rawSearch.engine === 'plugin-level-3') {
+    engine = rawSearch.engine;
+  }
+  const search = {
+    engine,
+    vector_plugin: typeof rawSearch.vector_plugin === 'string' ? rawSearch.vector_plugin : null,
+  };
+
+  const rawGrill = raw.grill || {};
+  let default_depth: StubsConfig['grill']['default_depth'] = 'standard_drill';
+  if (rawGrill.default_depth === 'light_probe' || rawGrill.default_depth === 'deep_interrogation') {
+    default_depth = rawGrill.default_depth;
+  }
+  const grill = { default_depth };
+
+  const github_token = typeof raw.github_token === 'string' ? raw.github_token : undefined;
+
+  let architecture_rules: StubsConfig['architecture_rules'] = undefined;
+  if (Array.isArray(raw.architecture_rules)) {
+    architecture_rules = raw.architecture_rules
+      .filter(
+        (r: any) =>
+          r &&
+          typeof r === 'object' &&
+          typeof r.source_domain === 'string' &&
+          typeof r.forbidden_target_domain === 'string',
+      )
+      .map((r: any) => ({
+        source_domain: r.source_domain,
+        forbidden_target_domain: r.forbidden_target_domain,
+        reason: typeof r.reason === 'string' ? r.reason : undefined,
+      }));
+  }
+
+  let architecture: StubsConfig['architecture'] = undefined;
+  if (raw.architecture && typeof raw.architecture === 'object') {
+    const min_domain_size =
+      typeof raw.architecture.min_domain_size === 'number'
+        ? raw.architecture.min_domain_size
+        : undefined;
+
+    let domains: Record<string, string[]> | undefined = undefined;
+    if (raw.architecture.domains && typeof raw.architecture.domains === 'object') {
+      domains = {};
+      for (const [dom, patterns] of Object.entries(raw.architecture.domains)) {
+        if (Array.isArray(patterns)) {
+          domains[dom] = patterns.filter((p): p is string => typeof p === 'string');
+        }
+      }
+    }
+
+    architecture = {
+      ...(min_domain_size !== undefined ? { min_domain_size } : {}),
+      ...(domains !== undefined ? { domains } : {}),
+    };
+  }
+
+  let remote: StubsConfig['remote'] = undefined;
+  if (raw.remote && typeof raw.remote === 'object') {
+    remote = {
+      provider: typeof raw.remote.provider === 'string' ? raw.remote.provider : 'github',
+      repo: typeof raw.remote.repo === 'string' ? raw.remote.repo : '',
+      default_branch:
+        typeof raw.remote.default_branch === 'string' ? raw.remote.default_branch : 'main',
+    };
+  }
+
+  return {
+    project_name,
+    autonomy_level,
+    paths,
+    search,
+    grill,
+    architecture_rules,
+    architecture,
+    github_token,
+    remote,
+  };
+}

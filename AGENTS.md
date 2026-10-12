@@ -82,23 +82,26 @@ AST dependency graph in `.stubs/graph.sqlite` with Louvain community detection, 
 
 <!-- stubs-instructions-end -->
 
-## Toolchain & Conventions
+## Monorepo Workspaces & Toolchain
 
-- Package manager: npm (npx for binaries)
-- Testing framework: jest
-- Linter: eslint
-- Formatter: prettier
-- Design principles: adhere to DESIGN_PHILOSOPHY.md (deep modules, pull complexity downward, code cohesion)
-- Install Dependencies: `npm install`
+The repository is organized as an npm workspaces monorepo:
+- `packages/cli` (`@wiltermood/stubs`): Unified interactive CLI & TUI orchestrator.
+- `packages/core` (`@wiltermood/stubs-core`): Graph engine, parser, and sidecar compiler.
+- `packages/tale` (`@wiltermood/tale`): ASD-STE100 technical English linter & skill.
+- `packages/design` (`@wiltermood/design`): UI/UX design tokens, ADRs, and compliance scripts.
+
+- Package manager: npm workspaces (npx for binaries)
 - Build Project: `npm run build`
+- Build CLI: `npm run build:cli`
+- Build Core: `npm run build:core`
 - Run Tests: `npm test`
 - Lint Code: `npm run lint`
+- Lint TALE: `npm run lint:tale`
 - Format Code: `npm run format`
-- Start Local Server: `npm start`
 
 ## stubs CLI Binary
 
-Binary location: `.agents/skills/stubs/dist/cli.cjs`. Invoke via `npx stubs <command>` or `node .agents/skills/stubs/dist/cli.cjs <command>`.
+Binary entry point: `bin/stubs.js` (delegates to `packages/cli/dist/index.cjs`). Invoke via `npx stubs <command>`.
 
 Known CLI bug status: B1 sand path resolution (RESOLVED), B2 non-interactive grill (RESOLVED), B3 materialize parser (RESOLVED).
 
