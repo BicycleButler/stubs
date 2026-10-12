@@ -475,8 +475,12 @@ export class WasmSqliteDriver implements DatabaseDriver {
         ) {
           const possiblePaths = [
             path.join(__dirname, file),
+            path.join(__dirname, '../../dist', file),
+            path.join(__dirname, '../dist', file),
+            path.join(__dirname, '../../../node_modules/sql.js/dist', file),
             path.join(__dirname, '../../node_modules/sql.js/dist', file),
             path.join(process.cwd(), 'node_modules/sql.js/dist', file),
+            path.join(process.cwd(), 'packages/core/dist', file),
             path.join(process.cwd(), '.agents/skills/stubs/dist', file),
           ];
           for (const p of possiblePaths) {

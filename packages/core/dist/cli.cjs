@@ -5936,8 +5936,12 @@ var init_storage = __esm({
             if (typeof globalThis.window === "undefined" && isNode && typeof __dirname !== "undefined") {
               const possiblePaths = [
                 path3.join(__dirname, file),
+                path3.join(__dirname, "../../dist", file),
+                path3.join(__dirname, "../dist", file),
+                path3.join(__dirname, "../../../node_modules/sql.js/dist", file),
                 path3.join(__dirname, "../../node_modules/sql.js/dist", file),
                 path3.join(process.cwd(), "node_modules/sql.js/dist", file),
+                path3.join(process.cwd(), "packages/core/dist", file),
                 path3.join(process.cwd(), ".agents/skills/stubs/dist", file)
               ];
               for (const p of possiblePaths) {
@@ -228565,7 +228569,9 @@ ${diagResult.mermaidCode}
           errors: [...codeSummary.errors, ...sidecarSummary.errors]
         });
         if (!isJson) {
-          console.log(`  \u2713 Indexed ${nodes.length} nodes, ${edges.length} edges, ${communitiesCount} communities`);
+          console.log(
+            `  \u2713 Indexed ${nodes.length} nodes, ${edges.length} edges, ${communitiesCount} communities`
+          );
         }
       } else {
         if (!isJson) {
@@ -228899,7 +228905,9 @@ Options:
     const nonFlagArgs = ctx.args.filter((a) => !a.startsWith("-"));
     if (nonFlagArgs.length === 0) {
       console.error('Error: "pre-flight" command requires a target file or symbol name.');
-      console.error("Usage: stubs pre-flight <target> [--guard <level>] [--depth <N>] [--context] [--order <files...>] [--json]");
+      console.error(
+        "Usage: stubs pre-flight <target> [--guard <level>] [--depth <N>] [--context] [--order <files...>] [--json]"
+      );
       return 1;
     }
     const target = normalizePosixPath(nonFlagArgs[0]);
@@ -228939,7 +228947,13 @@ Options:
     result.blastGuard = guardRes;
     if (includeContext) {
       const tiered = topology.getTieredAgentContext(target);
-      result.agentContext = tiered ? { formattedSummary: tiered.formattedSummary, l0: tiered.l0_target, l1_deps: tiered.l1_dependencies.length, l1_dependents: tiered.l1_dependents.length, l2_subsystem: tiered.l2_subsystem } : null;
+      result.agentContext = tiered ? {
+        formattedSummary: tiered.formattedSummary,
+        l0: tiered.l0_target,
+        l1_deps: tiered.l1_dependencies.length,
+        l1_dependents: tiered.l1_dependents.length,
+        l2_subsystem: tiered.l2_subsystem
+      } : null;
     }
     if (includeOrder) {
       const orderFiles = nonFlagArgs.slice(1).map(normalizePosixPath);
@@ -228985,7 +228999,9 @@ Options:
           console.log(`    ${idx + 1}. ${f}`);
         });
         if (result.editOrder.hasCycles) {
-          console.log(`  \u26A0 Circular dependencies detected: ${result.editOrder.cycleNodes.join(", ")}`);
+          console.log(
+            `  \u26A0 Circular dependencies detected: ${result.editOrder.cycleNodes.join(", ")}`
+          );
         }
       }
     }

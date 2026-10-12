@@ -45,7 +45,7 @@ When transforming text or generating a technical response, execute this 3-step l
 - **Non-STE Input:**
   > "The cache subsystem is utilized to store volatile transaction records; however, it shouldn't be relied upon for persistent persistence since power failure may cause data loss." _(26 words, semicolon, contraction, passive voice, unapproved words: *utilized*, *relied upon*, *since*, *may*)_
 - **ASD-STE100 Issue 9 Revision:**
-  > "The system uses the cache subsystem to store transaction records. But you must not use the cache subsystem for persistent data storage. A power failure can cause data loss." _(28 words total across 3 sentences; longest sentence = 10 words; active voice; approved vocabulary)_
+  > "The system uses the cache subsystem to store transaction records. But you must not use the cache subsystem for persistent data storage. A power failure can cause data loss." _(28 words total across 3 sentences. Longest sentence = 10 words. Active voice. Approved vocabulary)_
 
 ### Example 2: Procedural Deployment / Migration Step
 
@@ -54,21 +54,21 @@ When transforming text or generating a technical response, execute this 3-step l
 - **ASD-STE100 Issue 9 Revision:**
   > "1. Make sure that replica instances do not process read requests. 2. Do the database migration script.
   >
-  > This prevents database locking problems." _(20 words total across 2 steps + 1 note; imperative mood; conditions first)_
+  > This prevents database locking problems." _(20 words total across 2 steps + 1 note. Imperative mood. Conditions first)_
 
 ### Example 3: Agent Code Review / Bug Report
 
 - **Non-STE Input:**
   > "Testing the module showed that it's failing because of unhandled null pointer exceptions occurring when the user's auth token is missing." _(21 words, nominalization, contraction, progressive verbs, unapproved words: *testing*, *it's*, *occurring*)_
 - **ASD-STE100 Issue 9 Revision:**
-  > "The module test failed because of a null pointer exception. This error occurs when the user authentication token is not present." _(20 words across 2 sentences; active voice; no contractions; approved terms)_
+  > "The module test failed because of a null pointer exception. This error occurs when the user authentication token is not present." _(20 words across 2 sentences. Active voice. No contractions. Approved terms)_
 
 ### Example 4: Safety & Fault Warnings
 
 - **Non-STE Input:**
   > "Caution: Don't forget to backup the ledger database before executing this destructive schema change or you'll lose customer balances." _(19 words, informal tone, contraction, vague directive)_
 - **ASD-STE100 Issue 9 Revision:**
-  > "CAUTION: Make a backup of the ledger database before you do this schema change. If you do not make a backup, you can lose customer balance data." _(26 words across 2 sentences; explicit consequence; clear risk boundary)_
+  > "CAUTION: Make a backup of the ledger database before you do this schema change. If you do not make a backup, you can lose customer balance data." _(26 words across 2 sentences. Explicit consequence. Clear risk boundary)_
 
 ---
 
