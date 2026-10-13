@@ -43,36 +43,15 @@ The Materializer is the canonical sidecar-to-code bridge. It orchestrates parsin
 
 ## Materialization Flow
 
-```
-sidecar path
-    │
-    ▼
-1. Read sidecar file content
-    │
-    ▼
-2. parseOkfSpec() → validate frontmatter
-    │
-    ▼
-3. parseMarkdown() + extractImplementationCode() → code string
-    │
-    ▼
-4. typeCheckVirtualFile(targetPath, code) → TypeCheckResult
-    │  (fails here → return error, update status_flag='typecheck-failed')
-    ▼
-5. writeAtomic(targetPath, code) → temp file then rename
-    │
-    ▼
-6. Compute SHA-256 of code and sidecar content
-    │
-    ▼
-7. Update frontmatter sync_state + status='materialized'
-    │
-    ▼
-8. Write updated sidecar back to disk
-    │
-    ▼
-9. graphEngine.indexFile(sidecarPath)
-```
+1. Read sidecar file content.
+2. `parseOkfSpec()`: Validate frontmatter.
+3. `parseMarkdown()` and `extractImplementationCode()`: Extract code string.
+4. `typeCheckVirtualFile(targetPath, code)`: Return TypeCheckResult.
+5. `writeAtomic(targetPath, code)`: Write to temporary file, then rename atomically.
+6. Compute SHA-256 hash of code and sidecar content.
+7. Update frontmatter `sync_state` and set `status='materialized'`.
+8. Write updated sidecar back to disk.
+9. `graphEngine.indexFile(sidecarPath)`: Re-index in dependency graph.
 
 ## Key Types
 
@@ -89,11 +68,11 @@ function stringifyOkfSpec(frontmatter: OkfFrontmatter, body: string): string;
 
 ## Atomic Write Pattern
 
-Uses a `tempPath = targetPath + '.tmp-{timestamp}-{random}'` pattern with `fs.rename()`. This ensures the target file is never left in a partial state if the process crashes during a write.
+Uses a `tempPath = targetPath + '.tmp-{timestamp}-{random}'` pattern with `fs.rename()`. This makes sure that the target file is never left in a partial state if the process crashes during a write.
 
 ## Key Design Decisions
 
-- Type-check failure does **not** abort — the sidecar's `status_flag` is updated to `typecheck-failed` and the diagnostics are returned in `MaterializeResult.diagnostics` so the caller can surface them.
-- `resolveContainedPath()` is called before any file write to prevent directory traversal via malicious `target_code_file` frontmatter values.
+- Type-check failure does not abort. The sidecar `status_flag` updates to `typecheck-failed`. Diagnostics return in `MaterializeResult.diagnostics` for callers to surface.
+- `resolveContainedPath()` is called before each file write. This prevents directory traversal through malicious `target_code_file` frontmatter values.
 - `stringifyOkfSpec()` is exported to allow other engines (sanding) to reconstruct sidecar file content without duplicating the YAML serialization logic.
 - GraphEngine is initialized lazily on first `materialize()` call — not at construction — to keep construction cheap.

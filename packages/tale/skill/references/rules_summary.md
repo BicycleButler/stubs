@@ -2,8 +2,6 @@
 
 This reference contains the writing rules from **Part 1 of ASD-STE100 Simplified Technical English (Issue 9, January 15, 2025)**.
 
----
-
 ## Section 1: Words (Rules 1.1 – 1.14)
 
 ### Rule 1.1: Approved Words
@@ -103,8 +101,6 @@ This reference contains the writing rules from **Part 1 of ASD-STE100 Simplified
 
 - **Rule:** Use American English spelling (for example: _color_, _center_, _check_, _synchronize_, _catalog_).
 
----
-
 ## Section 2: Multi-Word Nouns (Rules 2.1 – 2.2)
 
 ### Rule 2.1: Three-Word Cluster Limit
@@ -119,8 +115,6 @@ This reference contains the writing rules from **Part 1 of ASD-STE100 Simplified
 - **Rule:** When an official technical noun has more than three words, introduce the full term once, then disambiguate with:
   1. A shorter recognized noun form.
   2. Hyphens (`-`) between modifier words functioning as a single unit.
-
----
 
 ## Section 3: Verbs and Voice (Rules 3.1 – 3.7)
 
@@ -164,16 +158,14 @@ This reference contains the writing rules from **Part 1 of ASD-STE100 Simplified
   - _Non-STE:_ "The transaction is committed by the ledger engine." (Passive)
   - _STE:_ "The ledger engine commits the transaction." (Active)
 
-### Rule 3.7: Use Verbs for Actions (Avoid Nominalizations)
+### Rule 3.7: Use Verbs for Actions (Prevent Nominalizations)
 
 - **Rule:** Use an approved verb to describe an action, not an abstract noun.
 - **Example:**
-  - _Non-STE:_ "Perform the alignment of the gears."
+  - _Non-STE:_ "Do the alignment of the gears."
   - _STE:_ "Align the gears."
   - _Non-STE:_ "Make a decision on the pull request."
   - _STE:_ "Decide on the pull request."
-
----
 
 ## Section 4: Sentences (Rules 4.1 – 4.5)
 
@@ -187,7 +179,7 @@ This reference contains the writing rules from **Part 1 of ASD-STE100 Simplified
   1. Do not omit articles (_a_, _an_, _the_) or demonstratives (_this_, _these_) to save space.
   2. **Contractions are strictly prohibited** (write _do not_, _cannot_, _is not_, _will not_).
 - **Example:**
-  - _Non-STE:_ "Don't disconnect cable before power off."
+  - _Non-STE:_ "Do not disconnect cable before power off."
   - _STE:_ "Do not disconnect the cable before you turn off the power."
 
 ### Rule 4.3: Vertical Lists for Complex Text
@@ -204,8 +196,6 @@ This reference contains the writing rules from **Part 1 of ASD-STE100 Simplified
 - **Example:**
   - _Non-STE:_ "Turn switch to reset register."
   - _STE:_ "Turn the switch to reset the register."
-
----
 
 ## Section 5: Procedural Writing (Rules 5.1 – 5.5)
 
@@ -236,8 +226,6 @@ This reference contains the writing rules from **Part 1 of ASD-STE100 Simplified
 
 - **Rule:** Write notes (`NOTE:`) only to provide supplementary explanations or background context. Never put action steps inside a note.
 
----
-
 ## Section 6: Descriptive Writing (Rules 6.1 – 6.6)
 
 ### Rule 6.1: Gradual Information Delivery
@@ -264,8 +252,6 @@ This reference contains the writing rules from **Part 1 of ASD-STE100 Simplified
 
 - **Rule:** No paragraph can contain more than **six sentences**. Split larger explanations into multiple structured paragraphs or lists.
 
----
-
 ## Section 7: Safety Instructions (Rules 7.1 – 7.3)
 
 ### Rule 7.1: Standard Risk Levels
@@ -283,8 +269,6 @@ This reference contains the writing rules from **Part 1 of ASD-STE100 Simplified
 
 - **Rule:** State the exact risk and consequence clearly so the operator understands why the command exists.
 - **Example:** "High voltage can cause severe electric shock or death."
-
----
 
 ## Section 8: Punctuation and Word Counting (Rules 8.1 – 8.7)
 
@@ -309,7 +293,7 @@ This reference contains the writing rules from **Part 1 of ASD-STE100 Simplified
 
 - **Rule:** In a vertical list, a colon (`:`) introduces the list and terminates the sentence boundary for word count.
 
-### Rule 8.5: Parenthetical Text Counts as 1 Word in Main Sentence
+### Rule 8.5: Parenthetical Text Counts as 1 Word in Primary Sentence
 
 - **Rule:** When calculating sentence length, an entire parenthetical clause counts as **1 word** in that sentence.
 
@@ -325,8 +309,6 @@ This reference contains the writing rules from **Part 1 of ASD-STE100 Simplified
 ### Rule 8.7: Hyphenated Words Count as 1 Word
 
 - **Rule:** Each hyphenated compound word (for example: _push-button_, _built-in_, _read-only_) counts as **one word**.
-
----
 
 ## Section 9: General Recommendations (GR-1 – GR-8)
 
@@ -359,16 +341,16 @@ This reference contains the writing rules from **Part 1 of ASD-STE100 Simplified
 ### GR-6: No Latin Abbreviations
 
 - **Rule:** Do not use Latin abbreviations. Replace with full English equivalents:
-  - Replace `e.g.` with "for example"
-  - Replace `i.e.` with "that is"
-  - Replace `etc.` with "and so on" or list all items explicitly
-  - Replace `vs` with "compared with" or "against"
+  - Replace `for example,.` with "for example"
+  - Replace `that is,.` with "that is"
+  - Replace `and so on.` with "and so on" or list all items explicitly
+  - Replace `against` with "compared with" or "against"
 
 ### GR-7: Inclusive and Gender-Neutral Language
 
 - **Rule:** Use gender-neutral nouns and pronouns (_person_, _operator_, _personnel_, _mechanic_, _they/their_).
 
-### GR-8: Possessive Forms (Avoid 's for Inanimate Objects)
+### GR-8: Possessive Forms (Prevent 's for Inanimate Objects)
 
 - **Rule:** Use the Saxon genitive (`'s`) only for persons or organizations. For inanimate objects, use "of" or compound nouns.
 - **Example:**

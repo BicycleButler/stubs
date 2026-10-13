@@ -67,13 +67,13 @@ moment of settling, not at the end of the project.
 ### 4.1 Use this form for each question
 
 ```
-❓ **Q[N] — [node path]**: [one decision]
+ **Q[N] — [node path]**: [one decision]
 
 **Options**
 A. … then this result
 B. … then this result
 
-➡️ **Recommended: A** — [reason from the codebase or a rule, not from taste]
+️ **Recommended: A** — [reason from the codebase or a rule, not from taste]
 
 **Falsifier:** [the fact that would show this choice is wrong]
 ```

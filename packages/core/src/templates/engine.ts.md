@@ -32,19 +32,18 @@ used_by:
 
 # Template Engine — Handlebars/EJS Sidecar Renderer
 
-Provides zero-dependency template rendering for OKF sidecar scaffolding. Templates use a Handlebars-compatible syntax that is transpiled to EJS then executed via `new Function()`.
+Provides zero-dependency template rendering for OKF sidecar scaffolding. Templates use a Handlebars-compatible syntax that is transpiled to EJS then executed through `new Function()`.
 
 ## Template Syntax Support
 
-| Handlebars       | EJS Equivalent                                                                                               |
-| ---------------- | ------------------------------------------------------------------------------------------------------------ |
-| `{{variable}}`   | `<%= variable %>`                                                                                            |
-| `{{this}}`       | `<%= typeof item !== "undefined" ? item : "" %>`                                                             |
-| `{{#if cond}}`   | `<% if (cond) { %>`                                                                                          |
-| `{{else}}`       | `<% } else { %>`                                                                                             |
-| `{{/if}}`        | `<% } %>`                                                                                                    |
-| `{{#each list}}` | `<% if (typeof list !== "undefined" && Array.isArray(list)) { list.forEach(function(item) { with(item) { %>` |
-| `{{/each}}`      | `<% } }); } %>`                                                                                              |
+- Handlebars | EJS Equivalent
+- `{{variable}}` | `<%= variable %>`
+- `{{this}}` | `<%= typeof item !== "undefined" ? item : "" %>`
+- `{{#if cond}}` | `<% if (cond) { %>`
+- `{{else}}` | `<% } else { %>`
+- `{{/if}}` | `<% } %>`
+- `{{#each list}}` | `<% if (typeof list !== "undefined" && Array.isArray(list)) { list.forEach(function(item) { with(item) { %>`
+- `{{/each}}` | `<% } }); } %>`
 
 ## Template File Convention
 
@@ -54,7 +53,7 @@ Templates are stored in `.stubs/templates/` with extension `.ts.md.tpl`. The `Te
 
 ### `translateHandlebarsToEjs(templateText: string): string`
 
-Pure function. Translates template syntax via ordered regex replacements. `{{this}}` is translated first to prevent it matching the general `{{expr}}` pattern.
+Pure function. Translates template syntax through ordered regex replacements. `{{this}}` is translated first to prevent it matching the general `{{expr}}` pattern.
 
 ### `compileTemplate(templateText: string): (data: any) => string`
 
@@ -64,5 +63,5 @@ Compiles a template (after Handlebars→EJS translation) into an executable Java
 
 - `new Function()` is used intentionally — templates are local developer-authored files, not user-provided untrusted input.
 - `with(context || {})` and `with(item)` provide the ergonomic variable access in template expressions without requiring explicit context qualification.
-- `listTemplates()` returns `[]` if the templates directory doesn't exist — callers never need to guard against a missing templates directory.
-- `translateHandlebarsToEjs` ordering matters: `{{this}}` must precede `{{expr}}` to avoid `this` being treated as a general expression.
+- `listTemplates()` returns `[]` if the templates directory does not exist — callers never must guard against a missing templates directory.
+- `translateHandlebarsToEjs` ordering matters: `{{this}}` must precede `{{expr}}` to prevent `this` being treated as a general expression.

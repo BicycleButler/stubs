@@ -49,27 +49,26 @@ Uses a simplified AES-256-GCM scheme with a machine-unique key derived from `hos
 
 ## GitHubApiClient
 
-The main API client class. Constructed with a PAT and optional base repo/branch:
+The primary API client class. Constructed with a PAT and optional base repo/branch:
 
 ### Key Methods
 
-| Method                                                            | GitHub API                             |
-| ----------------------------------------------------------------- | -------------------------------------- |
-| `getAuthenticatedUser()`                                          | `GET /user`                            |
-| `listUserRepos()`                                                 | `GET /user/repos`                      |
-| `listBranches(repo)`                                              | `GET /repos/{repo}/branches`           |
-| `getFile(repo, path, branch?)`                                    | `GET /repos/{repo}/contents/{path}`    |
-| `listDirectory(repo, path, branch?)`                              | `GET /repos/{repo}/contents/{path}`    |
-| `createOrUpdateFile(repo, path, content, message, sha?, branch?)` | `PUT /repos/{repo}/contents/{path}`    |
-| `deleteFile(repo, path, message, sha, branch?)`                   | `DELETE /repos/{repo}/contents/{path}` |
+- Method | GitHub API
+- `getAuthenticatedUser()` | `GET /user`
+- `listUserRepos()` | `GET /user/repos`
+- `listBranches(repo)` | `GET /repos/{repo}/branches`
+- `getFile(repo, path, branch?)` | `GET /repos/{repo}/contents/{path}`
+- `listDirectory(repo, path, branch?)` | `GET /repos/{repo}/contents/{path}`
+- `createOrUpdateFile(repo, path, content, message, sha?, branch?)` | `PUT /repos/{repo}/contents/{path}`
+- `deleteFile(repo, path, message, sha, branch?)` | `DELETE /repos/{repo}/contents/{path}`
 
 ### Authentication
 
-All requests use `Authorization: token {pat}` header. Rate limit information is available via `X-RateLimit-*` response headers.
+All requests use `Authorization: token {pat}` header. Rate limit information is available through `X-RateLimit-*` response headers.
 
 ## Key Design Decisions
 
-- `GitHubApiClient` validates the PAT on construction via `getAuthenticatedUser()` — fails fast rather than surfacing 401 errors later.
+- `GitHubApiClient` validates the PAT on construction through `getAuthenticatedUser()` — fails fast rather than surfacing 401 errors later.
 - File content is Base64-encoded/decoded per the GitHub Contents API contract.
 - `createOrUpdateFile` requires the existing file SHA for updates — callers must `getFile()` first to retrieve the SHA before modifying.
 - All API errors return typed error objects rather than throwing — compatible with the "define errors out of existence" philosophy for Web Portal SSE responses.

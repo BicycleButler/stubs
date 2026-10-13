@@ -5,7 +5,7 @@ description: Conceptualize architectural initiatives, problem framing, and plann
 
 # Stubs Conceptualizing & Planning Primitive
 
-The first phase of the Stubs 5-Phase Lifecycle (`Conceptualize` ──► `Grill` ──► `Spec/Scaffold` ──► `Materialize` ──► `Sand & Audit`).
+The first phase of the Stubs 5-Phase Lifecycle (`Conceptualize` -> `Grill` -> `Spec/Scaffold` -> `Materialize` -> `Sand & Audit`).
 
 ## Core Rules
 

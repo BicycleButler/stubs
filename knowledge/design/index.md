@@ -1,76 +1,72 @@
 ---
 title: 'Design Principles Index'
 type: 'index'
-description: 'Index of all design system ADRs governing UI/UX principles for The Bicycle Butler CRM'
+description: 'Index of all design system ADRs governing UI/UX principles'
 status: 'active'
-last_updated: '2026-07-29T15:35:00Z'
+last_updated: '2026-08-08T06:15:00Z'
 ---
 
 # Design Principles
 
-Architectural Decision Records governing visual design, interaction patterns, and UI/UX standards for The Bicycle Butler CRM. All design ADRs are **Accepted** and enforced by the `design-system` agent skill.
+Architectural Decision Records governing visual design, interaction patterns, and UI/UX standards for each UI project. All design ADRs are **Accepted** and enforced by the `design-guidelines` agent skill.
 
-> **Agent note:** Read the `.agents/skills/design-system/SKILL.md` for the compiled enforcement checklist. Read individual ADRs here for the full rationale and detailed rules.
+> **Agent note:** Read `SKILL.md` for the compiled enforcement checklist. Read individual ADRs for full rationale and detailed rules.
 
 ## Code & Naming Standards
 
-- [0015 - Style Guide](0015-style-guide.md) — `camelCase` in code; `Title Case` in UI display
+- [0015-style-guide.md] — `camelCase` in code.`Title Case` in UI display
 
 ## Visual Foundations
 
-- [0017 - Layout & Structure Standards](0017-layout-structure.md) — F-pattern, sidebar spec, z-index scale
-- [0018 - Spacing & Scaling System](0018-spacing-scaling.md) — 4px grid, 7-token scale, content widths
-- [0019 - Typography Standards](0019-typography.md) — 2 families, Golden Ratio modular scale (max 6 tiers), 4 weights
-- [0020 - Color System Architecture](0020-color-system.md) — OKLCH modeling, chart hue stepping, Zero Static Alert Colors
-- [0021 - Iconography & Imagery Standards](0021-iconography-imagery.md) — Lucide, 5 sizes, avatar chain
-- [0027 - Elevation & Depth Standards](0027-elevation-depth.md) — 5-tier shadow scale
-- [0028 - Theming & Dark Mode](0028-theming-dark-mode.md) — Token contract, z-index lightness hierarchy (4%–6% dark gap)
-- [0041 - Surface Tier System](0041-surface-tier-system.md) — `surface` prop, shadow-to-tier mapping, layering rules
+- [0017-layout-structure.md] — F-pattern, sidebar spec, z-index scale, whitespace-over-borders grouping
+- [0018-spacing-scaling.md] — 4px grid, 7-token scale, content widths, border radius tokens
+- [0019-typography.md] — 2 families, Golden Ratio modular scale (max 6 tiers, max 24px), 4 weights
+- [0020-color-system.md] — OKLCH modeling, 3-seed derivation, Tier 2 semantic tokens, chart hue stepping, Zero Static Alert Colors
+- [0021-iconography-imagery.md] — Lucide, 5 icon sizes, avatar immutable container rule
+- [0041-surface-tier-system.md] — 5-tier shadow scale tokens, `surface` prop (raised/flat/flush/inset), `ContainerPanel` primitive, modal backdrop, dark mode ring supplements
 
 ## Interaction & Motion
 
-- [0022 - Animations & Micro-Interaction Standards](0022-animations-microinteractions.md) — Ban linear easing, cubic-bezier curves (200ms–500ms), 1000ms icon tooltips, Optimistic UI
-- [0038 - Page & Section Transitions](0038-page-section-transitions.md) — Route fade, section slide-in, stagger patterns
-- [0044 - Scrollbar Auto-Hide Standards](0044-scrollbar-auto-hide-standards.md) — Hidden at rest, fade on idle, zero-width overlay
+- [0022-animations-microinteractions.md] — No linear easing, 200–500ms budget, tooltip delay tiers, async state visuals, and route transitions
+- [0044-scrollbar-auto-hide-standards.md] — Scrollbars hidden at rest, visible only on active scroll, 300ms idle persistence, zero-width overlay contract
 
 ## Layout & Navigation
 
-- [0024 - Responsive & Adaptive Layout](0024-responsive-layout.md) — Desktop >1024px, tablet 768–1024px, mobile <768px card transformation
-- [0037 - Navigation Header Bar](0037-navigation-header-bar.md) — 3-zone layout, frosted glass, breadcrumb placement
-- [0039 - Toolbar & Header Standards](0039-toolbar-header-standards.md) — Single-row layout, dynamic priority collapse, overflow anchor
-- [0040 - Split Pane Detail Cards Dynamic Layout](0040-split-pane-detail-cards.md) — Dynamic CSS Grid Inspector Pane layout and visual weighting.
-- [0045 - Mobile Sticky Footer & FAB Patterns](0045-mobile-sticky-footer-and-fab-patterns.md) — Single paradigm, 1–3 slot contract, safe-area buffer
+- [0024-responsive-layout.md] — Desktop >1024px, tablet 768–1024px, mobile <768px card transformation
+- [0037-navigation-header-bar.md] — 3-zone layout, frosted glass, breadcrumb placement
+- [0039-toolbar-header-standards.md] — 52px single-row toolbar, icon-only borderless buttons (200–300ms tooltip tier), zone division, filter consolidation
+- [0040-split-pane-detail-cards.md] — Dynamic CSS Grid Inspector Pane layout, priority rankings by entity
+- [0028-theming-dark-mode.md] — Theme token contract, z-index lightness hierarchy (4%–6% dark gap), system preference
+- [0045-mobile-sticky-footer-and-fab-patterns.md] — App-wide interaction paradigm consistency, 1–3 slot layout contract, safe-area scroll buffers.
 
 ## Components
 
-- [0029 - Button Hierarchy & States](0029-button-hierarchy-states.md) — Variant decision rule, menu-gated destructive actions, ghost triggers
-- [0032 - Modal & Dialog Standards](0032-modal-dialog-standards.md) — AlertDialog vs Dialog vs Sheet, size tiers, anatomy
-- [0033 - Toast & Notification Rules](0033-toast-notification-rules.md) — Auto-dismiss, undo toast, max 3 concurrent
-- [0034 - Table Design Standards](0034-table-design-standards.md) — Clean grid lines, numeric right-alignment, density toggle, Concept C & Concept A
-- [0035 - System Ban on Badges & Categorical Status Hierarchy](0035-badge-status-indicators.md) — Deprecation of badge.tsx, pills, dots, Concept C/A replacements
-- [0036 - Destructive Action Confirmation](0036-destructive-action-confirmation.md) — Menu-gated entry points, neutral resting triggers, AlertDialog anatomy
-- [0042 - Multi-Step Wizards](0042-multi-step-wizards.md) — 3-zone layout, background draft auto-save, next never disabled, accordion review
-- [0043 - Button Text vs Icon Rules](0043-button-text-vs-icon-rules.md) — Persistent vs transient surface rules, icon-only utilities, primary CTA must be icon+text
+- [0029-button-hierarchy-states.md] — Variant decision rule, text-slide exception, loading state, keyboard focus
+- [0043-button-text-against-icon-rules.md] — Surface presence principle, text pairing taxonomy, Primary CTA criteria, step-by-step heuristic
+- [0032-modal-dialog-standards.md] — AlertDialog against Dialog against Sheet, size tiers, header/footer anatomy, nesting ban
+- [0033-toast-notification-rules.md] — Auto-dismiss durations, undo toast, max 3 concurrent, toast against. bell boundary
+- [0034-table-design-standards.md] — Structural cleanliness (no badges/grid lines), Sub-label Stacking/Margin Wash Variant patterns, numeric right-alignment, density toggle
+- [0035-badge-status-indicators.md] — Total deprecation of `badge.tsx`, pills, dots. Sub-label Stacking/Margin Wash Variant replacements
+- [0036-destructive-action-confirmation.md] — Zero semantic color on resting surfaces, menu-gated entry points, AlertDialog anatomy
 
 ## Forms & Data
 
-- [0025 - Forms & Input Design](0025-forms-inputs.md) — AI prompt canvases, preview blocks, execution trails & confidence scores, dynamic validation
-- [0026 - Data Visualization Standards](0026-data-visualization.md) — Labeled axes, tabular alt, OKLCH palette
+- [0025-forms-inputs.md] — Dynamic validation, labels above inputs, AI-assisted input patterns (prompt canvases, execution trails)
+- [0026-data-visualization.md] — Labeled axes, tabular alt, OKLCH palette (defers to ADR 0020 §6)
+- [0042-multi-step-wizards.md] — Facebook 3-zone layout (tree sidebar / canvas / live preview), draft auto-save, click-to-validate Next button, accordion review step
 
 ## Accessibility
 
-- [0023 - Accessibility Standards](0023-accessibility.md) — WCAG 2.1 AA, focus, keyboard, ARIA, touch targets
+- [0023-accessibility.md] — WCAG 2.1 AA, focus rings, keyboard nav, ARIA, 44px touch targets
 
 ## Content & Copy
 
-- [0030 - Content Formatting Standards](0030-content-formatting.md) — Dates, currency, numbers, unknowns (`—`)
-- [0031 - UX Copy & Microcopy Standards](0031-ux-copy-microcopy.md) — Tone, button labels, error messages, forbidden phrases
+- [0030-content-formatting.md] — Dates (relative/absolute rules), currency, numbers, unknowns (`—`), phone, address
+- [0031-ux-copy-microcopy.md] — Tone, verb-first button labels, error structure, empty states, forbidden phrases
 
----
+## Cross-References to Architecture ADRs
 
-## Cross-References
+- [../architecture/adr/0011-optimistic-ui-merging.md] — data-layer merge strategy. ADR 0022 governs the visual layer
+- [../architecture/adr/0012-human-in-the-loop-ai-enrichment.md] — ReviewQueue. Referenced by ADR 0022
 
-These ADRs are in `knowledge/architecture/adr/` and are referenced by design ADRs:
-
-- [ADR 0011 — Optimistic UI Merging](../architecture/adr/0011-optimistic-ui-merging.md) — referenced by ADR 0022 (animation scoping)
-- [ADR 0012 — Human-in-the-Loop AI](../architecture/adr/0012-human-in-the-loop-ai-enrichment.md) — referenced by ADR 0022 (ReviewQueue)
+> **Corpus:** 26 active ADRs (0015–0043, excluding deprecated 0016, merged 0027→0041, merged 0038→0022).

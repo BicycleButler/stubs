@@ -35,11 +35,11 @@ No documented tone of voice or copy conventions exist. Strings scattered across 
 
 Structure: **What happened** + **What to do**.
 
-- ✅ "Couldn't save contact. Check your connection and try again."
-- ✅ "This email is already in use. Sign in instead, or use a different email."
-- ❌ "An error occurred."
-- ❌ "Something went wrong. Please try again later."
-- ❌ "Error 500."
+-  "Could not save contact. Check your connection and try again."
+-  "This email is already in use. Sign in instead, or use a different email."
+-  "An error occurred."
+-  "Something went wrong. Please try again later."
+-  "Error 500."
 
 Never show raw error codes, stack traces, or Firebase error IDs to users.
 
@@ -51,13 +51,12 @@ Empty states are **invitations**, not failure messages.
 
 Structure: **Action-oriented title** + **Brief why/what** + **CTA button** (when applicable).
 
-| Context                   | Title                      | Description                                        |
-| ------------------------- | -------------------------- | -------------------------------------------------- |
-| No contacts               | "Add your first contact"   | "Start building your network by adding a contact." |
-| No deals                  | "Start tracking deals"     | "Add your first deal to see it here."              |
-| No search results         | "No results for "{query}"" | "Try different keywords or check your filters."    |
-| No notifications          | "You're all caught up"     | "New notifications will appear here."              |
-| Filter produced 0 results | "No matches found"         | "Try adjusting your filters."                      |
+- Context | Title | Description
+- No contacts | "Add your first contact" | "Start building your network by adding a contact."
+- No deals | "Start tracking deals" | "Add your first deal to see it here."
+- No search results | "No results for "{query}"" | "Try different keywords or check your filters."
+- No notifications | "You are all caught up" | "New notifications will appear here."
+- Filter produced 0 results | "No matches found" | "Try adjusting your filters."
 
 Rules:
 
@@ -68,38 +67,37 @@ Rules:
 
 ### 5 — Loading Copy
 
-- Prefer skeleton shimmer over any text (ADR 0022).
+- Prefer skeleton shimmer over text (ADR 0022).
 - If a text fallback is needed: "Loading…" — one word, with ellipsis. Never "Please wait…", "Fetching data…", or "Loading [entity name]…".
 - Button loading labels: progressive present tense — "Saving…", "Deleting…", "Sending…" (ADR 0029 §3).
 
 ### 6 — Toast / Notification Copy (supplements ADR 0033)
 
-**Canonical source:** [ADR 0033 §5 — Toast & Notification Rules](0033-toast-notification-rules.md) defines the full toast copy rules (success, error, undo, info, 60-char max). The tone rules in §1–2 above apply to all toast strings; the structural format is governed by ADR 0033.
+**Canonical source:** [0033-toast-notification-rules.md] defines the full toast copy rules (success, error, undo, info, 60-char max). The tone rules in §1–2 above apply to all toast strings. The structural format is governed by ADR 0033.
 
 ### 7 — Confirmation Dialog Copy (supplements ADR 0036)
 
-**Canonical source:** [ADR 0036 §4 — Semantic Color at Rest & Destructive Action Confirmation](0036-destructive-action-confirmation.md) defines confirmation dialog anatomy and copy requirements. The tone rules in §1–2 above apply to all dialog strings; the structural format (question-form title, entity-named confirm button) is governed by ADR 0036.
+**Canonical source:** [0036-destructive-action-confirmation.md] defines confirmation dialog anatomy and copy requirements. The tone rules in §1–2 above apply to all dialog strings. The structural format (question-form title, entity-named confirm button) is governed by ADR 0036.
 
 ### 8 — Placeholder Text in Inputs (supplements ADR 0025)
 
 - Placeholder supplements the label — it does not replace it.
-- Format: hint, not instruction. "e.g., john@example.com" not "Enter email address".
+- Format: hint, not instruction. "for example,., john@example.com" not "Enter email address".
 - Never use placeholder as the only indicator of what a field expects.
 
 ### 9 — Forbidden Phrases
 
 The following strings are banned from user-facing copy:
 
-| Banned                      | Replace with                                                |
-| --------------------------- | ----------------------------------------------------------- |
-| "OK"                        | Specific verb ("Got it" only for informational only alerts) |
-| "Submit"                    | "Save", "Send", or specific action                          |
-| "An error occurred"         | Specific failure + next step                                |
-| "Something went wrong"      | Specific failure + next step                                |
-| "N/A"                       | Em-dash `—` (ADR 0030)                                      |
-| "Please try again later"    | "Try again" (or specific timeframe if known)                |
-| "Loading..." (as page text) | Use skeleton shimmer                                        |
-| "No data available"         | Contextual empty state (§4 above)                           |
+- Banned | Replace with
+- "OK" | Specific verb ("Got it" only for informational only alerts)
+- "Submit" | "Save", "Send", or specific action
+- "An error occurred" | Specific failure + next step
+- "Something went wrong" | Specific failure + next step
+- "N/A" | Em-dash `—` (ADR 0030)
+- "Please try again later" | "Try again" (or specific timeframe if known)
+- "Loading..." (as page text) | Use skeleton shimmer
+- "No data available" | Contextual empty state (§4 above)
 
 ## Consequences
 

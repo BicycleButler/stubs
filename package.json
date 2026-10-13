@@ -28,7 +28,9 @@
     "test:core": "npm run test --workspace=@wiltermood/stubs-core",
     "lint": "eslint packages/core/src packages/cli/src",
     "lint:tale": "node packages/tale/src/tale-lint.mjs packages/tale packages/cli",
+    "lint:tale:all": "node packages/tale/src/tale-lint.mjs",
     "format": "prettier --write .",
+    "format:tale": "node packages/tale/src/tale-lint.mjs --fix",
     "start": "node bin/stubs.js"
   },
   "repository": {

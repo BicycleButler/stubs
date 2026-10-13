@@ -2,8 +2,6 @@
 
 This reference outlines the exact punctuation constraints and word count calculation algorithms defined in **Part 1, Section 8 of ASD-STE100 Issue 9**.
 
----
-
 ## 1. Punctuation Rules (Rules 8.1 – 8.3)
 
 ### Semicolons are Strictly Prohibited (Rule 8.1)
@@ -11,7 +9,7 @@ This reference outlines the exact punctuation constraints and word count calcula
 - The semicolon (`;`) is **never permitted** in ASD-STE100.
 - Semicolons allow overly long, compound thoughts that increase ambiguity and cognitive load.
 - **Remedy:** Replace every semicolon with a period (`.`) and divide the text into two distinct sentences.
-  - _Non-STE:_ "Turn switch A to OFF; then wait for the light to extinguish."
+  - _Non-STE:_ "Turn switch A to OFF. Then wait for the light to extinguish."
   - _STE:_ "Turn switch A to the OFF position. Then wait until the light goes off."
 
 ### Hyphens for Directly Related Words (Rule 8.2)
@@ -30,8 +28,6 @@ Parentheses `()` are restricted to seven specific structural cases:
 5. **Alternative terms:** _the left (right) engine_.
 6. **Brief clarifications:** _increase the torque slowly (not more than 5 Nm per second)_.
 7. **Singular/plural notation:** _screw(s)_.
-
----
 
 ## 2. Word Count Determination & Rules (Rules 8.4 – 8.7)
 

@@ -15,9 +15,9 @@ tags:
 
 ## 1. Context & Problem Statement
 
-In automated architecture mapping, decomposing a repository into domain maps (`knowledge/architecture/domains/<domain>-domain-map.md`) is a prerequisite for generating the root architecture map (`knowledge/architecture/context-map.md`). However, naive 1:1 mapping between subdirectories and domains causes severe micro-domain explosion:
+In automated architecture mapping, decomposing a repository into domain maps (`knowledge/architecture/domains/<domain>-domain-map.md`) is a prerequisite for generating the root architecture map (`knowledge/architecture/context-map.md`). But naive 1:1 mapping between subdirectories and domains causes severe micro-domain explosion:
 
-- Repositories with modular directory layouts produce dozens of single-file micro-domains (e.g. 25 domains for ~80 source files, where 15 domains contain only 1 module).
+- Repositories with modular directory layouts produce dozens of single-file micro-domains (for example,. 25 domains for ~80 source files, where 15 domains contain only 1 module).
 - Micro-domain sprawl dilutes architectural signal, consumes redundant agent context tokens, and defeats high-level architectural comprehension.
 - Conversely, hardcoding language-specific or directory-specific rules breaks portability across polyglot repositories (TypeScript, Python, Go, Rust, monorepos).
 
@@ -41,7 +41,7 @@ Domain membership is evaluated through a strict 4-tier hierarchy:
 To eliminate micro-domains:
 
 - Candidate clusters with fewer than $N$ modules (default `min_domain_size: 3`) are declared micro-clusters.
-- Each micro-cluster calculates its total dependency coupling score against all other candidate domains:
+- Each micro-cluster calculates coupling scores against candidate domains:
   $$\text{Coupling}(M, D) = \sum_{m \in M, d \in D} (\text{edges}(m \to d) + \text{edges}(d \to m))$$
 - The micro-cluster automatically rolls into the candidate domain with the highest coupling score.
 - If a micro-cluster has zero external edges or no strong affinity, it rolls into an ambient fallback domain (`tools` for utility/harness modules, or `core` for entrypoint/runtime modules).

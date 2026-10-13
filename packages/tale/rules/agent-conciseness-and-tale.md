@@ -15,8 +15,6 @@ last_updated: '2026-09-14'
 
 All AI coding agents MUST obey this protocol across four operational domains: internal thoughts, user communication, code authoring, and documentation.
 
----
-
 ## 1. Internal Monologue & Reasoning Protocol ("Talking to Yourself")
 
 When generating internal thoughts or reasoning before actions:
@@ -31,8 +29,6 @@ When generating internal thoughts or reasoning before actions:
 4. **No Full-File Echos:** Do not copy full file contents or large diff blocks into thoughts.
 5. **Sentence Length:** Keep each bullet sentence less than 20 words.
 
----
-
 ## 2. User-Facing Response Protocol ("How You Respond")
 
 When crafting responses to the user:
@@ -42,8 +38,6 @@ When crafting responses to the user:
 3. **Clickable Links:** Always provide clickable markdown links with `file:///` URLs for all modified files, references, and code symbols.
 4. **No Artifact Echoes:** When creating or updating an artifact, do not write the artifact contents in chat. Direct the user to the artifact.
 5. **Bulleted Takeaways:** Use concise bulleted lists for findings and changes.
-
----
 
 ## 3. Code & Comment Language Protocol ("How You Write Code")
 
@@ -55,10 +49,8 @@ When writing TypeScript or JavaScript code:
    - Write all code comments and TSDoc summaries in the **Simple Present Tense** and active voice.
    - State _why_ the code exists, not _what_ the syntax does.
    - Semicolons (`;`) are strictly prohibited in comments. Split thoughts into separate sentences.
-   - Contractions (such as `don't` or `can't`) are strictly prohibited in comments.
-   - Use approved vocabulary from ASD-STE100 (for example: use `make sure that` instead of `ensure`).
-
----
+   - Contractions (such as `do not` or `cannot`) are strictly prohibited in comments.
+   - Use approved vocabulary from ASD-STE100 (for example: use `make sure that` instead of `make sure that`).
 
 ## 4. Documentation & Specifications ("How You Write Files")
 
@@ -69,8 +61,6 @@ When authoring markdown files, ADRs, and commit messages:
 3. **No Semicolons or Contractions:** Always use periods (`.`) and full words (`do not`, `is not`).
 4. **Controlled Vocabulary:** Consult `.agents/skills/tale/SKILL.md` and replace non-STE terms.
 5. **Verification:** Run `npm run lint:tale` on modified markdown files before ending tasks.
-
----
 
 ## 5. Agent-First Architecture & Context Records (ADR-001)
 

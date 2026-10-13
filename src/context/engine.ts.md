@@ -39,7 +39,7 @@ used_by:
 
 # Context Engine — Agent Context Packaging & Subgraph Slicing
 
-The `ContextEngine` assembles multi-tier architectural context packages for any specified target module. It solves the "context window explosion" problem by providing exact, distilled contracts rather than dumping raw full source files across the repository.
+The `ContextEngine` assembles multi-tier architectural context packages for the specified target module. It solves the "context window explosion" problem by providing exact, distilled contracts rather than dumping raw full source files across the repository.
 
 ## Tiered Slicing Invariants
 

@@ -14,13 +14,13 @@ Accepted
 
 ## Context
 
-ADR 0022 governs element-level animation durations (100–500ms) and easing curves but does not cover route-level transitions or the `animate-in` pattern for sections revealing on mount. Components use `animate-in fade-in slide-in-from-bottom-4` inconsistently — some pages have it, others don't. No rule defines stagger patterns, list item reveals, or when transitions should be skipped entirely.
+ADR 0022 governs element-level animation durations (100–500ms) and easing curves but does not cover route-level transitions or the `animate-in` pattern for sections revealing on mount. Components use `animate-in fade-in slide-in-from-bottom-4` inconsistently — some pages have it, others do not. No rule defines stagger patterns, list item reveals, or when transitions must be skipped entirely.
 
 ## Decision
 
 ### 1 — Route-Level Transitions
 
-- **Mechanism:** Fade-in only (`fade-in-0` → `fade-in-100`). No slide, flip, scale, or complex transitions at the page level — these add cognitive load and feel disorienting in a data-dense CRM.
+- **Mechanism:** Fade-in only (`fade-in-0` → `fade-in-100`). Do not use slide, flip, or complex transitions at the page level. These add cognitive load.
 - **Duration:** Standard 200ms (ADR 0022 tier 2).
 - **Easing:** `ease-out` (elements entering, ADR 0022 §3).
 - **Implementation:** Apply to the page root wrapper — the `<main>` element or top-level page `<div>`.
@@ -37,7 +37,7 @@ When a content panel, card, or section mounts into view (not a route change):
 
 ### 3 — List Item Stagger
 
-When a list of cards or items mounts together (e.g., search results, dashboard widgets):
+When a list of cards or items mounts together (for example,., search results, dashboard widgets):
 
 - Stagger delay: 20–30ms between items, using `animation-delay` or Tailwind `delay-*` utilities.
 - Maximum staggered items: 8. Beyond 8, all remaining items appear simultaneously (no perceptible stagger in large lists).
@@ -60,11 +60,11 @@ When a list of cards or items mounts together (e.g., search results, dashboard w
 
 ### 4 — Dialog / Sheet Open & Close
 
-Already implemented via Radix data-state attributes. Preserve the existing:
+Already implemented through Radix data-state attributes. Preserve the existing:
 
 - Open: `fade-in-0 zoom-in-95` (200ms)
 - Close: `fade-out-0 zoom-out-95` (200ms)
-- Do not add slide animations to dialogs — the zoom + fade is sufficient and avoids jank.
+- Do not add slide animations to dialogs — the zoom + fade is sufficient and prevents jank.
 
 ### 5 — Dropdown / Popover Transitions
 
@@ -75,7 +75,7 @@ Already implemented via Radix data-state attributes. Preserve the existing:
 ### 6 — Skeleton → Content Transition
 
 - When skeleton shimmer resolves to real content: fade-in the content wrapper with `animate-in fade-in duration-200`.
-- Never use a slide or scale to replace skeleton — the position is already established; only opacity changes.
+- Never use a slide or scale to replace skeleton — the position is already established. Only opacity changes.
 
 ### 7 — Reduced Motion Override
 
@@ -86,14 +86,13 @@ All transitions must respect `prefers-reduced-motion: reduce` (ADR 0022 §6).
 
 ### 8 — Forbidden Transition Patterns
 
-| Pattern                          | Reason                                       |
-| -------------------------------- | -------------------------------------------- |
-| `transition: all`                | Over-broad; animates unintended properties   |
-| `linear` easing                  | Mechanical; banned by ADR 0022               |
-| Slide >6 units at page level     | Disorienting at large viewport               |
-| Simultaneous fade + color change | Compound transitions feel sluggish           |
-| Infinite loops in content area   | Reserved for intentional loading states only |
-| Scale >105% on enter             | Feels aggressive in data-dense context       |
+- Pattern | Reason
+- `transition: all` | Over-broad. Animates unintended properties
+- `linear` easing | Mechanical. Banned by ADR 0022
+- Slide >6 units at page level | Disorienting at large viewport
+- Simultaneous fade + color change | Compound transitions feel sluggish
+- Infinite loops in content area | Reserved for intentional loading states only
+- Scale >105% on enter | Feels aggressive in data-dense context
 
 ## Consequences
 

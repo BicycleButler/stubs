@@ -34,5 +34,5 @@ The **WorkspaceManager** automatically detects multi-package monorepo workspaces
 ## Key Methods
 
 - `loadWorkspace()`: Discovers packages and loads all alias mapping tables.
-- `resolveImportPath(importSpecifier, importerFilePath, config)`: Translates package specifiers (e.g. `@stubs/core`) to target canonical file paths.
-- `getPackageForFile(filePath, config)`: Finds the owning package domain for any source file.
+- `resolveImportPath(importSpecifier, importerFilePath, config)`: Translates package specifiers (for example,. `@stubs/core`) to target canonical file paths.
+- `getPackageForFile(filePath, config)`: Finds the owning package domain for the specified source file.

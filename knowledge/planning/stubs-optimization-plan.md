@@ -20,17 +20,15 @@ initiative: stubs-standalone-optimization
 
 ## Executive Summary
 
-This document provides the executable implementation roadmap and multi-agent task tracker for optimizing `stubs` as a single, self-contained architecture-as-code and code-graph engine. Grounded in the settled decision record ([stubs-optimization-decisions.md](file:///Users/lappier/code/projects/stubs/knowledge/planning/stubs-optimization-decisions.md)), this plan executes five high-ROI enhancements designed to maximize agent efficiency, eliminate redundant tool invocations, and minimize token usage during code exploration and maintenance.
+This document provides the executable implementation roadmap and multi-agent task tracker for optimizing `stubs` as a single, self-contained architecture-as-code and code-graph engine. This plan executes five enhancements grounded in the decision record. It maximizes agent efficiency, eliminates redundant tool invocations, and minimizes token usage.
 
 ### Primary Goals
 
-1. **Unified Surgical Query (Q14 / Q9):** Turn `stubs query` into the single default entry point for all graph intelligence queries (general concept search, shortest paths, symbol explanations, and blast radius analysis) via both prefix syntax and flags, preserving legacy commands via forwarding wrappers.
-2. **Fast Incremental Scan (Q10 / Q2):** Skip unchanged source files and markdown sidecars prior to reading disk bodies by caching filesystem modification timestamps (`mtimeMs`) in the SQLite `file_meta` table.
-3. **Persisted Louvain Community Clusters (Q4 / Q12):** Wire the existing Louvain modularity algorithm in `TopologyEngine` to SQLite persistence via `GraphEngine.assignCommunities()`, exposing community partitions in queries without recomputing on the fly.
-4. **Framework-Aware Routing (Q3):** Introduce route-to-handler AST extraction for 5 major frameworks (Express, FastAPI, Django, Flask, Gin) in `src/graph/routes.ts`, establishing explicit graph edges between HTTP endpoints and controller implementations.
-5. **Runtime Optional Extras Detection (Q7 / Q13):** Add dynamic import detection (`try-import-and-catch`) for optional high-fidelity parsers (e.g. tree-sitter grammars), gracefully falling back to built-in zero-dependency extractors.
-
----
+1. **Unified Surgical Query (Q14 / Q9):** Turn `stubs query` into the single entry point for all graph intelligence queries through prefix syntax.
+2. **Fast Incremental Scan (Q10 / Q2):** Skip unchanged source files by caching modification timestamps (`mtimeMs`) in the SQLite `file_meta` table.
+3. **Persisted Louvain Community Clusters (Q4 / Q12):** Wire the Louvain algorithm in `TopologyEngine` to SQLite persistence through `GraphEngine.assignCommunities()`. Expose community partitions without recomputing.
+4. **Framework-Aware Routing (Q3):** Introduce route-to-handler AST extraction for 5 frameworks in `src/graph/routes.ts`. Establish explicit graph edges between HTTP endpoints and controllers.
+5. **Runtime Optional Extras Detection (Q7 / Q13):** Add dynamic import detection (`try-import-and-catch`) for optional parsers. Gracefully fall back to built-in extractors.
 
 ## Planned Architecture & File Tree Blueprint
 
@@ -62,8 +60,6 @@ tests/
   optional-extras.test.ts               # [NEW] Tests for dynamic grammar loading and graceful fallback
 ```
 
----
-
 ## Phase-by-Phase Execution & Multi-Agent Task Tracker
 
 ### Phase 1: Conceptualize & Requirements Alignment (Complete)
@@ -71,23 +67,19 @@ tests/
 - [x] Conduct codebase audit comparing `stubs-optimization-decisions.md` against actual implementation (`src/graph/`, `src/concept/`, `src/query/`, `src/cli/`).
 - [x] Identify architectural discrepancies:
   - Framework routing belongs in Graph Engine, not `ConceptEngine`.
-  - Louvain community detection and SQLite `community_id` column already exist; persistence needs wiring into `stubs scan`.
-  - Stubs currently has zero tree-sitter dependencies; optional extras must be dynamic import checks over built-in extractors.
+  - Louvain community detection and SQLite `community_id` column already exist. Persistence needs wiring into `stubs scan`.
+  - Stubs currently has zero tree-sitter dependencies. Optional extras must be dynamic import checks over built-in extractors.
   - Incremental scanning requires OS `mtimeMs` checking in `file_meta` to skip reading file contents.
-- [x] Resolve all 5 decision branches via interactive grilling session (`/grill-me`).
-- [x] Update and settle [stubs-optimization-decisions.md](file:///Users/lappier/code/projects/stubs/knowledge/planning/stubs-optimization-decisions.md).
-
----
+- [x] Resolve all 5 decision branches through interactive grilling session (`/grill-me`).
+- [x] Update and settle [file:///Users/lappier/code/projects/stubs/knowledge/planning/stubs-optimization-decisions.md].
 
 ### Phase 2: Grill & Stress-Testing (Complete)
 
-- [x] Stress-test Q14 CLI routing: ensure `stubs query` accepts natural prefix queries (`path: A to B`), explicit flags (`--path A B`), and legacy standalone invocations (`stubs path A B`) return identical outputs.
-- [x] Stress-test Q10 mtime invalidation: ensure file content hash is calculated and verified if mtime changes, while unchanged mtimes completely avoid file read I/O.
-- [x] Stress-test Q4 community persistence: ensure Louvain partition IDs do not corrupt existing sidecar records and remain resilient during partial/incremental scans.
+- [x] Stress-test Q14 CLI routing: make sure that prefix queries, explicit flags, and legacy invocations return identical outputs.
+- [x] Stress-test Q10 mtime invalidation: make sure that file content hash verifies if mtime changes. Unchanged mtimes prevent file reads.
+- [x] Stress-test Q4 community persistence: make sure that Louvain partition IDs remain resilient during partial or incremental scans.
 - [x] Stress-test Q3 routing boundaries: keep `src/graph/routes.ts` modular and decoupled from `src/concept/engine.ts`.
-- [x] Stress-test Q7/Q13 fallback paths: ensure missing optional packages emit clean, non-disruptive log notes without throwing runtime errors or prompting agent loops.
-
----
+- [x] Stress-test Q7/Q13 fallback paths: make sure that missing packages emit clean logs without throwing runtime errors.
 
 ### Phase 3: Spec & Sidecar Contracts (`*.md`) (Complete)
 
@@ -107,8 +99,6 @@ tests/
 - [x] **Contract 3.5: Code Extractor Sidecar** (`src/graph/extractor.ts.md`)
   - Specify integration hook for `extractFrameworkRoutes()`.
   - Specify dynamic grammar loader contract `loadOptionalParser(grammarName)`.
-
----
 
 ### Phase 4: Materialization (Executable Implementation) (Complete)
 
@@ -130,12 +120,12 @@ _Target Files: `src/query/engine.ts`, `src/cli/router.ts`, `tests/query-surgical
 - [x] Rewire `handleExplain`, `handlePath`, and `handleBlast` in `src/cli/router.ts` to delegate to `queryEngine.query()`.
 - [x] Create unit and integration test suite `tests/query-surgical.test.ts`.
 
-#### Step 4.2 — Fast Incremental Scan via Filesystem mtime (Q10 / Q2)
+#### Step 4.2 — Fast Incremental Scan through Filesystem mtime (Q10 / Q2)
 
 _Target Files: `src/graph/engine.ts`, `tests/scan-incremental.test.ts`_
 
 - [x] Update database schema initialization in `GraphEngine.initialize()`:
-  - Ensure `file_meta` table contains `mtime_ms INTEGER` column (with migration check if existing DB lacks column).
+  - Make sure that `file_meta` table contains `mtime_ms INTEGER` column (with migration check if existing DB lacks column).
 - [x] Update `GraphEngine.indexCodeWorkspace()`:
   - Fetch existing `(file_path, file_hash, mtime_ms)` from `file_meta`.
   - Call `fsDriver.stat(filePath)` to inspect `mtimeMs`.
@@ -164,12 +154,12 @@ _Target Files: `src/graph/engine.ts`, `src/cli/router.ts`, `src/query/engine.ts`
 _Target Files: `src/graph/routes.ts`, `src/graph/extractor.ts`, `tests/framework-routes.test.ts`_
 
 - [x] Create `src/graph/routes.ts` implementing `extractFrameworkRoutes(filePath, content)`:
-  - **Express (TS/JS):** Detect `app.get()`, `app.post()`, `router.route()`, etc. Map route path + HTTP method to handler function/method.
-  - **FastAPI (Python):** Detect `@app.get()`, `@router.post()`, etc. Map path + method to decorated async/sync handler function.
+  - **Express (TS/JS):** Detect `app.get()`, `app.post()`, `router.route()`, and so on. Map route path + HTTP method to handler function/method.
+  - **FastAPI (Python):** Detect `@app.get()`, `@router.post()`, and so on. Map path + method to decorated async/sync handler function.
   - **Django (Python):** Detect `path('pattern', view_func)` and `re_path()` in `urls.py`. Map route pattern to handler view.
   - **Flask (Python):** Detect `@app.route()`, `@blueprint.route()`. Map path + methods to decorated handler function.
   - **Gin (Go):** Detect `r.GET()`, `group.POST()`. Map route path + method to handler function identifier.
-- [x] Emit GraphNodes with `kind: 'route'` (ID: `route:<METHOD>:<path>`, e.g., `route:GET:/api/bikes`).
+- [x] Emit GraphNodes with `kind: 'route'` (ID: `route:<METHOD>:<path>`, for example,., `route:GET:/api/bikes`).
 - [x] Emit GraphEdges with `relation: 'handles'` from route node to handler function node (`confidence: 'EXTRACTED'`).
 - [x] Wire `extractFrameworkRoutes` into `extractFileGraph` in `src/graph/extractor.ts`.
 - [x] Create test suite in `tests/framework-routes.test.ts` with test fixtures for all 5 frameworks.
@@ -179,30 +169,26 @@ _Target Files: `src/graph/routes.ts`, `src/graph/extractor.ts`, `tests/framework
 _Target Files: `src/graph/extractor.ts`, `tests/optional-extras.test.ts`_
 
 - [x] Implement `tryLoadOptionalParser(parserModule: string)` helper in `src/graph/extractor.ts`.
-- [x] Wrap non-TS language dispatch: if an optional AST parser is available in the environment, utilize it; otherwise fall back cleanly to regex pattern extractors.
-- [x] Emit an aggregated, single-line scan summary note (e.g. `ℹ Using built-in regex extractors for Python/Go/Rust`) without throwing warnings.
+- [x] Wrap non-TS language dispatch: if an optional AST parser is available in the environment, use it. Otherwise fall back cleanly to regex pattern extractors.
+- [x] Emit an aggregated, single-line scan summary note (for example,. `ℹ Using built-in regex extractors for Python/Go/Rust`) without throwing warnings.
 - [x] Create tests in `tests/optional-extras.test.ts` verifying fallback behavior when optional modules are not installed.
-
----
 
 ### Phase 5: Sand, Test & Benchmark (Complete)
 
-- [x] **Full Test Suite:** Run `npm test` ensuring 100% pass across existing and new test suites.
+- [x] **Full Test Suite:** Run `npm test` making sure that 100% pass across existing and new test suites.
 - [x] **Linter & Formatting:** Run `npm run lint` and `npm run format`.
-- [x] **Build Validation:** Run `npm run build` and ensure `.agents/skills/stubs/dist/cli.cjs` bundles cleanly.
+- [x] **Build Validation:** Run `npm run build` and make sure that `.agents/skills/stubs/dist/cli.cjs` bundles cleanly.
 - [x] **AST Drift Sync:** Run `npx stubs sand` across modified sidecars in `src/`.
-- [x] **Phase Gate Check:** Run `npx stubs phase check` to ensure clean lifecycle compliance.
+- [x] **Phase Gate Check:** Run `npx stubs phase check` to make sure that clean lifecycle compliance.
 - [x] **Benchmark Verification:**
-  - Measure scan runtime on cold vs incremental runs.
-  - Measure token reduction of `stubs query "explain: <target>"` vs legacy multiple tool calls.
+  - Measure scan runtime on cold against incremental runs.
+  - Measure token reduction of `stubs query "explain: <target>"` against legacy multiple tool calls.
   - Document results in a dated benchmark note in `knowledge/planning/`.
-
----
 
 ## Non-Negotiables & Validation Gates
 
-1. **Zero External References:** Absolute prohibition of external framework/product names (`graphify`, etc.) across code, docs, templates, comments, and tests.
+1. **Zero External References:** Absolute prohibition of external framework/product names (`graphify`, and so on.) across code, docs, templates, comments, and tests.
 2. **Backward Compatibility:** All existing commands (`stubs explain`, `stubs path`, `stubs blast`) MUST continue to work with identical output shapes and exit codes.
 3. **Token Floor Rule:** Every change must either reduce agent token consumption or expand capability without increasing average tokens per query.
-4. **Schema Discipline:** All graph additions (`community_id`, `mtime_ms`) strictly reside in `.stubs/graph.sqlite`; no secondary database files.
+4. **Schema Discipline:** All graph additions (`community_id`, `mtime_ms`) strictly reside in `.stubs/graph.sqlite`. No secondary database files.
 5. **No Broken Builds:** All edits must maintain zero TypeScript compiler errors and clean ESLint checks.

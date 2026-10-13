@@ -73,22 +73,21 @@ interface CliContext {
 
 ## Command Routing Table
 
-| Command                             | Handler             | Engine Delegate                                        |
-| ----------------------------------- | ------------------- | ------------------------------------------------------ |
-| `init`                              | `handleInit`        | Direct file write of `DEFAULT_CONFIG`                  |
-| `concept new/scaffold/list`         | `handleConcept`     | `ConceptEngine.createConcept()` / `scaffoldFileTree()` |
-| `tree [options]`                    | `handleTree`        | `TreeEngine.generateVisualTree()`                      |
-| `phase status/check/advance`        | `handlePhase`       | `PhaseEngine.checkPhase()` / `advancePhase()`          |
-| `context <file>`                    | `handleContext`     | `ContextEngine.generateContextPackage()`               |
-| `impact <target>`                   | `handleImpact`      | `ImpactEngine.analyzeImpact()`                         |
-| `grill <file>`                      | `handleGrill`       | `GrillEngine.grill()`                                  |
-| `materialize <file>`                | `handleMaterialize` | `MaterializerEngine.materialize()`                     |
-| `audit <file>` / `reconcile <file>` | `handleReconcile`   | `AutonomyProtocol.reconcile()`                         |
-| `sand [file]` / `sync [file]`       | `handleSync`        | `SandingEngine.sync()` or `syncAll()`                  |
-| `validate <file>`                   | `handleValidate`    | `parseOkfSpec()` direct                                |
-| `template list/render`              | `handleTemplate`    | `TemplateEngine.listTemplates()` / `renderTemplate()`  |
-| `evaluate <action>`                 | `handleEvaluate`    | `AutonomyProtocol.evaluateAction()`                    |
-| `auth login`                        | `handleAuth`        | `saveCredentials()`                                    |
-| `install`                           | `handleInstall`     | GitHub API fetch + file write                          |
-| `update` / `upgrade`                | `handleUpdate`      | GitHub API refresh + file write                        |
-| `serve`                             | `handleServe`       | `PortalServer.start()`                                 |
+- Command | Handler | Engine Delegate
+- `init` | `handleInit` | Direct file write of `DEFAULT_CONFIG`
+- `concept new/scaffold/list` | `handleConcept` | `ConceptEngine.createConcept()` / `scaffoldFileTree()`
+- `tree [options]` | `handleTree` | `TreeEngine.generateVisualTree()`
+- `phase status/check/advance` | `handlePhase` | `PhaseEngine.checkPhase()` / `advancePhase()`
+- `context <file>` | `handleContext` | `ContextEngine.generateContextPackage()`
+- `impact <target>` | `handleImpact` | `ImpactEngine.analyzeImpact()`
+- `grill <file>` | `handleGrill` | `GrillEngine.grill()`
+- `materialize <file>` | `handleMaterialize` | `MaterializerEngine.materialize()`
+- `audit <file>` / `reconcile <file>` | `handleReconcile` | `AutonomyProtocol.reconcile()`
+- `sand [file]` / `sync [file]` | `handleSync` | `SandingEngine.sync()` or `syncAll()`
+- `validate <file>` | `handleValidate` | `parseOkfSpec()` direct
+- `template list/render` | `handleTemplate` | `TemplateEngine.listTemplates()` / `renderTemplate()`
+- `evaluate <action>` | `handleEvaluate` | `AutonomyProtocol.evaluateAction()`
+- `auth login` | `handleAuth` | `saveCredentials()`
+- `install` | `handleInstall` | GitHub API fetch + file write
+- `update` / `upgrade` | `handleUpdate` | GitHub API refresh + file write
+- `serve` | `handleServe` | `PortalServer.start()`

@@ -18,7 +18,7 @@ last_updated: '2026-07-29T15:30:00Z'
 
 - **Fixed:** `h-16` (64px) on all breakpoints. Do not vary by page or scroll state.
 - Header is sticky (`position: sticky; top: 0`), z-index `--z-index-sticky-header` (50, ADR 0017).
-- Background: `bg-background/80 backdrop-blur-md` — the frosted-glass treatment already in `top-nav.tsx`. Preserve this; do not make opaque.
+- Background: `bg-background/80 backdrop-blur-md` — the frosted-glass treatment already in `top-nav.tsx`. Preserve this. Do not make opaque.
 
 ### 2 — Zone Layout (3 zones, left → right)
 
@@ -28,11 +28,10 @@ last_updated: '2026-07-29T15:30:00Z'
                                                          Theme · Avatar
 ```
 
-| Zone   | Content                                                    | Width                                                   |
-| ------ | ---------------------------------------------------------- | ------------------------------------------------------- |
-| Left   | `GlobalSearch` input                                       | `flex-1`, max `xl:max-w-xl`                             |
-| Center | Reserved for future logo on marketing pages. Empty in app. | —                                                       |
-| Right  | Utility icons + avatar menu                                | `shrink-0`, items in a flex row with `gap-1.5 sm:gap-3` |
+- Zone | Content | Width
+- Left | `GlobalSearch` input | `flex-1`, max `xl:max-w-xl`
+- Center | Reserved for future logo on marketing pages. Empty in app. | —
+- Right | Utility icons + avatar menu | `shrink-0`, items in a flex row with `gap-1.5 sm:gap-3`
 
 The current `top-nav.tsx` layout matches this spec exactly. Do not add nav links, primary CTAs, or breadcrumbs inside the header bar.
 
@@ -40,7 +39,7 @@ The current `top-nav.tsx` layout matches this spec exactly. Do not add nav links
 
 - Trigger: click on search input OR `⌘K` / `Ctrl+K` keyboard shortcut (implemented in `command-palette.tsx`).
 - Search opens `CommandPalette` dialog at modal z-index.
-- Search input in header is the visual affordance — it does not execute search itself; it opens the command palette.
+- Search input in header is the visual affordance — it does not execute search itself. It opens the command palette.
 - On mobile (below `md`): search input collapses to a `Search` icon button that opens the palette.
 
 ### 4 — Right Zone — Allowed Items
@@ -60,7 +59,7 @@ No primary navigation links, no page-level CTAs, and no search results belong in
 The avatar dropdown must always contain in this order:
 
 1. User name + email (non-interactive label)
-2. Role text / Sub-label Stacking if applicable (e.g. Financial Admin)
+2. Role text / Sub-label Stacking if applicable (for example,. Financial Admin)
 3. Separator
 4. "Profile" → `/settings/profile`
 5. Mode toggle (Field/HQ) if applicable
@@ -75,7 +74,7 @@ Do not add feature navigation or "quick create" actions here. Those belong in th
 - Breadcrumb format: `Home (icon) / {Section} / {Entity Name}` with `ChevronRight` separators.
 - Current item (last segment): `font-medium text-foreground`. Ancestor items: `text-muted-foreground`, clickable.
 - Show breadcrumbs on all pages with ≥2 navigation levels deep.
-- Do not show on the dashboard home or top-level section list pages (e.g., `/contacts` index).
+- Do not show on the dashboard home or top-level section list pages (for example,., `/contacts` index).
 - Max visible segments: 4. If deeper, truncate middle segments with `…` and keep first + last 2.
 
 ### 7 — Mobile Behavior

@@ -46,31 +46,26 @@ The PortalServer is the local runtime API gateway and file event bridge. It serv
 
 ## Server Architecture
 
-```
-PortalServer
-├── Static file serving & HTML dashboard
-├── REST API routes (/api/* & /api/v1/*)
-│   ├── /api/v1/graph        → GraphEngine queries
-│   ├── /api/v1/planning     → Planning Hub initiatives, concepts & tasks
-│   ├── /api/v1/phases       → 5-Phase Lifecycle status matrix
-│   ├── /api/v1/tree         → Unified physical & planned file tree
-│   ├── /api/v1/directives   → User notes & human directives
-│   ├── /api/v1/templates    → Template molds & drafts
-│   └── /api/v1/bootstrap    → Codebase bootstrapping
-└── SSE endpoint (/api/events)
-    └── Filesystem watcher → broadcasts sidecar change events
-```
+- Static file serving and HTML dashboard
+- REST API routes (`/api/*` and `/api/v1/*`):
+  - `/api/v1/graph`: GraphEngine queries
+  - `/api/v1/planning`: Planning Hub initiatives, concepts, and tasks
+  - `/api/v1/phases`: 5-Phase Lifecycle status matrix
+  - `/api/v1/tree`: Unified physical and planned file tree
+  - `/api/v1/directives`: User notes and human directives
+  - `/api/v1/templates`: Template molds and drafts
+  - `/api/v1/bootstrap`: Codebase bootstrapping
+- SSE endpoint (`/api/events`): Filesystem watcher broadcasts sidecar change events
 
 ## Key API Endpoints
 
-| Method | Path                         | Action                                              |
-| ------ | ---------------------------- | --------------------------------------------------- |
-| `GET`  | `/api/v1/planning`           | Aggregated Planning Hub initiatives, tasks, metrics |
-| `GET`  | `/api/v1/phases`             | Repository 5-Phase Lifecycle status matrix          |
-| `GET`  | `/api/v1/tree`               | Unified visual file tree with planned items         |
-| `GET`  | `/api/v1/graph`              | Indexed sidecars and project metadata               |
-| `GET`  | `/api/v1/directives`         | List pending and historical directive notes         |
-| `POST` | `/api/v1/directives`         | Submit new directive note to frontmatter            |
-| `POST` | `/api/v1/directives/resolve` | Resolve an existing directive note                  |
-| `GET`  | `/api/v1/templates`          | List registered templates and drafts                |
-| `GET`  | `/api/events`                | Server-Sent Events stream                           |
+- Method | Path | Action
+- `GET` | `/api/v1/planning` | Aggregated Planning Hub initiatives, tasks, metrics
+- `GET` | `/api/v1/phases` | Repository 5-Phase Lifecycle status matrix
+- `GET` | `/api/v1/tree` | Unified visual file tree with planned items
+- `GET` | `/api/v1/graph` | Indexed sidecars and project metadata
+- `GET` | `/api/v1/directives` | List pending and historical directive notes
+- `POST` | `/api/v1/directives` | Submit new directive note to frontmatter
+- `POST` | `/api/v1/directives/resolve` | Resolve an existing directive note
+- `GET` | `/api/v1/templates` | List registered templates and drafts
+- `GET` | `/api/events` | Server-Sent Events stream

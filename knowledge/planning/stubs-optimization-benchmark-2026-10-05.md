@@ -21,9 +21,9 @@ Measured on the `stubs` repository on 2026-10-05.
 ### 1. Incremental Scan Latency & I/O Reduction (Q10 / Q2)
 
 - **Cold Scan Runtime:** 58ms (scanned and indexed 78 source files, parsed ASTs, created 871 nodes and 1,738 edges).
-- **Warm Incremental Scan Runtime:** 28ms (78 of 78 source files skipped via `stat` `mtimeMs` checking in `file_meta`).
+- **Warm Incremental Scan Runtime:** 28ms (78 of 78 source files skipped through `stat` `mtimeMs` checking in `file_meta`).
 - **File Read I/O Avoidance:** 100% of unchanged files bypassed `fs.readFile()` disk content reads.
-- **Content Re-Index Trigger:** Editing file and updating modification timestamp successfully triggers single-file re-indexing and edge updates while skipping all other 77 unchanged files.
+- **Content Re-Index Trigger:** Editing files triggers single-file re-indexing. Skips all other 77 unchanged files.
 
 ### 2. Surgical Query Tool-Call & Token Footprint (Q14 / Q9 / Q6)
 
@@ -51,10 +51,10 @@ Measured on the `stubs` repository on 2026-10-05.
 
 ### 5. Runtime Optional Extras (Q7 / Q13)
 
-- **Zero-Dependency Core:** Stubs retains zero required external grammar packages; built-in TypeScript AST and regex extractors operate without dependency warnings or runtime failures.
+- **Zero-Dependency Core:** Stubs retains zero required external grammar packages. Built-in TypeScript AST and regex extractors operate without dependency warnings or runtime failures.
 - **Dynamic Check:** `tryLoadOptionalParser()` dynamically checks for tree-sitter packages and transparently falls back to regex extractors with zero overhead.
 
 ## Compliance
 
-- **Zero External References:** Confirmed 0 references to external products (`graphify`, etc.) across all new code, tests, and documentation.
+- **Zero External References:** Confirmed 0 references to external products (`graphify`, and so on.) across all new code, tests, and documentation.
 - **Backward Compatibility:** All existing commands (`stubs explain`, `stubs path`, `stubs blast`) remain functional with 100% test compatibility.

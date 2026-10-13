@@ -2,8 +2,6 @@
 
 This guide provides rules for writing source code, variable names, function identifiers, and code comments compliant with **ASD-STE100 Issue 9**.
 
----
-
 ## 1. Identifier Naming Conventions
 
 ### 1.1 Action-First Function and Method Names
@@ -34,8 +32,6 @@ This guide provides rules for writing source code, variable names, function iden
 
 - Use `is...`, `has...`, or `can...` with a single adjective or noun.
 - Examples: `isOpen`, `hasDiscount`, `canRefund`.
-
----
 
 ## 2. Code Comments and TSDoc Guidelines
 
@@ -73,10 +69,8 @@ export function calculateCartTotal(lineItems: CartItem[]): number {
 - Write whole sentences starting with a capital letter and ending with a period.
 - Explain the reason or business logic, not the syntax.
 - **Rules:**
-  - _Non-STE:_ `// checking if amount isn't 0; if so, abort`
+  - _Non-STE:_ `// checking if amount is not 0; if so, abort`
   - _STE:_ `// Abort the transaction if the amount is 0.`
-
----
 
 ## 3. Anti-Pattern Checklist for Code
 
@@ -85,6 +79,6 @@ Before saving source files, verify:
 - [ ] Do all function names begin with a clear, active verb?
 - [ ] Are variable names limited to 3 words or fewer?
 - [ ] Are comments free of semicolons (`;`)?
-- [ ] Are comments free of contractions (`don't`, `can't`, `it's`)?
+- [ ] Are comments free of contractions (`do not`, `cannot`, `it is`)?
 - [ ] Are comments free of progressive action verbs (`is running`, `calculating`)?
 - [ ] Do comments describe _why_ the code exists, rather than restating syntax?

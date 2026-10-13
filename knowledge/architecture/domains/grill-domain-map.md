@@ -18,8 +18,8 @@ Parent Context Map: knowledge/architecture/context-map.md
 The Interactive Grill Engine coordinates domain logic, core types, and services for the grill subsystem.
 
 ## Key Modules & Files
-src/grill/engine.ts (Hub) -> deps: src/config/schema.ts.md, src/graph/engine.ts.md, src/parser/okf.ts.md | caps: GrillState, GrillEngineOptions, GrillEngine
-src/grill/engine.ts.md -> deps: none | caps: GrillState, GrillEngineOptions, GrillEngine
+- src/grill/engine.ts (Hub) -> deps: src/config/schema.ts.md, src/graph/engine.ts.md, src/parser/okf.ts.md | caps: GrillState, GrillEngineOptions, GrillEngine
+- src/grill/engine.ts.md -> deps: none | caps: GrillState, GrillEngineOptions, GrillEngine
 
 ## Domain Invariants
 - Downward dependencies only: cross-domain calls must target canonical domain hubs.

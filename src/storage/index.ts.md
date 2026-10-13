@@ -40,7 +40,7 @@ depends_on:
 
 # Storage Abstraction Layer
 
-The storage layer is the only place where runtime-environment differences (Node.js vs browser WASM) are handled. All engines above this layer use the abstract interfaces and are oblivious to the underlying runtime.
+The storage layer is the only place where runtime-environment differences (Node.js against browser WASM) are handled. All engines above this layer use the abstract interfaces and are oblivious to the underlying runtime.
 
 ## Interface Hierarchy
 
@@ -81,7 +81,7 @@ DatabaseDriver
 ### `WasmSqliteDriver`
 
 - Wraps `sql.js` WASM SQLite.
-- Persists database to the filesystem via `FileStorageDriver` after each write operation.
+- Persists database to the filesystem through `FileStorageDriver` after each write operation.
 - Used as fallback when native `sqlite3` is unavailable (browser, certain CI environments).
 - Loads the WASM binary from the `dist/` directory alongside the CLI bundle.
 
@@ -93,5 +93,5 @@ DatabaseDriver
 ## Key Design Decisions
 
 - `GraphEngine` probes `require('sqlite3')` at construction time and selects the driver automatically — callers never specify which driver to use.
-- `WasmSqliteDriver` serializes the database to disk (via `FileStorageDriver.writeFile`) after every write, making persistence explicit and testable.
+- `WasmSqliteDriver` serializes the database to disk (through `FileStorageDriver.writeFile`) after every write, making persistence explicit and testable.
 - `glob()` is only on `FileSystemDriver` (not `FileStorageDriver`) since WASM/browser environments cannot glob the host filesystem.

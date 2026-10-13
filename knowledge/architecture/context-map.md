@@ -11,22 +11,22 @@ tags:
 # Architecture Context Map
 
 ## Routing & Entrypoints
-Entry (Layer 0): src/context/engine.ts -> domain: core
-Entry (Layer 0): src/INDEX.md -> domain: core
-Entry (Layer 0): src/context/engine.ts.md -> domain: core
+- Entry (Layer 0): src/context/engine.ts -> domain: core
+- Entry (Layer 0): src/INDEX.md -> domain: core
+- Entry (Layer 0): src/context/engine.ts.md -> domain: core
 
 ## Subsystem Matrix
-Graph Engine (L1): src/graph/engine.ts -> deps: none | caps: normalizePosixPath, resolvePosixPath, fallbackGlob, IndexSummary
-Verification & Tool Suite (L2): src/prune/engine.ts -> deps: none | caps: PruneIssueType, PruneIssue, PruneAuditSummary, PruneAuditResult
-Core Entrypoints & Runtime (L3): src/context/engine.ts -> deps: cli | caps: ContextOptions, Tier0TargetContext, Tier1DependencyContext, Tier1DependentContext
-Server & Live Portal (L4): src/web/shims.ts -> deps: storage | caps: sha256, rightRotate, Hash, update
-Autonomy Protocol (L5): src/phase/engine.ts.md -> deps: core, graph, parser, sanding | caps: PhaseEngine, LifecyclePhase, LIFECYCLE_PHASES, PhaseRequirement
-Parser Engine (L6): src/parser/okf.ts.md -> deps: none | caps: OkfFrontmatter, ParsedOkfSpec, FileTreeEntry, isCodeSidecar
-Storage Layer (L7): src/storage/index.ts -> deps: none | caps: FileStorageDriver, FileSystemDriver, PreparedStatement, DatabaseDriver
-CLI & Router (L8): src/cli/router.ts -> deps: none | caps: CliContext, CliRouter, route, parseArgs
-Sanding & Sync Engine (L9): src/sanding/engine.ts -> deps: storage | caps: SyncResult, sha256, stripSyncStateFromYaml, stripSyncStateFromContent
-Interactive Grill Engine (L10): src/grill/engine.ts -> deps: core, graph, parser | caps: GrillState, GrillEngineOptions, GrillEngine, GrillState
-Materializer Engine (L11): src/materializer/engine.ts -> deps: core, graph, parser, storage | caps: MaterializeResult, stringifyOkfSpec, MaterializerEngine, MaterializerEngine
+- Graph Engine (L1): src/graph/engine.ts -> deps: none | caps: normalizePosixPath, resolvePosixPath, fallbackGlob, IndexSummary
+- Verification & Tool Suite (L2): src/prune/engine.ts -> deps: none | caps: PruneIssueType, PruneIssue, PruneAuditSummary, PruneAuditResult
+- Core Entrypoints & Runtime (L3): src/context/engine.ts -> deps: cli | caps: ContextOptions, Tier0TargetContext, Tier1DependencyContext, Tier1DependentContext
+- Server & Live Portal (L4): src/web/shims.ts -> deps: storage | caps: sha256, rightRotate, Hash, update
+- Autonomy Protocol (L5): src/phase/engine.ts.md -> deps: core, graph, parser, sanding | caps: PhaseEngine, LifecyclePhase, LIFECYCLE_PHASES, PhaseRequirement
+- Parser Engine (L6): src/parser/okf.ts.md -> deps: none | caps: OkfFrontmatter, ParsedOkfSpec, FileTreeEntry, isCodeSidecar
+- Storage Layer (L7): src/storage/index.ts -> deps: none | caps: FileStorageDriver, FileSystemDriver, PreparedStatement, DatabaseDriver
+- CLI & Router (L8): src/cli/router.ts -> deps: none | caps: CliContext, CliRouter, route, parseArgs
+- Sanding & Sync Engine (L9): src/sanding/engine.ts -> deps: storage | caps: SyncResult, sha256, stripSyncStateFromYaml, stripSyncStateFromContent
+- Interactive Grill Engine (L10): src/grill/engine.ts -> deps: core, graph, parser | caps: GrillState, GrillEngineOptions, GrillEngine, GrillState
+- Materializer Engine (L11): src/materializer/engine.ts -> deps: core, graph, parser, storage | caps: MaterializeResult, stringifyOkfSpec, MaterializerEngine, MaterializerEngine
 
 ## Domain Maps & Specs
 - graph: knowledge/architecture/domains/graph-domain-map.md (hub: src/graph/engine.ts)

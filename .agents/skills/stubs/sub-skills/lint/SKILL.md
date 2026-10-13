@@ -26,7 +26,7 @@ stubs lint-arch --rule LAYER_VIOLATION,CIRCULAR_DEPENDENCY
 ## Architectural Invariants Checked
 
 1. **Downward Layer Hierarchy (`LAYER_VIOLATION`):**
-   - Layer 0 (Foundation) $\rightarrow$ Layer 1 (Storage) $\rightarrow$ Layer 2 (Parser) $\rightarrow$ Layer 3 (Compiler) $\rightarrow$ Layer 4 (Graph) $\rightarrow$ Layer 5 (Engines) $\rightarrow$ Layer 6 (Interface).
+   - Layer 0 $\rightarrow$ Layer 1 $\rightarrow$ Layer 2 $\rightarrow$ Layer 3 $\rightarrow$ Layer 4 $\rightarrow$ Layer 5 $\rightarrow$ Layer 6.
    - Lower tiers can never import from higher tiers.
 2. **Circular Dependency Prevention (`CIRCULAR_DEPENDENCY`):**
    - Asserts zero closed dependency loops using Tarjan SCC.

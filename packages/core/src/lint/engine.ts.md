@@ -4,7 +4,7 @@ type: sidecar-spec
 description: >-
   Enforces zero-dependency architectural guardrails across the repository:
   downward layer hierarchy (Layer 0 Foundation -> Layer 6 Interface), circular
-  dependency cycle bans, sidecar manifest parity (code imports vs depends_on
+  dependency cycle bans, sidecar manifest parity (code imports against depends_on
   frontmatter), and domain encapsulation.
 tags:
   - lint
@@ -43,7 +43,7 @@ The `ArchLintEngine` provides fast, deterministic architectural linting for CI/p
 
 ## Invariant Rules
 
-1. **Layer Hierarchy:** Modules in Layer $N$ may only import modules from Layer $\le N$. Inversions are flagged as `LAYER_VIOLATION`.
+1. **Layer Hierarchy:** Modules in Layer $N$ can only import modules from Layer $\le N$. Inversions are flagged as `LAYER_VIOLATION`.
 2. **Cycle Prevention:** Detects closed loops using Tarjan SCC, flagged as `CIRCULAR_DEPENDENCY`.
 3. **Manifest Parity:** Verifies that code imports match `depends_on` frontmatter, flagged as `UNMANIFESTED_DEPENDENCY`.
 4. **Domain Encapsulation:** Flags external cross-domain calls targeting internal private symbols as `DOMAIN_LEAK`.

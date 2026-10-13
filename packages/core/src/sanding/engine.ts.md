@@ -60,17 +60,16 @@ interface SyncResult {
 
 ## Sync Decision Matrix
 
-| Condition                                         | Action                                                                           |
-| ------------------------------------------------- | -------------------------------------------------------------------------------- |
-| Sidecar newer, AST hashes differ                  | Materialize sidecar code → target file                                           |
-| Code newer, AST hashes differ                     | Sand code → sidecar `## Implementation` block                                    |
-| AST hashes match                                  | `no_change` — no file writes                                                     |
-| Structural conflict (both changed, hashes differ) | Escalate: `status='conflict'`, set `status_flag='needs-human-review-resolution'` |
-| Non-structural conflict (timestamp tie, same AST) | Auto-resolve: newer file wins                                                    |
+- Condition | Action
+- Sidecar newer, AST hashes differ | Materialize sidecar code → target file
+- Code newer, AST hashes differ | Sand code → sidecar `## Implementation` block
+- AST hashes match | `no_change` — no file writes
+- Structural conflict ( changed, hashes differ) | Escalate: `status='conflict'`, set `status_flag='needs-human-review-resolution'`
+- Non-structural conflict (timestamp tie, same AST) | Auto-resolve: newer file wins
 
 ## Frontmatter Healing
 
-`healCorruptedFrontmatter(yamlText)` provides a line-by-line regex fallback to recover valid `OkfFrontmatter` from malformed YAML. Used when `js-yaml.load()` fails — ensuring the sanding engine never aborts on a corrupted sidecar.
+`healCorruptedFrontmatter(yamlText)` provides a line-by-line regex fallback to recover valid `OkfFrontmatter` from malformed YAML. Used when `js-yaml.load()` fails — making sure that the sanding engine never aborts on a corrupted sidecar.
 
 ## `sync_state` Tracking
 
@@ -87,7 +86,7 @@ sync_state:
 
 ## Key Design Decisions
 
-- **Timestamp vector** determines direction when both files have changed; the newer file is the authoritative version.
+- **Timestamp vector** determines direction when  files have changed. The newer file is the authoritative version.
 - **AST structural hash** (`getAstStructuralHash`) distinguishes cosmetic reformats (no-op) from genuine structural changes (trigger sync).
 - **`healCorruptedFrontmatter()`** is a last-resort recovery path — it never silently loses data, only fills in defaults for truly missing fields.
 - Sanding is idempotent: running `stubs sand` on an already-synced workspace produces only `no_change` results.

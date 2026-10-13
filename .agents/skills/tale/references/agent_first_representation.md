@@ -13,21 +13,16 @@ These files include architecture records, context maps, and module sidecars.
 All files must obey ASD-STE100 Issue 9 grammar and vocabulary rules.
 In addition, agent-facing files must obey the six token-optimal syntax rules defined below.
 
----
-
 ## 1. Scope and File Classification
 
 Agent-facing documents must use high semantic density.
 Human visual files (such as diagrams and graphical dashboards) must live in separate files.
 
-| Classification   | Typical File Patterns                                         | Syntax Rules Enforced                  |
-| :--------------- | :------------------------------------------------------------ | :------------------------------------- |
-| **Agent-First**  | `AGENTS.md`, `RULES.md`, `*context*`, `architecture/**`       | Full ASD-STE100 + ADR-001 Syntax Rules |
-| **Human-Facing** | `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, `visual-*.md` | Full ASD-STE100 only                   |
+- Classification | Typical File Patterns | Syntax Rules Enforced
+- **Agent-First** | `AGENTS.md`, `RULES.md`, `*context*`, `architecture/**` | Full ASD-STE100 + ADR-001 Syntax Rules
+- **Human-Facing** | `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, `visual-*.md` | Full ASD-STE100 only
 
 Configure custom file patterns in `.talerc.json` or in the `package.json` file.
-
----
 
 ## 2. ADR-001 Syntax Rules
 
@@ -48,7 +43,7 @@ Configure custom file patterns in `.talerc.json` or in the `package.json` file.
 
 ### Rule 3: Single-Occurrence Path References
 
-- **Prohibited:** Redundant link labels: `[Auth Service](src/auth/service.ts)`.
+- **Prohibited:** Redundant link labels: `[src/auth/service.ts]`.
 - **Permitted:** Direct file path anchors: `[src/auth/service.ts]` or bare paths `src/auth/service.ts`.
 - **Rationale:** Duplicate strings waste token memory.
 
@@ -71,8 +66,6 @@ Configure custom file patterns in `.talerc.json` or in the `package.json` file.
 - **Prohibited:** Mermaid diagrams (` ```mermaid `) in agent-facing architecture documents.
 - **Permitted:** Put Mermaid diagrams in dedicated visual files (for example, `visual-map.md`).
 - **Rationale:** Large diagram definitions crowd out working memory in agent context windows.
-
----
 
 ## 3. Configuration in `.talerc.json`
 

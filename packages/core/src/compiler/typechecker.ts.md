@@ -31,7 +31,7 @@ depends_on:
 
 # Compiler — In-Memory TypeScript Typechecker
 
-Zero-emission TypeScript type-checker that validates extracted implementation code against the full workspace type graph before any file is written.
+Zero-emission TypeScript type-checker that validates extracted implementation code against the full workspace type graph before a file is written.
 
 ## Interface
 
@@ -50,15 +50,15 @@ function typeCheckVirtualFile(
 
 ## How It Works
 
-1. **Config Loading:** Reads `tsconfig.json` via the TypeScript compiler API. Results are cached by `mtime` — a cache hit skips re-parsing on repeated calls within the same session.
-2. **Virtual Overlay:** Overrides `ts.CompilerHost` methods (`readFile`, `fileExists`, `getSourceFile`) to return `virtualContent` when the target file path is requested, while delegating all other files to the real filesystem.
+1. **Config Loading:** Reads `tsconfig.json` through the TypeScript compiler API. Results are cached by `mtime` — a cache hit skips re-parsing on subsequent calls within the same session.
+2. **Virtual Overlay:** Overrides `ts.CompilerHost` methods (`readFile`, `fileExists`, `getSourceFile`) to return `virtualContent` for target paths. Delegates other files to the real filesystem.
 3. **Root Names:** Combines `tsconfig.json` file list with the target file path as compilation roots.
 4. **Diagnostics:** Calls `ts.getPreEmitDiagnostics()`. Formats each diagnostic with `filename (line,col): message`.
 5. **`noEmit = true`** is always forced — the checker never writes to disk.
 
 ## Key Design Decisions
 
-- `tsconfig.json` `rootDir` and `rootDirs` are deleted from compiler options before use, since the virtual file may not be under the real source root.
-- Falls back to a hard-coded set of safe compiler options (`ES2022`, `CommonJS`, `strict`) when `tsconfig.json` is missing — never refuses to type-check.
+- `tsconfig.json` `rootDir` and `rootDirs` are deleted from compiler options before use. The virtual file can exist outside the source root.
+- Falls back to a hard-coded set of safe compiler options (`ES2022`, `CommonJS`, `strict`) when `tsconfig.json` does not exist — never refuses to type-check.
 - On compilation crash, returns `success: false` with the crash message in `diagnostics` — never throws to the caller.
 - Config cache keyed by `mtime` prevents stale compiler option reads across sessions without the overhead of re-parsing every invocation.

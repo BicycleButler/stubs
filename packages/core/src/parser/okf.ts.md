@@ -44,42 +44,40 @@ depends_on:
 
 # OKF Sidecar Parser
 
-Core parsing primitive. Takes raw file content and returns a `ParsedOkfSpec` with either a validated `OkfFrontmatter` + body, or a list of validation errors. Never throws; all errors are accumulated in `result.errors`. Also provides helper parsers for markdown file tree blocks and interactive task checklists.
+Core parsing primitive. Takes raw file content and returns a `ParsedOkfSpec` with either a validated `OkfFrontmatter` + body, or a list of validation errors. Never throws. All errors are accumulated in `result.errors`. Also provides helper parsers for markdown file tree blocks and interactive task checklists.
 
 ## OkfFrontmatter Fields
 
 ### Required
 
-| Field         | Type       | Values                                                                                                                                                        |
-| ------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `title`       | `string`   | Display name of the module                                                                                                                                    |
-| `type`        | enum       | `subsystem-index` \| `sidecar-spec` \| `module-stub` \| `concept-doc` \| `architecture-decision` \| `architecture-doc` \| `planning-map` \| `initiative-plan` |
-| `description` | `string`   | Module purpose summary                                                                                                                                        |
-| `tags`        | `string[]` | Search/filter tags                                                                                                                                            |
-| `status`      | enum       | `skeleton` \| `spec` \| `implemented` \| `materialized` \| `grilling` \| `partially-materialized` \| `active` \| `clean` \| `draft`                           |
-| `version`     | `number`   | Monotonic integer                                                                                                                                             |
-| `status_flag` | enum       | `clean` \| `dependency-stale` \| `template-outdated` \| `template-realign-required` \| `needs-human-review-resolution` \| `typecheck-failed`                  |
+- Field | Type | Values
+- `title` | `string` | Display name of the module
+- `type` | enum | `subsystem-index` \ | `sidecar-spec` \ | `module-stub` \ | `concept-doc` \ | `architecture-decision` \ | `architecture-doc` \ | `planning-map` \ | `initiative-plan`
+- `description` | `string` | Module purpose summary
+- `tags` | `string[]` | Search/filter tags
+- `status` | enum | `skeleton` \ | `spec` \ | `implemented` \ | `materialized` \ | `grilling` \ | `partially-materialized` \ | `active` \ | `clean` \ | `draft`
+- `version` | `number` | Monotonic integer
+- `status_flag` | enum | `clean` \ | `dependency-stale` \ | `template-outdated` \ | `template-realign-required` \ | `needs-human-review-resolution` \ | `typecheck-failed`
 
 ### Optional
 
-| Field              | Type                                   | Purpose                                                                                        |
-| ------------------ | -------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `target_code_file` | `string`                               | Relative path to the paired `.ts` file                                                         |
-| `phase`            | `string`                               | Current 5-phase lifecycle stage (e.g. `conceptualize`, `grill`, `spec`, `materialize`, `sand`) |
-| `initiative`       | `string`                               | Associated initiative key or name                                                              |
-| `planned_files`    | `Array<string \| FileTreeEntry>`       | Explicit list of planned file targets                                                          |
-| `tasks`            | `Array<{text, completed, line}>`       | Structured tasks tracker list                                                                  |
-| `module_depth`     | `'deep' \| 'shallow'`                  | Signals interface complexity                                                                   |
-| `context_object`   | `string`                               | Name of the context parameter object                                                           |
-| `template_source`  | `string`                               | Template mold origin                                                                           |
-| `template_version` | `number \| string`                     | Template version for drift detection                                                           |
-| `exports`          | `string[]`                             | Public symbols exported by the target file                                                     |
-| `depends_on`       | `string[]`                             | Sidecar file paths this module imports                                                         |
-| `used_by`          | `string[]`                             | Sidecar file paths that import this module                                                     |
-| `stale_details`    | `string \| null`                       | Human-readable staleness reason                                                                |
-| `sync_state`       | object                                 | `last_sync_timestamp`, `sidecar_hash`, `code_hash`                                             |
-| `decisions`        | `Array<{id, summary, date}>`           | Architecture Decision Records                                                                  |
-| `user_notes`       | `Array<{id, timestamp, text, status}>` | Human directives and grill Q&A                                                                 |
+- Field | Type | Purpose
+- `target_code_file` | `string` | Relative path to the paired `.ts` file
+- `phase` | `string` | Current 5-phase lifecycle stage (for example,. `conceptualize`, `grill`, `spec`, `materialize`, `sand`)
+- `initiative` | `string` | Associated initiative key or name
+- `planned_files` | `Array<string \ | FileTreeEntry>` | Explicit list of planned file targets
+- `tasks` | `Array<{text, completed, line}>` | Structured tasks tracker list
+- `module_depth` | `'deep' \ | 'shallow'` | Signals interface complexity
+- `context_object` | `string` | Name of the context parameter object
+- `template_source` | `string` | Template mold origin
+- `template_version` | `number \ | string` | Template version for drift detection
+- `exports` | `string[]` | Public symbols exported by the target file
+- `depends_on` | `string[]` | Sidecar file paths this module imports
+- `used_by` | `string[]` | Sidecar file paths that import this module
+- `stale_details` | `string \ | null` | Human-readable staleness reason
+- `sync_state` | object | `last_sync_timestamp`, `sidecar_hash`, `code_hash`
+- `decisions` | `Array<{id, summary, date}>` | Architecture Decision Records
+- `user_notes` | `Array<{id, timestamp, text, status}>` | Human directives and grill Q&A
 
 ## File Tree and Checklist Extraction
 

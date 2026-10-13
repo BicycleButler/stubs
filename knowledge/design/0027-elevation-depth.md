@@ -18,7 +18,7 @@ Inconsistent shadow usage — cards with heavy shadows, others with none, dropdo
 
 ## Decision
 
-adopt elevation guidelines defined in [Proposal 0012 — Elevation & Depth](../architecture/architecture/proposals/0012-elevation-and-depth.md):
+adopt elevation guidelines defined in [../architecture/architecture/proposals/0012-elevation-and-depth.md]:
 
 1. **5-Tier Shadow Scale:**`shadow-xs` (resting), `shadow-sm` (raised/hover), `shadow-md` (floating/dropdown), `shadow-lg` (overlay/modal), `shadow-xl` (top-level/toast).
 2. **Layering Consistency:** Higher-elevation elements always cast shadows. No shadowless elements above shadowed elements in stacking context.

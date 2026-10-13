@@ -66,6 +66,6 @@ interface StubsConfig {
 ## Key Design Decisions
 
 - `loadConfig(configPath?)` resolves to `.stubs/config.json` by default.
-- `sanitizeConfig()` validates every field individually; invalid values fall back to defaults without throwing.
+- `sanitizeConfig()` validates every field individually. Invalid values fall back to defaults without throwing.
 - `autonomy_level` defaults to `strict_gate` — the most conservative mode.
-- Config is read synchronously (`fs.readFileSync`) since it is called once at startup before any async work begins.
+- Config is read synchronously (`fs.readFileSync`). It is called once at startup before async work begins.

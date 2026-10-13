@@ -14,21 +14,21 @@ When Tables are shown in the Split Pane view, the right-hand side (Inspector Pan
 
 ## Decision
 
-We will implement a `DynamicInspector` component to manage the layout of the Split Pane's detail view, adhering to the structural foundations of [ADR 0017 - Layout & Structure Standards](0017-layout-structure.md), the clean aesthetics of [ADR 0034 - Table Design Standards](0034-table-design-standards.md), and the elevation hierarchy of [ADR 0041 - Surface Tier System](0041-surface-tier-system.md).
+We implement a `DynamicInspector` component for Split Pane detail views. It adheres to [0017-layout-structure.md] structure, [0034-table-design-standards.md] aesthetics, and [0041-surface-tier-system.md] elevation tiers.
 
 ### 1 — Layout & Structure (CSS Grid)
 
-- **Dynamic Grid Layout:** The `DynamicInspector` will use a CSS Grid that scales responsively (e.g., `grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3`) utilizing standard spacing (`gap-4` or `gap-6`).
+- **Dynamic Grid Layout:** The `DynamicInspector` will use a CSS Grid that scales responsively (for example,., `grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3`) using standard spacing (`gap-4` or `gap-6`).
 - **Dynamic Card Weighting:** Each data module (Widget/Card) will define a `span` requirement based on its content density:
   - `span: 1` -> Maps to `col-span-1`. Ideal for narrow vertical data like basic Details/Firmographics, Contact Lists, or Location Lists.
   - `span: 2` -> Maps to `col-span-2` (or full width on smaller screens). Ideal for complex data requiring horizontal space like Deals, Trade Agreements, or timeline-based Interactions.
-- **Scroll vs. Static Content:** Cards will configure their overflow behavior (`overflow: 'scroll' | 'static'`).
-  - Scrollable lists (e.g., Contacts, Deals, Interactions) will configure appropriate overflow max-heights (e.g., `max-h-[420px] overflow-y-auto` for Interaction modules to ensure full row visibility, and dynamic `h-[calc(100vh-280px)] min-h-[550px]` for primary Timeline feeds) and utilize sticky headers to ensure the parent container's layout does not blow out vertically.
+- **Scroll against. Static Content:** Cards will configure their overflow behavior (`overflow: 'scroll' | 'static'`).
+  - Scrollable lists configure overflow max-heights and sticky headers. This makes sure that the parent container layout does not expand vertically.
 
 ### 2 — Data Loading & Skeleton States
 
-- The initial render will prioritize immediately available data (e.g., the base `Details` which arrive with the row object).
-- High-priority associated lists (Interactions, Deals) will be fetched asynchronously upon row focus, displaying Skeleton loaders within their respective grid cards until data arrives.
+- The initial render will prioritize immediately available data (for example,., the base `Details` which arrive with the row object).
+- Associated lists are fetched asynchronously upon row focus. Cards display Skeleton loaders until data arrives.
 
 ### 3 — Priority Rankings by Entity Table
 
@@ -58,7 +58,7 @@ The following outlines the priority ranking (load order/visual hierarchy), spann
 1. **Interactions** (Span: 2, Scroll) - Communication history with this individual.
 2. **Deals** (Span: 2, Scroll) - Associated opportunities they are involved in.
 3. **Affiliated Organizations** (Span: 1, Static) - Brand or Dealer relationships.
-4. **Files** (Span: 1, Scroll) - Any related documents.
+4. **Files** (Span: 1, Scroll) - Related documents.
 5. **Details** (Span: 1, Static) - Phone, email, title, social links.
 
 #### Deals

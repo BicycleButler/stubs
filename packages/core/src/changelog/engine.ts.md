@@ -43,6 +43,6 @@ The `ChangelogEngine` extracts architectural evolution from git revisions and OK
 
 ## Key Methods
 
-- `diffSpecs(oldContent, newContent, filePath)`: Performs structural diff of ADRs, exported contracts, and lifecycle status between two spec states.
+- `diffSpecs(oldContent, newContent, filePath)`: Does structural diff of ADRs, exported contracts, and lifecycle status between two spec states.
 - `generateChangelog(options)`: Analyzes a git revision range (`--since`, `--from`, `--to`) or uncommitted working tree.
 - `renderMarkdown(changelog)`: Renders executive summaries, ADR change logs, and contract drift tables.

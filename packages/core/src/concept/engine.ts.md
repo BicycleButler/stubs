@@ -42,5 +42,5 @@ Handles Phase 1 of the Stubs 5-Phase Lifecycle.
 ## Key Capabilities
 
 1. **`createConcept(options)`:** Generates new concept documents (`type: concept-doc`), initiative plans (`type: initiative-plan`), or planning maps (`type: planning-map`) from structured templates.
-2. **`scaffoldFileTreeFromDoc(docPath, options)`:** Reads `filetree` code blocks and frontmatter `planned_files` in a specification, creates directories on disk, creates source code stubs, and generates skeleton OKF sidecars (`*.ts.md`) with valid frontmatter.
+2. **`scaffoldFileTreeFromDoc(docPath, options)`:** Reads `filetree` blocks and frontmatter `planned_files`. Creates directories, source code stubs, and skeleton OKF sidecars (`*.ts.md`).
 3. **`listConcepts(dir)`:** Lists all conceptual blueprints and initiative plans in the workspace.

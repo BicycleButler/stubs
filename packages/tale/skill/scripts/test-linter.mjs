@@ -222,4 +222,54 @@ const url = "//not a comment; ensure this";
   console.log('✓ Test 15 Passed: ADR-001 file classification and glob pattern matching verified.');
 }
 
-console.log('\nAll 15 unit tests passed successfully!');
+// 16. ADR-001 ASCII Art and Box Drawing Detection Test
+{
+  const asciiBox = '```text\n+---+\n| A |\n+---+\n```';
+  const issues1 = lintAgentFirst(asciiBox);
+  assert.ok(
+    issues1.some((i) => i.rule.includes('ADR-001 Rule 1') && i.message.includes('ASCII art')),
+    'Expected ASCII box border to be detected',
+  );
+
+  const unicodeBox = '│ Box text │';
+  const issues2 = lintAgentFirst(unicodeBox);
+  assert.ok(
+    issues2.some((i) => i.rule.includes('ADR-001 Rule 1') && i.message.includes('box-drawing')),
+    'Expected Unicode box-drawing character to be detected',
+  );
+  console.log('✓ Test 16 Passed: ADR-001 ASCII art and Unicode box drawing detected.');
+}
+
+// 17. ADR-001 Markdown Table Auto-Fix to Compact Records Test
+{
+  const tableContent = '# Topic Table\n\n| Feature | Status |\n| :--- | :--- |\n| Router | Active |\n| Compiler | Stable |\n';
+  const { fixed, fixCount } = autoFixContent(tableContent, true);
+  assert.ok(fixCount >= 1, 'Expected table conversion fixCount');
+  assert.ok(!fixed.includes('| :--- |'), 'Alignment delimiter row removed');
+  assert.ok(fixed.includes('- Feature | Status'), 'Header converted to compact pipe record');
+  assert.ok(fixed.includes('- Router | Active'), 'Row converted to compact pipe record');
+  console.log('✓ Test 17 Passed: ADR-001 Markdown table auto-fix converts to compact pipe records.');
+}
+
+// 18. ADR-001 Decorative Divider Rule Auto-Fix Removal Test
+{
+  const docWithDividers = '---\ntitle: Doc\n---\n\nSection 1\n\n---\n\nSection 2';
+  const { fixed } = autoFixContent(docWithDividers, true);
+  assert.ok(fixed.startsWith('---\ntitle: Doc\n---'), 'Frontmatter header must be preserved');
+  assert.ok(!fixed.slice(20).includes('---'), 'Decorative divider rule outside frontmatter removed');
+  console.log('✓ Test 18 Passed: ADR-001 decorative divider rules removed outside frontmatter.');
+}
+
+// 19. ADR-001 Unicode Box-Drawing Frame Auto-Fix Test
+{
+  const boxContent = '```\n┌──────────────────────────┐\n│ [ Active Tab ] Idle Tab  │\n└──────────────────────────┘\n├─► Option A\n└─► Option B\n```';
+  const { fixed, fixCount } = autoFixContent(boxContent, true);
+  assert.ok(fixCount >= 1, 'Expected box cleanup fixCount');
+  assert.ok(!fixed.includes('┌'), 'Top box border removed');
+  assert.ok(!fixed.includes('└─'), 'Bottom box border removed');
+  assert.ok(fixed.includes('[ Active Tab ] Idle Tab'), 'Internal text preserved');
+  assert.ok(fixed.includes('- Option A'), 'Tree branch normalized to list item');
+  console.log('✓ Test 19 Passed: ADR-001 Unicode box-drawing frame and tree branches stripped.');
+}
+
+console.log('\nAll 19 unit tests passed successfully!');

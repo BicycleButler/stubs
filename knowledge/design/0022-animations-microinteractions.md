@@ -1,39 +1,68 @@
 ---
-title: '0022 - Animations & Micro-Interaction Standards'
+title: '0022 - Animations, Motion & Transition Standards'
 type: 'adr'
 description: 'Accepted'
 status: 'active'
-last_updated: '2026-08-01T15:45:00Z'
+last_updated: '2026-08-08T06:15:00Z'
 ---
 
-# 0022 - Animations & Micro-Interaction Standards
-
-## Status
-
-Accepted
+# 0022 - Animations, Motion & Transition Standards
 
 ## Context
 
-Interfaces designed only for happy paths fail silently when network errors or slow responses occur[cite: 1]. Linear animations feel mechanical and unnatural[cite: 1]. Without strict duration budgets and delay rules, rapid cursor movement creates visual noise[cite: 1].
-
-**Relationship to ADR 0011:** [ADR 0011 — Optimistic UI Merging](../architecture/adr/0011-optimistic-ui-merging.md) governs _data-layer merge strategy_ for offline/disconnected states[cite: 1]. This ADR governs the _visual and micro-interaction layer_[cite: 1].
+Covers all animation and transition rules: element-level micro-interactions, async state visuals, route transitions, and section reveals. Scoped to the visual layer. Data-layer merge strategy is governed by [../architecture/adr/0011-optimistic-ui-merging.md].
 
 ## Decision
 
-Adopt animation and micro-interaction standards across all UI components:
+### Element Animation
 
-1. **Strict Ban on Linear Easing:** `transition: all linear` is **strictly prohibited system-wide**[cite: 1]. All transitions and animations must use non-linear cubic-bezier physics curves (e.g., `cubic-bezier(0.4, 0, 0.2, 1)` for default ease-in-out, ease-out for entering elements, ease-in for exiting elements)[cite: 1].
-2. **Duration Budget Limits (200ms–500ms):** All UI transition durations must strictly fall between **200ms and 500ms**[cite: 1]. Fast micro-interactions use 200ms, standard element transitions use 300ms, and complex surface/layout transitions cap strictly at 500ms[cite: 1]. Durations below 200ms or above 500ms are banned[cite: 1].
-3. **1000ms Delayed Tooltip Rule for Icon Controls & Avatar Tags:** Icon-only controls and Avatar name tags must enforce a **1000ms delay** before rendering tooltips/popovers on continuous hover to prevent visual clutter during rapid mouse scanning[cite: 1]. Tooltips dismiss instantly on mouse-out[cite: 1].
-4. **Avatar Hover Name Tag Pattern:** User name tag previews on avatars must render exclusively via **Portal-based Tooltips or Popovers** anchored to the avatar base[cite: 1]. Morphing or expanding the avatar container itself is strictly prohibited per [ADR 0021](0021-iconography-imagery.md) to eliminate layout reflows and container clipping[cite: 1].
-5. **Unhappy Path First:** Every async operation defines 4 visual states — Empty (illustrated CTA), Loading (skeleton shimmer, not spinner), Error (contextual message + retry), Partial/Degraded (show what succeeded, inline error for what failed)[cite: 1].
-6. **Optimistic UI Updates Subsection:** Client UI state **must mutate immediately** upon user action for predictable network calls (e.g., deleting records from lists, toggling statuses, or marking notifications read) before server responses resolve[cite: 1]. If the server call fails, state rolls back smoothly with a high-priority failure toast[cite: 1]. Reversible low-risk operations mutate optimistically; high-risk financial or security mutations require explicit confirmation[cite: 1].
-7. **Reduced Motion Compliance:** Respect `prefers-reduced-motion: reduce` by replacing spatial animations with instant state switches or subtle opacity-only fades[cite: 1].
+1. **No Linear Easing.** `transition: all linear` is banned system-wide. Use cubic-bezier curves: `cubic-bezier(0.4, 0, 0.2, 1)` (default), ease-out (entering), ease-in (exiting).
+2. **Duration Budget: 200ms–500ms.** Micro-interactions: 200ms. Standard transitions: 300ms. Complex surface/layout transitions: max 500ms. Outside this range is banned.
+3. **Tooltip Delay Tiers.** Three tiers by context:
+   - **Toolbar buttons (200–300ms):** Page toolbar icon buttons per [0039-toolbar-header-standards.md]. Toolbar context implies deliberate cursor placement.
+   - **Content area (700–1000ms):** Dropdowns, popovers, general hover tooltips — implementations can tune within the band.
+   - **Standalone icons & avatars (1000ms):** Floating controls and avatars use 1000ms delay to prevent flicker during rapid scanning.
+   - All tooltips dismiss instantly on mouse-out.
+4. **Avatar Name Tags.** Render through Portal-based Tooltips or Popovers anchored to the avatar. Expanding or morphing the avatar container is prohibited per [0021-iconography-imagery.md].
+5. **Reduced Motion.** Respect `prefers-reduced-motion: reduce` — replace spatial animations with instant state switches or opacity-only fades. Skeleton shimmer halts: `motion-reduce:after:animate-none`.
 
-## Consequences
+### Async State Visuals
 
-- Mechanical linear transitions are completely eliminated across the application[cite: 1].
-- All interaction physics adhere strictly to human visual timing (200ms–500ms)[cite: 1].
-- 1000ms tooltip delay eliminates banner flicker during quick cursor movements over toolbars and user avatar lists[cite: 1].
-- Portal overlays preserve avatar geometry and layout stability without clipping[cite: 1].
-- Optimistic updates provide immediate response for predictable user actions[cite: 1].
+6. **Unhappy Path First.** Every async operation must define all 4 states:
+   - **Empty:** Illustrated empty state with CTA.
+   - **Loading:** Skeleton shimmer — never a spinner.
+   - **Error:** Contextual message + retry action.
+   - **Partial/Degraded:** Show what succeeded. Inline error for what failed.
+7. **Optimistic UI.** Mutate client state immediately on user action for predictable operations (delete from list, toggle status, mark read). On server failure: roll back + high-priority error toast. Reversible, low-risk operations mutate optimistically. Financial or security mutations require explicit confirmation.
+
+### Route & Layout Transitions
+
+8. **Route Transitions.** Fade only — class: `animate-in fade-in duration-200`. No slide, flip, or scale at page level. Apply to the `<main>` or top-level page `<div>`.
+9. **Section / Panel Mount.** Class: `animate-in fade-in slide-in-from-bottom-4 duration-300`. Maximum slide distance: `slide-in-from-bottom-6`.
+10. **List Item Stagger.** Stagger the first 8 items at 20–30ms intervals through `animationDelay`. Items 9+ appear simultaneously. Stagger only on initial mount — not on re-renders or filter changes.
+
+    ```tsx
+    {
+      items.map((item, i) => (
+        <div
+          key={item.id}
+          className="animate-in fade-in slide-in-from-bottom-2 duration-300"
+          style={{ animationDelay: `${Math.min(i, 7) * 25}ms` }}
+        />
+      ));
+    }
+    ```
+
+11. **Dialog / Sheet.** Preserve Radix transitions: open `fade-in-0 zoom-in-95` (200ms), close `fade-out-0 zoom-out-95` (200ms). No slide animations on dialogs.
+12. **Dropdown / Popover.** Open/close: `fade-in-0 zoom-in-95` / `fade-out-0 zoom-out-95` at 100ms.
+13. **Skeleton → Content.** Fade in the content wrapper: `animate-in fade-in duration-200`. Never slide or scale — position is already established.
+
+### Forbidden Patterns
+
+- Pattern | Reason
+- `transition: all` | Over-broad. Animates unintended properties
+- `linear` easing | Mechanical. Banned
+- Page-level slide > 6 units | Disorienting at large viewport
+- Simultaneous fade + color change | Compound transitions feel sluggish
+- Infinite loops in content area | Reserved for intentional loading states only
+- Scale > 105% on enter | Aggressive in data-dense context

@@ -4,7 +4,7 @@ This document synthesizes the core UI/UX architectural decisions, design tokens,
 
 ## 1. Visual Foundations & Color System
 
-- **OKLCH Color Modeling:** All color tokens use OKLCH modeling to maintain perceptual uniform lightness, hue integrity, and optimal contrast across themes.
+- **OKLCH Color Modeling:** Color tokens use OKLCH modeling to maintain uniform lightness and optimal contrast across themes.
 - **Zero Static Alert Colors:** Alert and status indicators dynamic styling rather than hardcoded static hex values.
 - **Elevation & Depth:** 5-tier shadow scale (`shadow-xs` to `shadow-xl`) paired with subtle surface lightness shifts.
 - **Theming & Dark Mode:** Dark theme uses dynamic OKLCH tokens with strict z-index lightness hierarchy (4%–6% gaps between structural layers).
@@ -12,7 +12,7 @@ This document synthesizes the core UI/UX architectural decisions, design tokens,
 ## 2. Typography & Spacing
 
 - **Typography:** 2 font families (System Sans / Inter for UI, Monospace for code/data). Golden Ratio modular scale (maximum 6 tiers).
-- **Naming & Display:** Code/variables in `camelCase`; UI display text in `Title Case` or `Sentence case` depending on context.
+- **Naming & Display:** Code/variables in `camelCase`. UI display text in `Title Case` or `Sentence case` depending on context.
 - **Spacing Grid:** 4px baseline grid scale with 7 predefined tokens (`space-1` through `space-16`).
 
 ## 3. Interaction, Motion & Responsiveness

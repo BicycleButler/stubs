@@ -58,13 +58,13 @@ used_by:
 
 # Graph Engine — SQLite Adjacency Graph & FTS5
 
-The central data store of the stubs framework. Every sidecar spec and planning document is indexed here; all dependency links, tasks, planned blueprints, and lifecycle phase states are tracked.
+The central data store of the stubs framework. Every sidecar spec and planning document is indexed here. All dependency links, tasks, planned blueprints, and lifecycle phase states are tracked.
 
 ## Database Schema
 
 ### `sidecars` table
 
-Primary record store. Columns map 1:1 to `OkfFrontmatter` fields plus metadata: `file_path`, `title`, `type`, `description`, `module_depth`, `context_object`, `template_source`, `template_version`, `status`, `version`, `phase`, `initiative`, `target_code_file`, `status_flag`, `stale_details`, `last_sync_timestamp`, `sidecar_hash`, `code_hash`, `interfaces_text`, `decisions_text`, `raw_content`, `tags`, `exports`, `file_hash`, `created_at`, `updated_at`.
+Primary record store. Columns map 1:1 to `OkfFrontmatter` fields plus metadata: `file_path`, `title`, `type`, `description`, and related attributes.
 
 ### `tasks` table
 
@@ -88,16 +88,15 @@ Full-text search index over: `file_path`, `title`, `description`, `tags`, `expor
 
 ## Key Operations
 
-| Method                        | Description                                                 |
-| ----------------------------- | ----------------------------------------------------------- |
-| `initialize()`                | Opens DB, creates schema and tables                         |
-| `indexFile(sidecarPath)`      | Parses, validates, and upserts a sidecar/doc into the graph |
-| `indexWorkspace(specsDir)`    | Globs for `*.md` files and batch-indexes them               |
-| `getPlanningHub()`            | Aggregates initiatives, concepts, tasks, and completion %   |
-| `getPhaseStatus()`            | Generates 5-phase lifecycle status matrix and counts        |
-| `getTasks(filter)`            | Queries structured tasks with optional filters              |
-| `getPlannedFiles(filter)`     | Queries planned files from blueprints                       |
-| `getProjectFileTree(options)` | Merges physical and planned file trees                      |
-| `search(query, options)`      | FTS5 BM25-ranked full-text search with tag/bounds filtering |
-| `getSidecar(filePath)`        | Returns full sidecar record by path                         |
-| `deleteSidecar(filePath)`     | Removes sidecar, tasks, planned files, and dependency edges |
+- Method | Description
+- `initialize()` | Opens DB, creates schema and tables
+- `indexFile(sidecarPath)` | Parses, validates, and upserts a sidecar/doc into the graph
+- `indexWorkspace(specsDir)` | Globs for `*.md` files and batch-indexes them
+- `getPlanningHub()` | Aggregates initiatives, concepts, tasks, and completion %
+- `getPhaseStatus()` | Generates 5-phase lifecycle status matrix and counts
+- `getTasks(filter)` | Queries structured tasks with optional filters
+- `getPlannedFiles(filter)` | Queries planned files from blueprints
+- `getProjectFileTree(options)` | Merges physical and planned file trees
+- `search(query, options)` | FTS5 BM25-ranked full-text search with tag/bounds filtering
+- `getSidecar(filePath)` | Returns full sidecar record by path
+- `deleteSidecar(filePath)` | Removes sidecar, tasks, planned files, and dependency edges

@@ -22,8 +22,6 @@ initiative: framework-lifecycle-expansion
 
 This document tracks the technical implementation of the **5-Phase Lifecycle & Conceptual Planning Hub** expansion for `stubs`. It provides an executable roadmap, planned file tree blueprints, and interactive task checklists organized by phase for human developers and autonomous AI agents.
 
----
-
 ## Planned Architecture & File Tree Blueprint
 
 ```filetree
@@ -72,8 +70,6 @@ tests/
   planning-portal.test.ts       # [NEW] Tests for portal planning REST endpoints
 ```
 
----
-
 ## Phase-by-Phase Execution & Task Tracker
 
 ### Phase 1: Conceptualize & Specification Scaffolding
@@ -95,7 +91,7 @@ tests/
 
 - [x] Update `src/parser/okf.ts.md` with new `OkfFrontmatter` types, `extractFileTreeBlocks`, `parseFileTreeEntries`, and checklist extractors.
 - [x] Create `src/concept/engine.ts.md` sidecar specifying `createConcept`, `scaffoldFileTreeFromDoc`, and `listConcepts`.
-- [x] Create `src/concept/tree.ts.md` sidecar specifying ASCII/Unicode tree generation and planned vs existing file annotations.
+- [x] Create `src/concept/tree.ts.md` sidecar specifying ASCII/Unicode tree generation and planned against existing file annotations.
 - [x] Create `src/phase/engine.ts.md` sidecar specifying `checkPhase`, `advancePhase`, and `getWorkspacePhaseMatrix`.
 - [x] Update `src/graph/engine.ts.md` sidecar with planning queries, task indexing, and phase tables.
 - [x] Update `src/cli/router.ts.md` sidecar specifying CLI routing for `concept`, `tree`, and `phase` commands.
@@ -142,17 +138,14 @@ tests/
 - [x] Author tests in `tests/tree.test.ts`.
 - [x] Author tests in `tests/phase.test.ts`.
 - [x] Author integration tests in `tests/planning-portal.test.ts`.
-- [x] Run full test suite (`npm test`) and ensure 100% pass rate.
+- [x] Run full test suite (`npm test`) and make sure that 100% pass rate.
 - [x] Run `npm run lint` and `npm run build`.
 - [x] Execute `stubs sand` across workspace to verify zero AST drift.
 
----
-
 ## Dynamic Notes & Decision Log
 
-| Date       | Agent / User | Note / Decision                                                                                                                      |
-| :--------- | :----------- | :----------------------------------------------------------------------------------------------------------------------------------- |
-| 2026-08-26 | Agent & User | Finalized 5-phase lifecycle model (Conceptualize, Grill, Spec, Materialize, Sand & Audit).                                           |
-| 2026-08-26 | Agent & User | Agreed on hybrid concept placement + centralized `knowledge/planning/` hub with markdown task tracking.                              |
-| 2026-08-26 | Agent & User | Adopted standardized `filetree` markdown code block syntax for conceptual tree declaration.                                          |
-| 2026-08-26 | Agent & User | Completed full implementation across OKF parser, GraphEngine, ConceptEngine, TreeEngine, PhaseEngine, CLI router, and Portal server. |
+- Date | Agent / User | Note / Decision
+- 2026-08-26 | Agent & User | Finalized 5-phase lifecycle model (Conceptualize, Grill, Spec, Materialize, Sand & Audit).
+- 2026-08-26 | Agent & User | Agreed on hybrid concept placement + centralized `knowledge/planning/` hub with markdown task tracking.
+- 2026-08-26 | Agent & User | Adopted standardized `filetree` markdown code block syntax for conceptual tree declaration.
+- 2026-08-26 | Agent & User | Completed full implementation across OKF parser, GraphEngine, ConceptEngine, TreeEngine, PhaseEngine, CLI router, and Portal server.

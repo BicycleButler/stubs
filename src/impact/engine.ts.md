@@ -33,7 +33,7 @@ used_by:
 
 # Impact Engine — Blast-Radius & Regression Risk Analysis
 
-The `ImpactEngine` calculates the blast-radius of modifying any file or sidecar in the repository.
+The `ImpactEngine` calculates the blast-radius of modifying a file or sidecar in the repository.
 
 ## Capabilities
 

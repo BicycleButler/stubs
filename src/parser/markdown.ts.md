@@ -49,7 +49,7 @@ Replaces the TypeScript block under `## Implementation` with `newCode`.
 
 ## Key Design Decisions
 
-- Both functions normalize `\r\n` → `\n` at entry.
+-  functions normalize `\r\n` → `\n` at entry.
 - Section detection is regex-based (`/^#+\s*(?:\d+\.\s*)?Implementation/i`) to handle numbered headings like `## 5. Implementation`.
 - No AST parsing — deliberate line-by-line scan for predictability and zero external dependencies.
 - `replaceImplementationCode` preserves the surrounding body text and only surgically replaces the code block content, not the fences.

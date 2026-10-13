@@ -9,6 +9,6 @@ Execute bidirectional code-to-spec synchronization whenever `.ts` code or `.ts.m
 
 ## Execution Rules
 1. Run `node .agents/skills/stubs/dist/cli.cjs sand <path>` to check drift state.
-2. If reverse sanding (`code-to-spec`) is indicated: extract modified implementation AST from `.ts`, update `## Implementation` in `.ts.md`, update sidecar/code SHA hashes, and set `status_flag: clean`.
+2. If reverse sanding is indicated: extract modified AST from source code. Update sidecar YAML and set `clean`.
 3. If forward sanding (`spec-to-code`) is indicated: extract code from `.ts.md` and overwrite `.ts`.
 4. On 3-way conflicts, present a visual AST diff to the user before applying changes.

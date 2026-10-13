@@ -29,7 +29,7 @@ depends_on:
 
 # Storage — Path Containment Guard
 
-Security primitive. Prevents directory traversal attacks via malicious `target_code_file` values in sidecar frontmatter. All path resolution in engines goes through `resolveContainedPath`.
+Security primitive. Prevents directory traversal attacks through malicious `target_code_file` values in sidecar frontmatter. All path resolution in engines goes through `resolveContainedPath`.
 
 ## Functions
 
@@ -37,7 +37,7 @@ Security primitive. Prevents directory traversal attacks via malicious `target_c
 
 - Resolves `relativePath` against `baseDir` using `path.resolve`.
 - Computes `path.relative(normalizedBase, normalizedTarget)`.
-- **Throws** if the relative path starts with `..` or is absolute — this is the only function in the codebase that intentionally throws on a security violation.
+- **Throws** if the relative path starts with `..` or is absolute. This is the only function that throws on security violations.
 
 ### `isSafeRelativePath(relativePath): boolean`
 
@@ -54,5 +54,5 @@ Security primitive. Prevents directory traversal attacks via malicious `target_c
 ## Key Design Decisions
 
 - `resolveContainedPath` throws by design — path escapes are security violations, not recoverable errors.
-- All other storage and parser functions avoid throwing; containment is the deliberate exception.
-- Validation is separate from resolution (`isSafeRelativePath` vs `resolveContainedPath`) to allow pre-validation before attempting resolution.
+- All other storage and parser functions prevent throwing. Containment is the deliberate exception.
+- Validation is separate from resolution (`isSafeRelativePath` against `resolveContainedPath`) to allow pre-validation before attempting resolution.

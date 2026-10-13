@@ -14,7 +14,9 @@ Waiting for connection triggers or showing blocking overlays offline/slow networ
 
 ## Decision
 
-enforce optimistic rendering pattern client-side query hooks merge active server documents with uncommitted local `MutationQueueItem` drafts. drafts decorated with temporary IDs and "Syncing" indicators and sorted to index 0 of feeds. **Exemption:** Per [ADR 0022 — Animations & Micro-Interactions](../../design/0022-animations-microinteractions.md), mutations affecting financial data, access control rules, or 3rd-party integrations strictly excluded from optimistic feed merging and must render explicit loading/confirmation states.
+Client query hooks merge active server documents with uncommitted local drafts. Drafts show temporary IDs and "Syncing" indicators, and appear at index 0 of feeds.
+
+Exemption: Mutations affecting financial data, access control, or external integrations must not use optimistic merging. These mutations must show explicit loading and confirmation states.
 
 ## Consequences
 
@@ -22,4 +24,4 @@ enforce optimistic rendering pattern client-side query hooks merge active server
 - Keeps UI functional and consistent regardless of connection status while protecting critical financial records.
 - Requires clean separation between server-authoritative and client-draft state structures.
 
-> **See also:**[ADR 0022 — Animations & Micro-Interactions](../../design/0022-animations-microinteractions.md) governs visual/interaction layer for optimistic UI — which operations qualify for instant rendering, unhappy path state design, and rollback UX. ADR governs data-layer merge strategy.
+> **See also:**[../../design/0022-animations-microinteractions.md] governs visual/interaction layer for optimistic UI — which operations qualify for instant rendering, unhappy path state design, and rollback UX. ADR governs data-layer merge strategy.

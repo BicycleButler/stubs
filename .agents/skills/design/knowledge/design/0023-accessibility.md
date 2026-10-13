@@ -15,7 +15,7 @@ Accessibility violations — suppressed focus rings, missing keyboard navigation
 ## Decision
 
 1. **WCAG 2.1 Level AA** as minimum compliance target.
-2. **Focus Management:** 2px visible ring via `:focus-visible`, focus trapping in modals, focus return on close.
+2. **Focus Management:** 2px visible ring through `:focus-visible`, focus trapping in modals, focus return on close.
 3. **Keyboard Navigation:** mouse-reachable functionality must keyboard-reachable. WAI-ARIA patterns for composite widgets. Skip-navigation links on every page.
 4. **Semantic Structure:** One `<h1>` per page, no skipped heading levels, semantic HTML elements (`<nav>`, `<main>`, `<aside>`) over generic `<div>`.
 5. **Color Independence:** Never communicate color alone — supplement with icons, text, or patterns.

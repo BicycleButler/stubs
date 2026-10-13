@@ -33,7 +33,7 @@ used_by:
 
 # Sanding AST — Structural Hash & Code Type-Check
 
-Low-level TypeScript AST utilities that give the Sanding Engine the ability to determine whether code and spec have diverged structurally, and whether the diverged code is type-safe.
+Low-level TypeScript AST utilities for the Sanding Engine. Determines if code and spec diverged structurally and validates type safety.
 
 ## `getAstStructuralHash(code: string): string`
 
@@ -55,11 +55,11 @@ In-memory type-checker used by the Sanding Engine (distinct from `compiler/typec
 ### Key Differences from `compiler/typechecker.ts`
 
 - Simpler host implementation (no `originalReadFile` delegation chain).
-- Includes both `getPreEmitDiagnostics` and `emit` diagnostics (Materializer uses only `getPreEmitDiagnostics`).
+- Includes  `getPreEmitDiagnostics` and `emit` diagnostics (Materializer uses only `getPreEmitDiagnostics`).
 - Module-level config cache (`astConfigCache`) is a singleton rather than a `Map` — adequate since sanding always operates in the same workspace.
 
 ## Key Design Decisions
 
 - Identifier text is included in node serialization to detect renames — otherwise `rename(a, b)` would produce the same hash as `rename(a, c)`.
 - Literal values (string/number literals) are intentionally **excluded** from the hash — changing a string constant is not a structural change.
-- `getAstCompilerOptions()` falls back to safe defaults if `tsconfig.json` is missing, ensuring the hash never crashes on a bare-bones project.
+- `getAstCompilerOptions()` falls back to safe defaults if `tsconfig.json` does not exist. The hash never crashes on bare projects.

@@ -10,9 +10,9 @@ last_updated: '2026-08-08T05:45:00Z'
 
 ## Context
 
-Across core application domain views (Organizations, Contacts, Dealers, Expenses, Tasks, Deals, Inventory), section and page toolbars lack visual consistency, introduce arbitrary spatial animations, and occupy excessive vertical real estate (120px–220px before table/data display)[cite: 1]. Legacy implementations suffer from redundant secondary search inputs, loose toggle switches ("Archived", "Incomplete"), deprecated status badge pills, unorganized action rows, and hover-triggered dynamic layout shifts[cite: 1].
+Across core views, toolbars lack visual consistency and introduce arbitrary animations. Toolbars occupy excessive vertical real estate before data display. Legacy implementations suffer from redundant secondary search inputs, loose toggle switches ("Archived", "Incomplete"), deprecated status badge pills, unorganized action rows, and hover-triggered dynamic layout shifts[cite: 1].
 
-A unified architectural standard is required to enforce compact single-row toolbars, clean alignment zones, predictable control caps, visual toolbar button presentation standards, and strict accessibility compliance across all entity section headers[cite: 1].
+A unified standard enforces compact single-row toolbars and clean alignment zones. It defines predictable button caps and accessibility compliance across headers.
 
 ## Decision
 
@@ -21,21 +21,16 @@ A unified architectural standard is required to enforce compact single-row toolb
 - **Maximum Vertical Height:** Standard page toolbars must strictly enforce a maximum height of **52px across all screen sizes** (mobile, tablet, desktop). Multi-row wrapping is strictly eliminated in favor of dynamic single-row adaptive priority collapse.
 - **Strict Prohibition of Horizontal & Vertical Scrolling:** Horizontal scrolling (`overflow-x-auto`) and vertical scrolling (`overflow-y-auto`) are **strictly banned** on page toolbars. Toolbars must fit statically on a single 52px row regardless of container width.
 - **Persistent Overflow Anchor (`MoreVertical`):** The overflow menu button (`MoreVertical` / `⋮` three vertical dots) is an **absolute persistent anchor** on the far right of `PageToolbarRight`. It remains permanently visible on the toolbar across all screen widths.
-- **Dynamic Single-Row Priority Collapse Engine:** Toolbars utilize container measurement (`ResizeObserver` / Container Queries) to track available container width in real-time. As container space narrows, controls adapt and collapse in a deterministic 7-stage priority sequence to preserve the single 52px row.
+- **Dynamic Single-Row Priority Collapse Engine:** Toolbars use container measurement (`ResizeObserver` / Container Queries) to track available container width in real-time. As container space narrows, controls adapt and collapse in a deterministic 7-stage priority sequence to preserve the single 52px row.
 
 ### 2. Header Zone Division & Priority Architecture
 
 Page toolbars enforce a strict 2-zone horizontal layout:
 
-```
-+-------------------------------------------------------------------------------------------------+
-| PAGE TOOLBAR BAR (Fixed Height: 52px, Strict Single-Row Layout)                                 |
-| +------------------------------------+   +----------------------------------------------------+ |
-| | [Title] (e.g., Contacts)           |   | [Search]  [Filter]  [Secondary]  [Primary]  [⋮]     | |
-| | [Sub-label Count (Sub-label Stacking)]      |   | (Adaptive Priority Collapse Sequence → [⋮] Menu)   | |
-| +------------------------------------+   +----------------------------------------------------+ |
-+-------------------------------------------------------------------------------------------------+
-```
+- **Page Toolbar Bar Dimensions:** Fixed Height 52px, Strict Single-Row Layout
+- **Left Zone:** Title (for example, Contacts), Sub-label Count (Sub-label Stacking)
+- **Right Zone:** Search, Filter, Secondary CTA, Primary CTA, Overflow Menu (`⋮`)
+- **Adaptive Sequence:** Adaptive priority collapse sequence into Overflow Menu
 
 #### Declarative Control Priority Contract (`priority` prop)
 
@@ -51,13 +46,13 @@ Controls placed in `PageToolbarRight` define an explicit priority tier governing
 
 When width constraints occur, items adapt in the following strict order:
 
-1. **Stage 1 (Search Bar Input Collapse):** Compact search input (`w-[240px]`) collapses into a borderless Search icon button (`[🔍]`). Clicking this icon opens the mobile Search Dialog.
+1. **Stage 1 (Search Bar Input Collapse):** Compact search input (`w-[240px]`) collapses into a borderless Search icon button (`[]`). Clicking this icon opens the mobile Search Dialog.
 2. **Stage 2 (Utility Controls Overflow):** Lower priority utility controls (`priority="utility"`), evaluated left-to-right, move into the `MoreVertical` dropdown menu.
-3. **Stage 3 (Primary CTA Text Collapse):** Primary CTA button transitions from `Icon + Text` (e.g., `[+] Add Contact`) to `Icon-Only` while preserving its variant framing (`variant="default"` accent color & styling).
-4. **Stage 4 (Search Icon Overflow):** Collapsed Search icon button (`priority="search"`) moves into the `MoreVertical` dropdown menu as `[🔍] Search...` list item.
+3. **Stage 3 (Primary CTA Text Collapse):** Primary CTA button transitions from `Icon + Text` (for example,., `[+] Add Contact`) to `Icon-Only` while preserving its variant framing (`variant="default"` accent color & styling).
+4. **Stage 4 (Search Icon Overflow):** Collapsed Search icon button (`priority="search"`) moves into the `MoreVertical` dropdown menu as `[] Search...` list item.
 5. **Stage 5 (Secondary CTA Overflow):** Secondary button (`priority="secondary"`) moves into the `MoreVertical` dropdown menu as `[Icon] Label` list item.
 6. **Stage 6 (Primary CTA Overflow):** Primary CTA icon button (`priority="primary"`) moves into the `MoreVertical` dropdown menu as top-level highlighted `[Icon] Label` list item.
-7. **Stage 7 (Title Text Truncation):** If container space is still insufficient with _only_ `MoreVertical` remaining on the right, Left Zone title text is clipped/truncated (`truncate flex-1 min-w-0`).
+7. **Stage 7 (Title Text Truncation):** Truncate title text if space is insufficient with only `MoreVertical` remaining (`truncate flex-1 min-w-0`).
 
 #### Item Representation Inside `MoreVertical` Dropdown Menu
 
@@ -69,14 +64,14 @@ When controls enter the overflow dropdown:
 
 ### 3. Toolbar Button Implementation Rules (Visual Look)
 
-Governed strictly by [ADR 0043 - Button Text vs Icon Rules](0043-button-text-vs-icon-rules.md):
+Governed strictly by [0043-button-text-against-icon-rules.md]:
 
 - **Primary CTA (Icon + Text Button):**
-  - The page or section's single Primary CTA (e.g., `[+] Add Contact`) **must use the Icon + Text** format at rest.
+  - The page or section's single Primary CTA (for example,., `[+] Add Contact`) **must use the Icon + Text** format at rest.
   - It uses standard visual framing (`variant="default" h-9 px-4`) to offer a clear, high-contrast focal point.
   - On narrow viewports (Stage 3), it collapses to an icon-only button (`h-9 w-9`) while maintaining `variant="default"` styling.
 - **Auxiliary & Utility Options (Icon-Only Borderless Buttons):**
-  - All non-primary utility controls (e.g., `[⛛] Filter`, `[↑] Import`, `[↓] Export`, `[⋮] More Actions`) **must render as Icon-Only** with no visible text on the button face.
+  - All non-primary utility controls (for example,., `[] Filter`, `[↑] Import`, `[↓] Export`, `[⋮] More Actions`) **must render as Icon-Only** with no visible text on the button face.
   - **No Border:** Borderless framing (`border-none` / transparent background `variant="ghost"` / `variant="outline" border-none`).
   - **Full-Height Icon:** Icon scale expands to match the total height of the button container.
   - **Tooltip Interaction:** Toolbar icon-only buttons use a **200–300ms hover delay** before displaying a tooltip with descriptive text.
@@ -90,6 +85,6 @@ Governed strictly by [ADR 0043 - Button Text vs Icon Rules](0043-button-text-vs-
 ## Consequences
 
 - Toolbar vertical height is strictly locked to 52px across all screen sizes, eliminating awkward multi-row wrapping.
-- Visual hierarchy is preserved: Primary CTA and Search stay visible on the bar as long as physically possible before overflowing into `MoreVertical`.
+- The system preserves visual hierarchy. Primary CTA and Search stay visible before overflowing into `MoreVertical`.
 - Dynamic layout reflows use deterministic 7-stage container measurement without triggering horizontal or vertical scrollbars.
 - Full WCAG 2.1 Level AA keyboard navigation and touch target standards are maintained.

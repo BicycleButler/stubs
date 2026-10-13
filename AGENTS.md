@@ -17,7 +17,7 @@ Lifecycle phases:
 
 ## Architecture Context Maps — Read First
 
-Agent entry point: knowledge/architecture/context-map.md (human visual map: knowledge/architecture/visual-map.md; agents ignore unless requested).
+Agent entry point: knowledge/architecture/context-map.md (human visual map: knowledge/architecture/visual-map.md,  agents ignore unless requested).
 Repo ADRs: knowledge/architecture/ADR/ (ADR-001 agent-first format, ADR-002 domain clustering).
 Subsystem index: src/INDEX.md.
 Module specs: co-located `*.ts.md` sidecars in `src/`.
@@ -50,7 +50,7 @@ AST dependency graph in `.stubs/graph.sqlite` with Louvain community detection, 
   - `npx stubs query "blast: <target>"`: Level 2 Downstream impact radius and dependents
   - `npx stubs query "pkg:<package> <query>"`: Monorepo package-scoped query
   - `npx stubs query "<concept>"`: Multi-hop token-budgeted GraphRAG context retrieval
-- Model Context Protocol (MCP): connect via standard JSON-RPC 2.0 stdio:
+- Model Context Protocol (MCP): connect through standard JSON-RPC 2.0 stdio:
   ```json
   {
     "mcpServers": {
@@ -63,10 +63,10 @@ AST dependency graph in `.stubs/graph.sqlite` with Louvain community detection, 
   ```
   (or `"command": "npx", "args": ["stubs", "mcp"]`). Ultra-lean suite exposes `stubs_query` and `stubs_scan`.
 - Monorepo & workspace boundary resolution:
-  - Discovers package boundaries via `package.json` (`workspaces`), `pnpm-workspace.yaml`, `Cargo.toml` (`[workspace]`), `go.work`.
+  - Discovers package boundaries through `package.json` (`workspaces`), `pnpm-workspace.yaml`, `Cargo.toml` (`[workspace]`), `go.work`.
   - Path aliases in `tsconfig.json` (`compilerOptions.paths`) and package exports map directly to canonical source files.
-  - Monorepo query prefix: `pkg:<package>` (e.g. `npx stubs query "pkg:billing invoice"`).
-- Automatic graph maintenance: auto-checks file mtime (<30ms) for 0% staleness. Refresh manually via `npx stubs scan`.
+  - Monorepo query prefix: `pkg:<package>` (for example,. `npx stubs query "pkg:billing invoice"`).
+- Automatic graph maintenance: auto-checks file mtime (<30ms) for 0% staleness. Refresh manually through `npx stubs scan`.
 
 ## CLI Commands
 
@@ -102,6 +102,6 @@ The repository is organized as an npm workspaces monorepo:
 
 ## stubs CLI Binary
 
-Binary entry point: `bin/stubs.js` (delegates to `packages/cli/dist/index.cjs`). Invoke via `npx stubs <command>`.
+Binary entry point: `bin/stubs.js` (delegates to `packages/cli/dist/index.cjs`). Invoke through `npx stubs <command>`.
 
 Known CLI bug status: B1 sand path resolution (RESOLVED), B2 non-interactive grill (RESOLVED), B3 materialize parser (RESOLVED).

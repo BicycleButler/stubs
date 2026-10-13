@@ -14,7 +14,7 @@ Automated background AI data enhancements (scraping directories or sites) can ha
 
 ## Decision
 
-establish Human-in-the-Loop gating policy: non-critical data (like logos) applied autonomously, but critical business fields (email, phone, address) must generate `PendingChange` or `ClientEnrichmentProposal` inside `ReviewQueue`. only committed to authoritative records upon manual user validation. High-confidence suggestions (>95%) can bypass manual review only if explicit auto-reconcile settings active.
+Apply non-critical data autonomously. Critical fields (email, phone, address) generate pending changes for review. Commit critical fields only after user validation. High-confidence suggestions can bypass review if auto-reconcile settings are active.
 
 ## Consequences
 

@@ -5,8 +5,6 @@ This reference contains the exhaustive alphabetical index of the **~240 approved
 > [!IMPORTANT]
 > Do not use an action verb that is not on this list. Use a recognized Technical Verb (Rule 1.12) or rephrase with an approved verb.
 
----
-
 ## Approved Verbs (A – Z)
 
 ### A

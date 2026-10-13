@@ -42,7 +42,7 @@ stale_details: null
 
 # Query Engine — GraphRAG and Unified Surgical Query
 
-The `QueryEngine` provides a single unified entry point for both broad semantic graph context retrieval (GraphRAG) and targeted surgical queries (symbol explanation, shortest path relational traces, and downstream blast radius impact).
+The `QueryEngine` provides a single unified entry point for  broad semantic graph context retrieval (GraphRAG) and targeted surgical queries (symbol explanation, shortest path relational traces, and downstream blast radius impact).
 
 ## Surgical Query Modes
 

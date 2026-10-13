@@ -26,5 +26,5 @@ stubs impact <file_path> [--depth <N>] [--json] [--transitive] [--upstream]
 
 ## Agent Workflow Integration
 
-- **Before Materializing/Modifying a Module:** Run `stubs impact <path>` to check whether changes to its public exports will break downstream callers or cross domain boundaries.
-- **Before Subagent Dispatch / Task Briefing:** Run `stubs context <path>` to extract a clean markdown context package to seed into the subagent's prompt or write to an ephemeral file.
+- **Before Modifying a Module:** Run `stubs impact <path>` to check whether changes break downstream callers or cross domain boundaries.
+- **Before Subagent Dispatch:** Run `stubs context <path>` to extract a clean context package for the subagent prompt.

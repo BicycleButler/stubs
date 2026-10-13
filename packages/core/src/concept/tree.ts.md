@@ -38,5 +38,5 @@ Visualizes repository file trees combining real disk files and conceptual bluepr
 ## Key Capabilities
 
 1. **`generateVisualTree(options)`:** Generates a unified ASCII/Unicode tree.
-2. **Planned Files Overlay:** Scans `filetree` code blocks and planned_files in concept docs and displays `[PLANNED]` badges for files yet to be created.
-3. **Phase & Status Badging:** Annotates active specifications with their current phase (`[SPEC]`, `[GRILL]`, `[MATERIALIZE]`, `[SAND]`) and status flags (`clean`, `dependency-stale`, etc.).
+2. **Planned Files Overlay:** Scans `filetree` blocks and `planned_files` in concept documents. Displays `[PLANNED]` badges for missing files.
+3. **Phase & Status Badging:** Annotates active specifications with their current phase (`[SPEC]`, `[GRILL]`, `[MATERIALIZE]`, `[SAND]`) and status flags (`clean`, `dependency-stale`, and so on.).

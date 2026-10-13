@@ -414,8 +414,25 @@ export function splitIntoSentences(content) {
     fullText = fullText.replace(/`[^`]*`/g, ' code_span ');
     // Normalize markdown links [label](url) -> label
     fullText = fullText.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
-    // Strip parenthetical asterisks
-    fullText = fullText.replace(/\*\([^*]*\)\*/g, '');
+    // Handle ADR-001 compact records (- Col 1 | Col 2 | Col 3) as discrete tabular fields
+    if (block.isListItem && fullText.includes(' | ')) {
+      const cells = fullText.split(/\s+\|\s+/);
+      for (const cell of cells) {
+        const protectedCell = protectAbbreviations(cell);
+        const rawSentences = protectedCell.split(/(?<=[.!?])\s+(?=[A-Z0-9"]|$)/);
+        for (const raw of rawSentences) {
+          const restored = restoreAbbreviations(raw).trim();
+          if (restored.length > 0) {
+            sentences.push({
+              text: restored,
+              lineNum: startLineNum,
+              isListItem: false, // Compact record cells represent descriptive tabular data
+            });
+          }
+        }
+      }
+      continue;
+    }
 
     const protectedText = protectAbbreviations(fullText);
 
@@ -694,14 +711,12 @@ export function lintSTE(content, isCodeFile = false) {
 export const DEFAULT_TALE_CONFIG = {
   agentFirst: {
     patterns: [
-      'AGENTS.md',
-      'RULES.md',
-      '**/*context*',
-      'knowledge/architecture/**',
-      '**/*.spec.md',
+      '**/*.md',
+      '**/*.markdown',
     ],
     exclude: [
       'README.md',
+      'QUICKSTART.md',
       'CONTRIBUTING.md',
       'CHANGELOG.md',
       'LICENSE.md',
@@ -717,12 +732,14 @@ export function matchesGlobPattern(filePath, pattern) {
 
   let regexStr = normalizedPattern
     .replace(/[.+^${}()|[\]\\]/g, '\\$&')
+    .replace(/\?/g, '[^/]')
+    .replace(/\*\*\//g, '___GLOBSTAR_SLASH___')
     .replace(/\*\*/g, '___GLOBSTAR___')
     .replace(/\*/g, '[^/]*')
-    .replace(/___GLOBSTAR___/g, '.*')
-    .replace(/\?/g, '.');
+    .replace(/___GLOBSTAR_SLASH___/g, '(?:.*/)?')
+    .replace(/___GLOBSTAR___/g, '.*');
 
-  if (!regexStr.startsWith('.*') && !regexStr.startsWith('/')) {
+  if (!regexStr.startsWith('.*') && !regexStr.startsWith('/') && !regexStr.startsWith('(?:')) {
     regexStr = `(?:^|.*/)${regexStr}`;
   }
   const regex = new RegExp(`^${regexStr}$`, 'i');
@@ -806,6 +823,8 @@ export function lintAgentFirst(content) {
   }
 
   const EMOJI_REGEX = /[\u{1F300}-\u{1F9FF}\u{1FA00}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/u;
+  const UNICODE_BOX_DRAWING_REGEX = /[\u2500-\u257F\u2580-\u259F]/u;
+  const ASCII_BOX_BORDER_REGEX = /\+[=-]{2,}\+/;
   let consecutiveBlankLines = 0;
   let inCodeFence = false;
 
@@ -815,6 +834,7 @@ export function lintAgentFirst(content) {
     const trimmed = line.trim();
 
     if (trimmed.startsWith('```')) {
+      consecutiveBlankLines = 0;
       inCodeFence = !inCodeFence;
       if (inCodeFence && trimmed.toLowerCase().startsWith('```mermaid')) {
         issues.push({
@@ -826,6 +846,19 @@ export function lintAgentFirst(content) {
         });
       }
       continue;
+    }
+
+    // Mask inline code spans before checking prose characters (preserve raw lines inside code fences)
+    const lineWithoutInlineCode = inCodeFence ? line : line.replace(/`[^`]*`/g, ' code_span ');
+
+    if (UNICODE_BOX_DRAWING_REGEX.test(lineWithoutInlineCode) || ASCII_BOX_BORDER_REGEX.test(lineWithoutInlineCode)) {
+      issues.push({
+        lineNum,
+        rule: 'ADR-001 Rule 1',
+        message:
+          'ASCII art or box-drawing character detected. Prohibited in agent-first and token-optimized files.',
+        context: line,
+      });
     }
 
     if (inCodeFence) {
@@ -962,6 +995,129 @@ export function autoFixContent(content, isAgentFirst = false) {
       });
     }
 
+    // Strip decorative horizontal dividers outside frontmatter
+    const dividerLines = fixed.split('\n');
+    let inFm = false;
+    let fmEnd = 0;
+    if (dividerLines.length > 0 && dividerLines[0].trim() === '---') {
+      inFm = true;
+      for (let i = 1; i < dividerLines.length; i++) {
+        if (dividerLines[i].trim() === '---') {
+          fmEnd = i + 1;
+          inFm = false;
+          break;
+        }
+      }
+    }
+    let inFence = false;
+    const strippedLines = [];
+    for (let i = 0; i < dividerLines.length; i++) {
+      const line = dividerLines[i];
+      const lineNum = i + 1;
+      const trimmed = line.trim();
+      if (trimmed.startsWith('```')) {
+        inFence = !inFence;
+        strippedLines.push(line);
+        continue;
+      }
+      if (inFence || lineNum <= fmEnd) {
+        strippedLines.push(line);
+        continue;
+      }
+      if (trimmed === '---' || trimmed === '***' || trimmed === '___') {
+        fixCount++;
+        continue;
+      }
+      strippedLines.push(line);
+    }
+    fixed = strippedLines.join('\n');
+
+    // Convert Markdown tables to compact pipe-delimited records
+    const tableLines = fixed.split('\n');
+    const convertedLines = [];
+    inFence = false;
+    let idx = 0;
+
+    const isTableRow = (str) => {
+      const s = str.trim();
+      return s.startsWith('|') && s.endsWith('|') && s.includes('|');
+    };
+    const isDelimiterRow = (str) => {
+      const s = str.trim();
+      return /^\|?\s*:?-+:?\s*(\|?\s*:?-+:?\s*)+\|?$/.test(s);
+    };
+    const parseCells = (row) => {
+      let s = row.trim();
+      if (s.startsWith('|')) s = s.slice(1);
+      if (s.endsWith('|')) s = s.slice(0, -1);
+      return s.split('|').map((c) => c.trim());
+    };
+
+    while (idx < tableLines.length) {
+      const line = tableLines[idx];
+      const trimmed = line.trim();
+
+      if (trimmed.startsWith('```')) {
+        inFence = !inFence;
+        convertedLines.push(line);
+        idx++;
+        continue;
+      }
+
+      if (inFence) {
+        convertedLines.push(line);
+        idx++;
+        continue;
+      }
+
+      if (idx + 1 < tableLines.length && isTableRow(line) && isDelimiterRow(tableLines[idx + 1])) {
+        fixCount++;
+        const headerCells = parseCells(line);
+        convertedLines.push(`- ${headerCells.join(' | ')}`);
+        idx += 2; // skip header and delimiter row
+
+        while (idx < tableLines.length && isTableRow(tableLines[idx])) {
+          fixCount++;
+          const rowCells = parseCells(tableLines[idx]);
+          convertedLines.push(`- ${rowCells.join(' | ')}`);
+          idx++;
+        }
+        continue;
+      }
+
+      convertedLines.push(line);
+      idx++;
+    }
+    fixed = convertedLines.join('\n');
+
+    // Strip standalone Unicode box-drawing borders, frames, and tree branches
+    const boxLines = fixed.split('\n');
+    const cleanedBoxLines = [];
+    for (const bLine of boxLines) {
+      const trimmed = bLine.trim();
+      // Skip pure box border lines (e.g. ┌────┐, └────┘, ├────┤, ══════)
+      if (
+        trimmed.length >= 3 &&
+        /^[\u2500-\u257F\u2550-\u256C+\-=_|~ ]+$/.test(trimmed) &&
+        /[\u2500-\u257F\u2550-\u256C]/.test(trimmed)
+      ) {
+        fixCount++;
+        continue;
+      }
+      // Strip leading and trailing vertical box borders
+      let cleaned = bLine.replace(/^(\s*)[│║]\s*/, '$1').replace(/\s*[│║](\s*)$/, '$1');
+      // Normalize tree branch prefixes (e.g. ├─►, └─►, ├──, └──) to bullet points
+      if (/^\s*[└├][─═]+[►> ]\s*/.test(cleaned)) {
+        cleaned = cleaned.replace(/^\s*[└├][─═]+[►> ]\s*/, '- ');
+        fixCount++;
+      }
+      if (cleaned !== bLine) {
+        fixCount++;
+      }
+      cleanedBoxLines.push(cleaned);
+    }
+    fixed = cleanedBoxLines.join('\n');
+
     // Collapse consecutive blank lines
     const multipleBlanks = /(\n[ \t]*){3,}/g;
     if (multipleBlanks.test(fixed)) {
@@ -1071,7 +1227,8 @@ Options:
   -c, --code            Scan code comments in TypeScript/JavaScript files (.ts, .tsx, .js)
   -a, --all             Scan both documentation (.md) and code comments (.ts, .js)
   --agent-first         Force ADR-001 Agent-First syntax checks (compact records, no emojis, no redundant links)
-  --fix                 Automatically fix safe violations (contractions, Latin terms, emojis, duplicate links)
+  --fix                 Automatically fix violations: convert tables to compact pipe records,
+                        remove ':--', strip box frames/dividers, normalize links, fix contractions
   --json                Output results in JSON format
   -h, --help            Show this help message
 

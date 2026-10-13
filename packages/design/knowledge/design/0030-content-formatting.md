@@ -10,25 +10,24 @@ last_updated: '2026-07-29T15:30:00Z'
 
 ## Context
 
-No standard exists for how dates, times, numbers, currency, or "unknown" values are displayed to users. This produces inconsistent UI: some dates show as ISO strings, some as full long form, currency loses locale formatting, and missing values alternate between blank cells, "N/A", "null", and em-dashes.
+No standard exists for how dates, times, numbers, currency, or "unknown" values are displayed to users. This produces inconsistent UI: dates show as ISO strings, currency loses formatting, and missing values vary arbitrarily.
 
 ## Decision
 
 ### 1 — Date & Time Display
 
-**Relative vs. Absolute rule (mirrors Facebook's recency model):**
+**Relative against. Absolute rule (mirrors Facebook's recency model):**
 
-| Age of event                     | Display format        | Example              |
-| -------------------------------- | --------------------- | -------------------- |
-| < 1 minute                       | "Just now"            | Just now             |
-| 1–59 minutes                     | "{n} minutes ago"     | 12 minutes ago       |
-| 1–23 hours                       | "{n} hours ago"       | 3 hours ago          |
-| Yesterday (same calendar day −1) | "Yesterday at {time}" | Yesterday at 2:14 PM |
-| 2–6 days ago                     | "{day} at {time}"     | Tuesday at 2:14 PM   |
-| Same calendar year               | "MMM D at {time}"     | Jul 29 at 2:14 PM    |
-| Different year                   | "MMM D, YYYY"         | Jul 29, 2024         |
+- Age of event | Display format | Example
+- < 1 minute | "Just now" | Just now
+- 1–59 minutes | "{n} minutes ago" | 12 minutes ago
+- 1–23 hours | "{n} hours ago" | 3 hours ago
+- Yesterday (same calendar day −1) | "Yesterday at {time}" | Yesterday at 2:14 PM
+- 2–6 days ago | "{day} at {time}" | Tuesday at 2:14 PM
+- Same calendar year | "MMM D at {time}" | Jul 29 at 2:14 PM
+- Different year | "MMM D, YYYY" | Jul 29, 2024
 
-**Absolute date format:** `MMM D, YYYY` (e.g., "Jul 29, 2026"). Never `MM/DD/YYYY`.
+**Absolute date format:** `MMM D, YYYY` (for example,., "Jul 29, 2026"). Never `MM/DD/YYYY`.
 
 **Time format:** 12-hour with AM/PM: `2:14 PM`. No leading zero on hours.
 
@@ -49,7 +48,7 @@ No standard exists for how dates, times, numbers, currency, or "unknown" values 
 ### 3 — Plain Numbers
 
 - **Thousands separator:** Comma: `1,234,567`.
-- **Decimals:** Show only when meaningful (counts = 0 decimals; percentages = 1 decimal; rates = 2 decimals).
+- **Decimals:** Show only when meaningful (counts = 0 decimals. Percentages = 1 decimal,  rates = 2 decimals).
 - **Large count abbreviation:** Same threshold as currency: ≥10,000 → `12.3K`, ≥1,000,000 → `1.2M`.
 - **Zero:** Display as `0` — never blank for a numeric field.
 
@@ -75,7 +74,7 @@ No standard exists for how dates, times, numbers, currency, or "unknown" values 
 ### 7 — Addresses
 
 - Multi-line inline display: `123 Main St, Suite 4, Denver, CO 80202`.
-- Single-line (tables/cards): truncate at available width with ellipsis; show full on hover tooltip.
+- Single-line (tables/cards): truncate at available width with ellipsis. Show full on hover tooltip.
 
 ## Consequences
 

@@ -154,6 +154,9 @@ var require_src = __commonJS({
 });
 
 // src/index.ts
+var import_fs = __toESM(require("fs"));
+var import_path = __toESM(require("path"));
+var import_child_process = require("child_process");
 var import_picocolors3 = __toESM(require_picocolors());
 
 // ../../node_modules/@clack/prompts/dist/index.mjs
@@ -1149,6 +1152,27 @@ async function main() {
     console.log("Usage: npx stubs mcp add <server>");
     return;
   }
+  if (command === "tale" || command === "lint:tale" || command === "format:tale") {
+    const taleArgs = process.argv.slice(3);
+    if (command === "format:tale" && !taleArgs.includes("--fix")) {
+      taleArgs.unshift("--fix");
+    }
+    const candidatePaths = [
+      import_path.default.resolve(__dirname, "../../tale/src/tale-lint.mjs"),
+      import_path.default.resolve(process.cwd(), "packages/tale/src/tale-lint.mjs"),
+      import_path.default.resolve(process.cwd(), ".agents/skills/tale/scripts/tale-lint.mjs"),
+      import_path.default.resolve(__dirname, "../../../packages/tale/src/tale-lint.mjs")
+    ];
+    const scriptPath = candidatePaths.find((p2) => import_fs.default.existsSync(p2));
+    if (scriptPath) {
+      const res = (0, import_child_process.spawnSync)(process.execPath, [scriptPath, ...taleArgs], { stdio: "inherit" });
+      process.exit(res.status ?? 0);
+    }
+    console.error(
+      import_picocolors3.default.red("Error: Could not locate tale-lint.mjs. Make sure @wiltermood/tale is installed.")
+    );
+    process.exit(1);
+  }
   if (command === "help" || command === "--help" || command === "-h") {
     console.log(`
 ${import_picocolors3.default.bold("Stubs AI Agent Skills & Tools Hub")}
@@ -1159,6 +1183,7 @@ ${import_picocolors3.default.bold("Usage:")}
   stubs add <items...>      Install specific skills (e.g. tale, design, stubs, all)
   stubs list                List all available skills, rules, and MCP servers
   stubs mcp add <server>    Register an MCP server into .agents/mcp_config.json
+  stubs tale [options]      Lint or format documentation & code comments (--fix)
 
 ${import_picocolors3.default.bold("Flags:")}
   --global, -g              Install globally into ~/.gemini/config instead of local workspace
@@ -1172,11 +1197,11 @@ ${import_picocolors3.default.bold("Core Architecture Commands:")}
     return;
   }
   try {
-    const path3 = require("path");
-    const fs3 = require("fs");
-    const coreCliPath = path3.resolve(__dirname, "../../core/dist/cli.cjs");
-    const legacyPath = path3.resolve(__dirname, "../../../dist/cli.cjs");
-    const enginePath = fs3.existsSync(coreCliPath) ? coreCliPath : fs3.existsSync(legacyPath) ? legacyPath : null;
+    const path4 = require("path");
+    const fs4 = require("fs");
+    const coreCliPath = path4.resolve(__dirname, "../../core/dist/cli.cjs");
+    const legacyPath = path4.resolve(__dirname, "../../../dist/cli.cjs");
+    const enginePath = fs4.existsSync(coreCliPath) ? coreCliPath : fs4.existsSync(legacyPath) ? legacyPath : null;
     if (enginePath) {
       require(enginePath);
       return;

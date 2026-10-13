@@ -37,7 +37,7 @@ depends_on:
 
 # Storage — Credentials & Console Masking
 
-Security module. Handles PAT encryption/decryption and ensures tokens never appear in CLI output.
+Security module. Handles PAT encryption/decryption and makes sure that tokens never appear in CLI output.
 
 ## Encryption Scheme
 
@@ -51,14 +51,14 @@ Encrypted payload is stored as a JSON object with fields: `encrypted`, `salt`, `
 
 ## Console Masking
 
-`applyGlobalConsoleMasking()` is called once at CLI startup (in `CliRouter.route()`). It patches `process.stdout.write` and `process.stderr.write` to find-and-replace any stored PAT value with `[REDACTED]` in all output.
+`applyGlobalConsoleMasking()` is called once at CLI startup (in `CliRouter.route()`). It patches `process.stdout.write` and `process.stderr.write`. It replaces stored PAT values with `[REDACTED]` in all output.
 
 ## Credential File Location
 
-`~/.stubs/credentials.json` — stored in the user home directory, outside any repository.
+`~/.stubs/credentials.json` — stored in the user home directory, outside the repository.
 
 ## Key Design Decisions
 
-- `decrypt()` falls back to returning the plaintext unchanged if the payload is not in the encrypted JSON format — handles migration from older plaintext storage gracefully.
-- Machine-unique key means credentials are not portable across machines (intentional — prevents credential leakage via repository sharing).
+- `decrypt()` returns plaintext unchanged if not in encrypted JSON format. This handles migration from older storage cleanly.
+- Machine-unique key means credentials are not portable across machines (intentional — prevents credential leakage through repository sharing).
 - `applyGlobalConsoleMasking()` is idempotent — safe to call multiple times.

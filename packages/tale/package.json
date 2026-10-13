@@ -13,7 +13,9 @@
     "README.md"
   ],
   "scripts": {
+    "lint": "node src/tale-lint.mjs",
     "lint:tale": "node src/tale-lint.mjs",
+    "format": "node src/tale-lint.mjs --fix",
     "test": "node skill/scripts/test-linter.mjs"
   },
   "keywords": [

@@ -21,9 +21,9 @@ Mixed icon sources, uncontrolled sizing, and missing avatar fallbacks degrade vi
    - **Navigation (24px):** `strokeWidth={1.75}` (toolbar, sidebar)
    - **Feature (32px):** `strokeWidth={1.5}` (card headers, metric callouts)
    - **Hero (48px):** `strokeWidth={1.5}` (empty states, banners)
-3. **Mobile Touch Target Bounds:** All interactive icon elements on touch devices (`<768px`) must satisfy a minimum **44×44px** hit area (`size-11` or pseudo-element `before:-inset-1` padding), adapting down to desktop density (`md:size-9` / 36px) for mouse pointers.
+3. **Mobile Touch Target Bounds:** Interactive icon elements on touch devices must provide a minimum 44×44px hit area.
 4. **Dynamic Background Contrast:** Icons on user-uploaded images require a solid backdrop, drop-shadow, or scrim overlay.
 5. **Avatar System & Fixed Bounds:**
    - 4 sizes (24/32/40/48px), strictly circular. Fallback chain: uploaded image → initials → generic icon.
-   - **Immutable Container Rule:** The `Avatar` primitive must preserve its 1:1 circular aspect ratio. Expanding it into name tags, pills, or cards is strictly prohibited. Hover previews must render via portal overlays per [ADR 0022](0022-animations-microinteractions.md).
+   - **Immutable Container Rule:** The `Avatar` primitive must preserve its 1:1 circular aspect ratio. Expanding it into name tags, pills, or cards is strictly prohibited. Hover previews must render through portal overlays per [0022-animations-microinteractions.md].
 6. **Image Handling:** Aspect ratio locking, lazy loading below fold, alt text for meaningful images, WebP/AVIF preferred.

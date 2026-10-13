@@ -1,3 +1,6 @@
+import fs from 'fs';
+import path from 'path';
+import { spawnSync } from 'child_process';
 import pc from 'picocolors';
 import { runInteractiveTui } from './tui';
 import { getAvailableSkills, installSkills } from './installer';
@@ -87,6 +90,28 @@ async function main(): Promise<void> {
     return;
   }
 
+  if (command === 'tale' || command === 'lint:tale' || command === 'format:tale') {
+    const taleArgs = process.argv.slice(3);
+    if (command === 'format:tale' && !taleArgs.includes('--fix')) {
+      taleArgs.unshift('--fix');
+    }
+    const candidatePaths = [
+      path.resolve(__dirname, '../../tale/src/tale-lint.mjs'),
+      path.resolve(process.cwd(), 'packages/tale/src/tale-lint.mjs'),
+      path.resolve(process.cwd(), '.agents/skills/tale/scripts/tale-lint.mjs'),
+      path.resolve(__dirname, '../../../packages/tale/src/tale-lint.mjs'),
+    ];
+    const scriptPath = candidatePaths.find((p) => fs.existsSync(p));
+    if (scriptPath) {
+      const res = spawnSync(process.execPath, [scriptPath, ...taleArgs], { stdio: 'inherit' });
+      process.exit(res.status ?? 0);
+    }
+    console.error(
+      pc.red('Error: Could not locate tale-lint.mjs. Make sure @wiltermood/tale is installed.'),
+    );
+    process.exit(1);
+  }
+
   if (command === 'help' || command === '--help' || command === '-h') {
     console.log(`
 ${pc.bold('Stubs AI Agent Skills & Tools Hub')}
@@ -97,6 +122,7 @@ ${pc.bold('Usage:')}
   stubs add <items...>      Install specific skills (e.g. tale, design, stubs, all)
   stubs list                List all available skills, rules, and MCP servers
   stubs mcp add <server>    Register an MCP server into .agents/mcp_config.json
+  stubs tale [options]      Lint or format documentation & code comments (--fix)
 
 ${pc.bold('Flags:')}
   --global, -g              Install globally into ~/.gemini/config instead of local workspace

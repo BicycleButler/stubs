@@ -45,11 +45,10 @@ The policy and reconciliation engine. It enforces action gates before code is wr
 
 ## 3-Tier Autonomy Matrix
 
-| Level              | `draft_template_proposal` | `scaffold_sidecar` | `materialize_code` |
-| ------------------ | ------------------------- | ------------------ | ------------------ |
-| `strict_gate`      | ✅                        | ❌                 | ❌                 |
-| `guided_execution` | ✅                        | ✅                 | ❌                 |
-| `autonomous`       | ✅                        | ✅                 | ✅                 |
+- Level | `draft_template_proposal` | `scaffold_sidecar` | `materialize_code`
+- `strict_gate` |  |  | 
+- `guided_execution` |  |  | 
+- `autonomous` |  |  | 
 
 `evaluateAction(actionType)` returns `{ allowed: boolean; reason: string }` — callers display the reason to users when blocked.
 
@@ -99,4 +98,4 @@ interface DriftReport {
 - `reconcile()` returns a `ReconciliationResult` with the phase number where execution stopped — callers can pinpoint exactly which phase failed.
 - Phase 3 conflict detection is non-blocking by default: conflicts are reported in `proposal.conflicts` but only abort if `options.forceApply` is false. With `forceApply: true`, conflicting changes are applied anyway.
 - Phase 4 validation is a structural/format check — it does not run the TypeScript compiler (that is the Materializer's responsibility).
-- Phase 5 write is non-atomic at the protocol level (vs. MaterializerEngine's `writeAtomic`) — the assumption is that reconciliation is a supervised, human-reviewed operation.
+- Phase 5 write is non-atomic at the protocol level (against. MaterializerEngine's `writeAtomic`) — the assumption is that reconciliation is a supervised, human-reviewed operation.

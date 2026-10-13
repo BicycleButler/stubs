@@ -38,7 +38,7 @@ stale_details: null
 
 # Grill Engine — Interactive Spec Interrogation
 
-The Grill Engine acts as a design review enforcer. Given a sidecar spec, it generates targeted questions about the module's interface, constraints, error handling, and context objects — then records the answers as permanent `user_notes` ADR entries in the frontmatter.
+The Grill Engine acts as a design review enforcer. It generates targeted questions about the module interface from a sidecar spec. It records answers as permanent `user_notes` ADR entries in the frontmatter.
 
 ## State Machine
 
@@ -47,21 +47,20 @@ INIT → PARSING → GENERATING_QUESTIONS → GRILLING → SAVING → DONE
                                                          ↘ ERROR
 ```
 
-- **INIT:** Entry state; sets up options and resolves file path.
+- **INIT:** Entry state. Sets up options and resolves file path.
 - **PARSING:** Reads and validates the OKF sidecar file.
 - **GENERATING_QUESTIONS:** Calls `generateQuestions()` based on depth level.
-- **GRILLING:** Prompts via readline (interactive) or auto-answers (non-interactive).
+- **GRILLING:** Prompts through readline (interactive) or auto-answers (non-interactive).
 - **SAVING:** Writes updated frontmatter with Q&A recorded as `user_notes`.
 - **DONE:** Terminal success state.
-- **ERROR:** Terminal failure state; transitions here if file not found or OKF parse fails.
+- **ERROR:** Terminal failure state. Transitions here if file not found or OKF parse fails.
 
 ## Grill Depth Matrix
 
-| Depth                | Questions | Focus                                                     |
-| -------------------- | --------- | --------------------------------------------------------- |
-| `light_probe`        | ~3        | Public interface, happy-path inputs/outputs               |
-| `standard_drill`     | ~5–7      | Interface + constraints + error handling + context object |
-| `deep_interrogation` | ~10+      | All of above + edge cases + performance + security        |
+- Depth | Questions | Focus
+- `light_probe` | ~3 | Public interface, happy-path inputs/outputs
+- `standard_drill` | ~5–7 | Interface + constraints + error handling + context object
+- `deep_interrogation` | ~10+ | All of above + edge cases + performance + security
 
 ## Q&A Recording
 
@@ -76,7 +75,7 @@ The sidecar file status is set to `grilling` before the session begins and resto
 
 ## Key Design Decisions
 
-- Status is set to `grilling` on the file immediately at the start of the session — even if the agent crashes, the file records that grilling was in-progress.
+- Status is set to `grilling` on the file at session start. The file records that grilling was in progress if crashes occur.
 - Non-interactive mode (`options.nonInteractive = true`) accepts pre-provided `options.answers[]` or generates automated placeholder responses — enables agents to run grill without user input.
 - `onStateChange` callback allows the CLI to display progress to the user without the engine knowing about output format.
 - After grilling, the updated sidecar is re-indexed in GraphEngine.

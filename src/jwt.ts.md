@@ -33,7 +33,7 @@ user_notes:
   - id: NOTE-GRILL-1787306626714-1
     timestamp: '2026-08-21T10:03:46.707Z'
     text: >-
-      Q: What are the input validation rules and constraint boundaries (e.g.,
+      Q: What are the input validation rules and constraint boundaries (for example,.,
       format, value ranges, size limits) for this interface? | A: [Automated
       reply to: What are the input validation ...]
     status: resolved
@@ -47,7 +47,7 @@ user_notes:
   - id: NOTE-GRILL-1787306626714-3
     timestamp: '2026-08-21T10:03:46.707Z'
     text: >-
-      Q: How does this module "define errors out of existence" internally (e.g.,
+      Q: How does this module "define errors out of existence" internally (for example,.,
       favoring idempotent behaviors, explicit Result types, or null-objects over
       throwing exceptions)? | A: [Automated reply to: How does this module
       "define e...]
@@ -62,7 +62,7 @@ user_notes:
   - id: NOTE-GRILL-1787316251117-1
     timestamp: '2026-08-21T12:44:11.112Z'
     text: >-
-      Q: What are the input validation rules and constraint boundaries (e.g.,
+      Q: What are the input validation rules and constraint boundaries (for example,.,
       format, value ranges, size limits) for this interface? | A: [Automated
       reply to: What are the input validation ...]
     status: resolved
@@ -76,7 +76,7 @@ user_notes:
   - id: NOTE-GRILL-1787316251117-3
     timestamp: '2026-08-21T12:44:11.112Z'
     text: >-
-      Q: How does this module "define errors out of existence" internally (e.g.,
+      Q: How does this module "define errors out of existence" internally (for example,.,
       favoring idempotent behaviors, explicit Result types, or null-objects over
       throwing exceptions)? | A: [Automated reply to: How does this module
       "define e...]
@@ -94,7 +94,7 @@ depends_on:
 
 ## 1. Module Overview
 
-Provides lightweight, secure JWT verification and generation interfaces.
+Provides lightweight, safe JWT verification and generation interfaces.
 
 ## 2. Interfaces
 
@@ -107,7 +107,7 @@ export interface AuthContext {
 
 ## Current implementation
 
-This is a placeholder for the current implementation narrative. It should not be confused
+This is a placeholder for the current implementation narrative. It must not be confused
 with the actual implementation section below.
 
 ## Implementation
@@ -159,31 +159,31 @@ export function verifyToken(token: string, secret: string): JwtPayload | null {
 **Date:** 8/21/2026  
 **Depth:** standard_drill
 
-- **Q:** _Regarding the module's public interface: what are the primary input parameters and expected happy-path output types/values?_
-  **A:** [Automated reply to: Regarding the module's public ...]
+- **Q:** _What are the primary input parameters and return types?_
+**A:** [Automated reply to: Regarding the module's public ...]
 
-- **Q:** _What are the input validation rules and constraint boundaries (e.g., format, value ranges, size limits) for this interface?_
-  **A:** [Automated reply to: What are the input validation ...]
+- **Q:** _What are the input validation rules and constraint boundaries?_
+**A:** [Automated reply to: What are the input validation ...]
 
-- **Q:** _How does the context object `AuthContext` capture environment and security variables to prevent parameter cluttering?_
-  **A:** [Automated reply to: How does the context object `A...]
+- **Q:** _How does the context object `AuthContext` capture security variables?_
+**A:** [Automated reply to: How does the context object `A...]
 
-- **Q:** _How does this module "define errors out of existence" internally (e.g., favoring idempotent behaviors, explicit Result types, or null-objects over throwing exceptions)?_
-  **A:** [Automated reply to: How does this module "define e...]
+- **Q:** _How does this module "define errors out of existence" internally (for example,., favoring idempotent behaviors, explicit Result types, or null-objects over throwing exceptions)?_
+**A:** [Automated reply to: How does this module "define e...]
 
 ## Grilling & Discussion (Standard Drill)
 
 **Date:** 8/21/2026  
 **Depth:** standard_drill
 
-- **Q:** _Regarding the module's public interface: what are the primary input parameters and expected happy-path output types/values?_
-  **A:** [Automated reply to: Regarding the module's public ...]
+- **Q:** _What are the primary input parameters and return types?_
+**A:** [Automated reply to: Regarding the module's public ...]
 
-- **Q:** _What are the input validation rules and constraint boundaries (e.g., format, value ranges, size limits) for this interface?_
-  **A:** [Automated reply to: What are the input validation ...]
+- **Q:** _What are the input validation rules and constraint boundaries?_
+**A:** [Automated reply to: What are the input validation ...]
 
-- **Q:** _How does the context object `AuthContext` capture environment and security variables to prevent parameter cluttering?_
-  **A:** [Automated reply to: How does the context object `A...]
+- **Q:** _How does the context object `AuthContext` capture security variables?_
+**A:** [Automated reply to: How does the context object `A...]
 
-- **Q:** _How does this module "define errors out of existence" internally (e.g., favoring idempotent behaviors, explicit Result types, or null-objects over throwing exceptions)?_
-  **A:** [Automated reply to: How does this module "define e...]
+- **Q:** _How does this module "define errors out of existence" internally (for example,., favoring idempotent behaviors, explicit Result types, or null-objects over throwing exceptions)?_
+**A:** [Automated reply to: How does this module "define e...]
