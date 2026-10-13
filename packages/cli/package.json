@@ -29,6 +29,15 @@
   ],
   "author": "Wiltermood",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BicycleButler/stubs.git",
+    "directory": "packages/cli"
+  },
+  "bugs": {
+    "url": "https://github.com/BicycleButler/stubs/issues"
+  },
+  "homepage": "https://github.com/BicycleButler/stubs#readme",
   "dependencies": {
     "@clack/prompts": "^0.9.1",
     "picocolors": "^1.1.1"

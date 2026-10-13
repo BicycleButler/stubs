@@ -27,6 +27,15 @@
   ],
   "author": "Wiltermood",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BicycleButler/stubs.git",
+    "directory": "packages/core"
+  },
+  "bugs": {
+    "url": "https://github.com/BicycleButler/stubs/issues"
+  },
+  "homepage": "https://github.com/BicycleButler/stubs#readme",
   "dependencies": {
     "esbuild": "^0.24.0",
     "js-yaml": "^5.2.3",

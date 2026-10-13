@@ -5,7 +5,7 @@ set -euo pipefail
 # Copies the tale skill into a target repository or global agent configuration.
 # Supports both local repository execution and remote one-liner execution via curl.
 
-REPO_URL="https://github.com/Wiltermoodj/stubs.git"
+REPO_URL="https://github.com/BicycleButler/stubs.git"
 BRANCH="${TALE_BRANCH:-main}"
 TMP_DIR="${TMPDIR:-/tmp}/tale-install-$$"
 
@@ -35,7 +35,7 @@ Usage:
   install.sh [options]
 
 One-liner Remote Install:
-  curl -fsSL https://raw.githubusercontent.com/Wiltermoodj/stubs/main/packages/tale/skill/scripts/install.sh | bash
+  curl -fsSL https://raw.githubusercontent.com/BicycleButler/stubs/main/packages/tale/skill/scripts/install.sh | bash
 
 Options:
   -g, --global              Install skill globally (~/.gemini/config/skills/tale)

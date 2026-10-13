@@ -227216,7 +227216,7 @@ Options:
   --scaffold, --init   Scaffold root context-map.md and domains/ directory structure
   --token <pat>        [DEPRECATED] Provide a GitHub Personal Access Token directly (auth login). Prefer STDIN pipe or environment variables.
   --provider <name>    Specify auth provider (default: github) (auth login)
-  --repo <owner/repo>  Override default target repo (Defaults to Wiltermoodj/stubs)
+  --repo <owner/repo>  Override default target repo (Defaults to BicycleButler/stubs)
   --branch <name>      Specify a git branch or tag (Defaults to main)
   -f, --force          Overwrite existing .agents/skills/stubs/ directory
   -h, --help           Display help message.
@@ -227797,7 +227797,7 @@ Warnings / Errors:`);
     const isClaude = ctx.args.includes("--claude");
     const isCursor = ctx.args.includes("--cursor");
     const isAllAgents = ctx.args.includes("--all-agents");
-    let repo = "Wiltermoodj/stubs";
+    let repo = "BicycleButler/stubs";
     let branch = "main";
     let i = 0;
     while (i < ctx.args.length) {
@@ -227916,7 +227916,7 @@ Warnings / Errors:`);
       console.log("To update to the latest version, run:");
       console.log("  npm update stubs");
       console.log("or reinstall from GitHub:");
-      console.log("  npm install --save-dev github:Wiltermoodj/stubs\n");
+      console.log("  npm install --save-dev github:BicycleButler/stubs\n");
       if (!noPkgUpdate && process.env.NODE_ENV !== "test") {
         this.runPackageUpdate(targetDir, pm, isGitDep, repo, branch);
       }
@@ -227948,7 +227948,7 @@ Warnings / Errors:`);
     return "npm";
   }
   runPackageUpdate(targetDir, pm, isGitDep, repo, branch) {
-    const targetRepo = repo || "Wiltermoodj/stubs";
+    const targetRepo = repo || "BicycleButler/stubs";
     const gitTarget = `github:${targetRepo}${branch && branch !== "main" ? "#" + branch : ""}`;
     let cmd;
     switch (pm) {
@@ -228150,7 +228150,7 @@ export class {{pascalName}} {
       ".agents/skills/stubs/.gitignore",
       ...SUB_SKILL_NAMES.map((name) => `.agents/skills/stubs/sub-skills/${name}/SKILL.md`)
     ];
-    const repo = options.repo || "Wiltermoodj/stubs";
+    const repo = options.repo || "BicycleButler/stubs";
     const branch = options.branch || "main";
     await import_fs4.promises.mkdir(destDir, { recursive: true });
     for (const file of SKILL_FILES) {

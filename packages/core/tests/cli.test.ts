@@ -284,7 +284,7 @@ title: "Temp Spec"
     it('should print npm update instructions when package.json dependency is detected', async () => {
       fs.writeFileSync(
         path.join(tempDir, 'package.json'),
-        JSON.stringify({ devDependencies: { stubs: 'github:Wiltermoodj/stubs' } }),
+        JSON.stringify({ devDependencies: { stubs: 'github:BicycleButler/stubs' } }),
       );
 
       global.fetch = jest.fn().mockImplementation((url: string) => {

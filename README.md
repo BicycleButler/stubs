@@ -25,9 +25,18 @@ It provides a unified, interactive installer (`@clack/prompts` TUI) and modular 
 
 ## Quickstart & Interactive TUI Installation
 
+### Install as Workspace Dependency
+
+To add `stubs` as a development dependency in your project:
+
+```bash
+npm install --save-dev github:BicycleButler/stubs
+# or: pnpm add -D github:BicycleButler/stubs
+```
+
 ### 1. Launch Interactive Installer (TUI)
 
-Run `npx stubs` without arguments to launch the interactive terminal interface:
+Run `npx stubs` (or invoke directly if installed) to launch the interactive terminal interface:
 
 ```bash
 npx stubs
@@ -102,15 +111,15 @@ from the codebase. The process is:
 1️⃣ **Install the Stubs CLI** (once per repo):
 
 ```bash
-pnpm add -D github:Wiltermoodj/stubs
-# or: npm i -D github:Wiltermoodj/stubs
+pnpm add -D github:BicycleButler/stubs
+# or: npm i -D github:BicycleButler/stubs
 ```
 
 Ensure `pnpm-workspace.yaml` (or root `package.json`) has:
 
 ```yaml
 allowBuilds:
-  stubs@git+https://github.com/Wiltermoodj/stubs.git#15795266c6ca874580ad0305efaf33396cd5f790: true
+  stubs@git+https://github.com/BicycleButler/stubs.git#15795266c6ca874580ad0305efaf33396cd5f790: true
 ```
 
 2️⃣ **Run the discovery script** (creates domain maps):

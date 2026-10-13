@@ -24,5 +24,14 @@
     "design-tokens"
   ],
   "author": "Wiltermood",
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BicycleButler/stubs.git",
+    "directory": "packages/design"
+  },
+  "bugs": {
+    "url": "https://github.com/BicycleButler/stubs/issues"
+  },
+  "homepage": "https://github.com/BicycleButler/stubs#readme"
 }

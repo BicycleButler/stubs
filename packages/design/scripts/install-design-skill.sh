@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-REPO="https://github.com/Wiltermoodj/design.git"
+REPO="https://github.com/BicycleButler/design.git"
 SKILL_NAME="design"
 TMP_DIR="${TMPDIR:-/tmp}/design-install-$$"
 SOURCE_DIR=""

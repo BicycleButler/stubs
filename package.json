@@ -32,8 +32,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Wiltermoodj/stubs.git"
+    "url": "git+https://github.com/BicycleButler/stubs.git"
   },
+  "bugs": {
+    "url": "https://github.com/BicycleButler/stubs/issues"
+  },
+  "homepage": "https://github.com/BicycleButler/stubs#readme",
   "keywords": [
     "stubs",
     "skills",

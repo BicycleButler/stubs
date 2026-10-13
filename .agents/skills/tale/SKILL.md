@@ -103,7 +103,7 @@ To install this skill into another repository or globally on your machine:
 
 ```bash
 # Install directly from remote repository into current project
-curl -fsSL https://raw.githubusercontent.com/Wiltermoodj/template/main/.agents/skills/tale/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/BicycleButler/stubs/main/packages/tale/skill/scripts/install.sh | bash
 
 # Install locally to a specific target project
 bash .agents/skills/tale/scripts/install.sh --project /path/to/project
