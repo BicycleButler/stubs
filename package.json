@@ -15,6 +15,7 @@
     ".agents/skills/stubs/",
     ".stubs/templates/",
     "README.md",
+    "QUICKSTART.md",
     "AGENTS.md",
     "LICENSE"
   ],

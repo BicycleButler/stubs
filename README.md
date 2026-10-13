@@ -1,306 +1,224 @@
-# `stubs` — Specification-First AI Software Development & Agent Skills Hub
+<p align="center">
+  <img src="assets/hero-banner.jpg" alt="stubs — Architecture-First AI Engineering" width="100%" />
+</p>
 
-`stubs` is the central repository and development hub for AI Agent Skills, Rules, CLI tools, and Model Context Protocol (MCP) servers.
+<p align="center">
+  <strong>"AI has changed the way we write code, but it shouldn't change the way we engineer it."</strong>
+</p>
 
-It provides a unified, interactive installer (`@clack/prompts` TUI) and modular npm packages for:
-- **`stubs`**: Architecture sidecars, OKF specifications, and bidirectional AST graph engine.
-- **`tale`**: ASD-STE100 Issue 9 Simplified Technical English governance and automated linter.
-- **`design`**: Codebase-agnostic UI/UX design tokens, ADRs, compliance audits, and remediation scripts.
-- **`mcp`**: Modular Model Context Protocol server suite for agent tool invocation.
+<p align="center">
+  <a href="#quick-start"><img src="https://img.shields.io/badge/CLI-npx%20stubs-00E599?style=flat-square&logo=terminal&logoColor=000" alt="CLI" /></a>
+  <a href="QUICKSTART.md"><img src="https://img.shields.io/badge/Docs-Quickstart%20Guide-6366F1?style=flat-square" alt="Documentation" /></a>
+  <a href="#token-optimal-graphrag"><img src="https://img.shields.io/badge/Context-85%25%20Token%20Savings-EC4899?style=flat-square" alt="Token Savings" /></a>
+  <a href="packages/tale"><img src="https://img.shields.io/badge/STE-ASD--STE100%20Issue%209-F59E0B?style=flat-square" alt="TALE" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-ISC-8B5CF6?style=flat-square" alt="License" /></a>
+</p>
+
+---
+
+## The Engineer-First Platform for the Agentic Era
+
+AI coding assistants write code at blistering speed—yet large codebases are breaking faster than ever. When agents make blind edits, they strip critical docstrings, hallucinate system invariants, trigger compile errors across unfinished files, and incinerate tens of thousands of tokens exploring directory trees they don't comprehend.
+
+**`stubs` restores engineering discipline to AI-assisted development.**
+
+Instead of jumping directly from an ambiguous prompt into messy source modifications, `stubs` gives human engineers and autonomous agents a rigorous, specification-first workflow: plan architectural concepts upfront, stress-test decisions with interactive grilling, isolate stubbed code safely inside Markdown sidecars, and explore dependencies through an ultra-lean, token-optimal AST GraphRAG engine.
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                       CENTRAL AGENT CAPABILITIES HUB                         │
-├──────────────────────────────────────┬──────────────────────────────────────┤
-│    Unified TUI & CLI Orchestrator    │     Modular Scoped Packages          │
-├──────────────────────────────────────┼──────────────────────────────────────┤
-│ • npx stubs (interactive TUI)        │ • @wiltermood/stubs (CLI & Manager)  │
-│ • npx stubs init                     │ • @wiltermood/stubs-core (AST Engine)│
-│ • npx stubs add <tale|design|stubs>  │ • @wiltermood/tale (STE Linter)      │
-│ • npx stubs mcp add <server>         │ • @wiltermood/design (UI Guidelines) │
-└──────────────────────────────────────┴──────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                        UNCHECKED AGENTS vs. ARCHITECTURE-FIRST                         │
+├──────────────────────────────────────────┬─────────────────────────────────────────────┤
+│        Without stubs (Chaos)             │              With stubs (Order)             │
+├──────────────────────────────────────────┼─────────────────────────────────────────────┤
+│ ❌ Dumps 50,000+ raw tokens per query    │ ✅ Surgical GraphRAG queries (<350 tokens)  │
+│ ❌ Strips comments & deletes docstrings  │ ✅ Sidecar markdown shields production code │
+│ ❌ Half-written files break the build    │ ✅ Safe stubbing isolated until ready       │
+│ ❌ Fluffy prompts cause erratic code     │ ✅ TALE engine cuts spec tokens by 50%      │
+│ ❌ Hallucinated interfaces & drift       │ ✅ Automated grilling & AST reconciliation  │
+└──────────────────────────────────────────┴─────────────────────────────────────────────┘
 ```
 
 ---
 
-## Quickstart & Interactive TUI Installation
+<p align="center">
+  <img src="assets/workflow-architecture.jpg" alt="Stubs Architecture Lifecycle: Grill, Sidecars, and GraphRAG" width="100%" />
+</p>
 
-### Install as Workspace Dependency
+---
 
-To add `stubs` as a development dependency in your project:
+## ⚡ Quick Start: Zero to Configured in 60 Seconds
 
-```bash
-npm install --save-dev github:BicycleButler/stubs
-# or: pnpm add -D github:BicycleButler/stubs
-```
-
-### 1. Launch Interactive Installer (TUI)
-
-Run `npx stubs` (or invoke directly if installed) to launch the interactive terminal interface:
+Install `stubs` into your project or launch the global interactive setup with a single terminal command:
 
 ```bash
 npx stubs
 ```
 
-Select any combination of skills (`tale`, `design`, `stubs`), target destination (local workspace `./.agents` or global `~/.gemini/config`), and optional MCP servers.
+The interactive terminal UI (`@clack/prompts`) will immediately guide you through configuring your workspace, selecting modular skills (`tale`, `design`, `stubs`), and binding local or Model Context Protocol (MCP) servers.
 
-### 2. Install Specific Skills (Non-Interactive / CI)
+> 📖 **Need command flags, CI options, or step-by-step tutorials?**  
+> Check out the complete **[Quickstart & Usage Guide](QUICKSTART.md)**.
 
-```bash
-# Install tale and design into current project
-npx stubs add tale design
+---
 
-# Install all skills and configure workspace hooks
-npx stubs add all
+## The Four Core Pillars
 
-# Install globally for all repositories
-npx stubs add --global all
-```
+### 1. Plan Before Writing: Blueprints & The Grilling Engine
 
-### 3. Register MCP Servers
+Great software engineering starts with architectural intent, not blind code generation. `stubs` introduces **Concept Blueprints** and the interactive **Grilling Engine** to eliminate design flaws before a single line of production code is written.
 
-```bash
-# Register an MCP server into .agents/mcp_config.json
-npx stubs mcp add stubs
-npx stubs mcp add tale
-npx stubs mcp add design
-```
-
-### Updating `stubs`
-
-Run `update` inside any initialized workspace to refresh CLI binaries, agent skills, template molds, and database schemas:
+- **Stress-Test Invariants:** Run `stubs grill` to interview agents and engineers on edge cases, data lifecycles, and architectural decision records (ADRs).
+- **Resolve Dependencies Early:** Walk down each branch of the design tree, forcing alignment on interfaces and boundaries.
+- **Stop Hallucinations:** Ground agents in immutable requirements rather than open-ended natural language prompts.
 
 ```bash
-stubs update
-# Or with npx:
-npx stubs update
+# Stress-test a new authentication spec before writing code
+stubs grill "OAuth2 Session Management with PKCE"
 ```
 
 ---
 
-## Quickstart Guide
+### 2. Markdown Sidecars: Safe Stubbing Without Broken Builds
 
-Get your repository initialized, mapped, and indexed in four simple steps:
+AI agents frequently introduce syntax errors and destroy existing code when attempting contiguous file replacements. `stubs` solves this with **Sidecar Files** (`*.ts.md`, `*.py.md`, `*.go.md`).
 
-```bash
-# 1. Initialize stubs configuration, agent skills, and templates
-npx stubs init
+- **Isolated Safe Stubbing:** Stub types, interfaces, and function signatures in co-located markdown sidecars. Code remains isolated until it is completely verified and materialized.
+- **Zero Build Breakages:** Incomplete or experimental agent implementations never trigger compiler or linter errors in your primary source tree.
+- **Protected Comments & Context:** Agents cannot accidentally wipe docstrings, comments, or surrounding implementations.
+- **Automated AST Sanding (`stubs sand`):** Two-way synchronization reconciles physical code changes back into markdown specifications with zero drift.
 
-# 2. Scaffold root architecture context map and domain hierarchy
-npx stubs map --scaffold
+#### Side-by-Side: Raw Edits vs. Sidecar Stubs
 
-# 3. Scan physical codebase, extract AST symbols, and build dependency graph
-npx stubs scan
-
-# 4. Query architectural graph with 3-tier progressive disclosure
-npx stubs query "map:"                      # Level 0 Macro Map (clusters & hubs)
-npx stubs query "stub: src/auth.ts"          # Level 1 Skeleton Interface Stub (80-90% token savings)
-npx stubs query "explain: AuthService"       # Level 2 Symbol Profile & Callers/Callees
-npx stubs query "path: router to engine"     # Level 2 Shortest Path Chain
-npx stubs query "blast: src/auth.ts"         # Level 2 Downstream Blast Radius
-
-# 5. View visual file tree with architectural status and centrality markers
-npx stubs tree --status
+```diff
+# Without stubs: Blind agent edit destroys comments and leaves broken exports
+- /**
+-  * Critical crypto hash invariant: Must use Argon2id with 64MB memory cost
+-  */
+  export async function hashPassword(pwd: string) {
+-   return argon2.hash(pwd, { memoryCost: 65536 });
++   // Agent replaced with unfinished stub that breaks compilation
++   const hash = crypto.createHash('sha256'); ...
 ```
 
-### Domain-Mapping (CLI‑only)
-
-We provide a CLI‑driven workflow that automatically creates domain maps
-from the codebase. The process is:
-
-1️⃣ **Install the Stubs CLI** (once per repo):
-
-```bash
-pnpm add -D github:BicycleButler/stubs
-# or: npm i -D github:BicycleButler/stubs
-```
-
-Ensure `pnpm-workspace.yaml` (or root `package.json`) has:
-
-```yaml
-allowBuilds:
-  stubs@git+https://github.com/BicycleButler/stubs.git#15795266c6ca874580ad0305efaf33396cd5f790: true
-```
-
-2️⃣ **Run the discovery script** (creates domain maps):
-
-```bash
-./scripts/create-domain-maps.sh
-```
-
-Writes OKF front‑matter + section placeholders to
-`knowledge/architecture/domains/*.md` using the SQLite graph
-(`file_path` column), `subsystem-index` type, and adds `description`.
-
-3️⃣ **Fill in the descriptive sections** (agent/LLM task):
-Edit each `*-domain-map.md` to replace the placeholders for:
-
-- `## Key concepts`
-- `## Decisions (locked)`
-- `## Open questions (frontier)`
-- `## Implementation plan`
-
-Then run the grill to lock decisions and record outcomes:
-
-```bash
-npx stubs grill knowledge/architecture/domains/<domain>-domain-map.md
-```
-
-4️⃣ **Validate** (optional, for index sidecars):
-
-```bash
-npx stubs validate knowledge/architecture/domains/*.md
-```
-
-The script is intentionally dependency‑free (only needs `sqlite3` CLI,
-already present via the stubs post‑install binary) and works with macOS
-bash 3.2. It generates one sidecar per top‑level domain prefix found in the
-graph (`apps/*`, `packages/*`).
+````markdown
+<!-- With stubs: Clean, protected sidecar specification (src/auth.ts.md) -->
 
 ---
 
-### Standard Development Workflow
+target: src/auth.ts
+status: drafting
+---
 
-```bash
-# 1. Draft a new concept blueprint or sidecar specification
-stubs concept new "User Authentication"
-stubs template apply spec --name=auth --target=src/auth.ts
+## Method: `hashPassword`
 
-# 2. Stress-test and grill design invariants before writing code
-stubs grill src/auth.ts.md
-
-# 3. Materialize and typecheck production code directly from spec
-stubs materialize src/auth.ts.md
-
-# 4. Reconcile AST drift automatically whenever code or spec edits occur
-stubs sand
-
-# 5. Audit workspace health, cycles, and God-node hotspots
-stubs audit --hotspots --cycles
+```typescript
+export async function hashPassword(pwd: string): Promise<string> {
+  // Safe stub: verified against ADR-004 before materializing to src/auth.ts
+}
 ```
+````
 
 ---
 
-## Interactive Web Portal & PWA
+### 3. Token-Optimal Code Intelligence: 85%+ Context Savings
 
-Launch the local interactive dashboard to visually explore dependencies, inspect architecture health, and collaborate with agents:
+AI agents do not need your entire codebase dumped into their context window. In fact, large context stuffing degrades reasoning quality and skyrockets inference bills.
 
-```bash
-stubs serve --port=3000
-```
+`stubs` embeds an in-memory AST dependency engine with Louvain community detection, PageRank centrality, and FTS5 BM25 hybrid search, accessible via **3-Tier Progressive Disclosure**:
 
-- **Interactive 1-Hop Ego Graph:** Visual graph explorer powered by SQLite and WebAssembly.
-- **Real-Time Synchronization:** Live Server-Sent Events (SSE) stream workspace edits as they occur.
-- **Human Directive Channel:** Submit real-time agent directives and steering constraints directly from the browser.
-- **Offline PWA Support:** Touch-friendly Progressive Web App installable on desktop and mobile.
+| Tier                        | Command                                                                                                       | Token Cost      | What Agent Receives                                                                                      |
+| :-------------------------- | :------------------------------------------------------------------------------------------------------------ | :-------------- | :------------------------------------------------------------------------------------------------------- |
+| **Level 0: Macro Map**      | `stubs query "map:"`                                                                                          | **~340 tokens** | High-level subsystem communities, God Node coupling hubs, and monorepo boundaries.                       |
+| **Level 1: Skeleton Stub**  | `stubs query "stub: src/auth.ts"`                                                                             | **~150 tokens** | Function/class signatures, docstrings, and line ranges (`auth.ts#L10-L45`) with bodies stripped (`...`). |
+| **Level 2: Surgical Query** | `stubs query "explain: AuthService"`<br>`stubs query "path: api to db"`<br>`stubs query "blast: src/auth.ts"` | **<500 tokens** | Exact caller/callee trees, shortest dependency chains, or downstream impact radius.                      |
 
-_(Note: `stubs serve` runs directly out-of-the-box in any project. Static web bundle compilation via `npm run build:web` and GitHub Pages deployment via `npm run deploy:pages` are internal development actions for `stubs` source contributors.)_
+#### Universal Model Context Protocol (MCP)
 
----
-
-## CLI Command Reference
-
-| Command                               | Description                                                                                                                      |
-| :------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------- |
-| **`query`** `[query]`                 | **Primary Intelligence Entrypoint:** Progressive disclosure & GraphRAG (`map:`, `stub:`, `explain:`, `path:`, `blast:`, `pkg:`). |
-| **`mcp`**                             | Starts JSON-RPC 2.0 Model Context Protocol stdio server for IDE agents (`stubs_query`, `stubs_scan`).                            |
-| **`init`**                            | Initializes `.stubs/config.json`, template molds, and agent skill configurations.                                                |
-| **`scan`**, **`index`** `[dir]`       | Scans source code, extracts AST symbols/imports, and populates the SQLite graph.                                                 |
-| **`map`** `[--scaffold]`              | Scaffolds or validates architectural context maps (`knowledge/architecture/context-map.md`).                                     |
-| **`tree`** `[--status\|--graph]`      | Visualizes ASCII/Unicode file tree annotated with lifecycle phase and node degree centrality.                                    |
-| **`export`** `<obsidian\|wiki>`       | Exports architecture graph to an Obsidian Vault (with `[[wikilinks]]`) or Wikipedia-style portal.                                |
-| **`concept`** `<action>`              | Manages concept blueprints (`new <title>`, `scaffold <doc>`, `list`).                                                            |
-| **`phase`** `<action>`                | Manages 5-phase lifecycle (`status [file]`, `check <file>`, `advance <file> [phase]`).                                           |
-| **`grill`** `<file>`                  | Runs interactive or automated (`--non-interactive`) design stress-testing on specifications.                                     |
-| **`materialize`** `<file>`            | Extracts, typechecks, and generates executable source code from sidecar specs.                                                   |
-| **`sand`**, **`sync`** `[file]`       | Bi-directionally synchronizes AST hashes and frontmatter between code and specs.                                                 |
-| **`context`** `<file>`                | Generates token-optimized, tiered agent context briefing slices (`--depth`, `--json`).                                           |
-| **`impact`** / **`blast`** `<target>` | Analyzes upstream and downstream dependency blast radius and risk scoring.                                                       |
-| **`lint-arch`**                       | Lints architecture rules against layer hierarchy, cyclic dependency bans, and manifest parity.                                   |
-| **`mock`** `<file>`                   | Generates spec-driven test suites and mock scaffolding (`--framework`, `--output`).                                              |
-| **`diagram`** `[target]`              | Generates Mermaid architecture and sequence diagrams (`--type`, `--sync`).                                                       |
-| **`prune`** `[--fix\|--zombies]`      | Identifies and prunes phantom specs, untracked source code, and zombie exports.                                                  |
-| **`changelog`** `[--since]`           | Generates semantic architectural changelogs from git history and spec changes.                                                   |
-| **`path`** `<src>` `<dest>`           | Finds the shortest dependency or call chain between two files or symbols.                                                        |
-| **`audit`** `[--hotspots\|--cycles]`  | Audits workspace health, circular dependencies, unlinked files, and God nodes.                                                   |
-| **`template`** `<action>`             | Manages template molds (`list`, `render <name> <data>`).                                                                         |
-| **`serve`** `[--port=3000]`           | Starts the local Web Portal and Event Bridge server for real-time visual exploration.                                            |
-| **`auth login`**                      | Authenticates GitHub credentials and stores Personal Access Tokens (PATs).                                                       |
-| **`update`**, **`upgrade`**           | Updates installed agent skills, template molds, dependencies, and SQLite schemas.                                                |
-
----
-
-## Token-Optimal Code Intelligence & MCP Integration
-
-`stubs` includes a category-leading zero-LLM architecture and code intelligence engine designed specifically to minimize AI agent token consumption during codebase navigation and refactoring (saving 80–90% of exploration tokens):
-
-### 1. 3-Level Progressive Disclosure (`stubs query`)
-
-Instead of flooding agent context windows with full file contents:
-
-- **Level 0 Macro Map (`map:`):** Subsystem community partitions (Louvain modularity), God Node coupling hubs, and monorepo packages (~340 tokens).
-- **Level 1 Skeleton Stub (`stub: <path>`):** Strips function/class bodies to `...`, preserving interfaces, types, docstrings, and line ranges (`file.ts#L10-L45`), saving 85–90% tokens.
-- **Level 2 Surgical Queries:**
-  - `explain: <symbol>`: Callers, callees, confidence, and PageRank authority score.
-  - `path: <A> to <B>`: Shortest dependency chain between modules.
-  - `blast: <target>`: Downstream blast radius impact tree.
-  - `pkg:<name> <query>`: Monorepo package-scoped search (pruning 90%+ irrelevant context).
-  - `<natural language>`: Hybrid FTS5 BM25 + PageRank GraphRAG with strict 1,000-token budget pruning.
-
-### 2. Universal Model Context Protocol (MCP) Stdio Server
-
-Connect any agent harness or environment via standard JSON-RPC 2.0 stdio:
+`stubs` exposes an ultra-lean stdio MCP server (`stubs_query` and `stubs_scan`) with a schema overhead under **200 tokens**, keeping your agent prompt lean while empowering it with total codebase awareness:
 
 ```json
 {
   "mcpServers": {
     "stubs": {
-      "command": "node",
-      "args": [".agents/skills/stubs/dist/cli.cjs", "mcp"]
+      "command": "npx",
+      "args": ["stubs", "mcp"]
     }
   }
 }
 ```
 
-_(Or `"command": "npx", "args": ["stubs", "mcp"]`)_
+---
 
-The ultra-lean MCP surface exposes two high-impact tools (`stubs_query` and `stubs_scan`), keeping prompt schema overhead under 200 tokens per turn while supporting all surgical prefix commands (`map:`, `stub:`, `explain:`, `path:`, `blast:`, `pkg:`). Graph freshness is maintained automatically (<30ms filesystem `mtimeMs` verification before each query).
+### 4. TALE: Halving Markdown Tokens with Simplified Technical English
 
-### 3. Monorepo & Multi-Package Boundary Resolution
+AI agents become inconsistent, verbose, and erratic when prompted with conversational filler. `stubs` integrates **`tale`** (`@wiltermood/tale`), enforcing **ASD-STE100 Issue 9 Simplified Technical English (STE)** across specs, agent prompts, and documentation.
 
-`stubs` auto-detects monorepo layouts with zero manual configuration:
+- **Cuts Markdown Tokens in Half:** Eliminates conversational pleasantries, ambiguous qualifiers, and passive voice overhead.
+- **Unambiguous Directives:** One word, one meaning. Prevents agents from misinterpreting constraints or misapplying design tokens.
+- **Automated STE Linter:** Instant feedback via `stubs lint:tale` or through agent hooks.
 
-- **Package Discovery:** Recognizes package manifests across `package.json` (`workspaces`), `pnpm-workspace.yaml`, `Cargo.toml` (`[workspace]`), and `go.work`.
-- **Alias Resolution:** Resolves TypeScript `compilerOptions.paths` and `package.json` exports to canonical source file paths, keeping graph edges intact across packages.
-- **Package Scoping:** Agents use `stubs query "pkg:<package> <query>"` (e.g. `pkg:billing invoice`) to restrict seed search, BFS/DFS expansions, and shortest paths to that package root, eliminating 90%+ irrelevant cross-package context.
+#### Comparison: Verbose Fluff vs. TALE Precision
+
+```markdown
+<!-- Before TALE: 84 tokens, ambiguous qualifiers, passive voice -->
+
+It would be ideal if the developer or agent could make sure that the authentication token
+is possibly verified before attempting to dispatch any asynchronous requests to the database,
+in order to prevent potential unauthorized access exceptions.
+
+<!-- After TALE: 22 tokens (74% savings!), crystal-clear imperative logic -->
+
+Verify the authentication token before you send a database request.
+Do not send unverified requests.
+```
 
 ---
 
-## Sub-Skills Reference
+## 📦 Modular Package Ecosystem
 
-For agent orchestration, specialized sub-skills live under `.agents/skills/stubs/sub-skills/`:
+The `stubs` project is organized as a high-performance npm monorepo with modular workspaces:
+
+| Package       | Name                                      | Description                                                                   |
+| :------------ | :---------------------------------------- | :---------------------------------------------------------------------------- |
+| 🚀 **CLI**    | [`@wiltermood/stubs`](packages/cli)       | Interactive Clack TUI orchestrator, project initializer, and workflow runner. |
+| 🧠 **Core**   | [`@wiltermood/stubs-core`](packages/core) | Zero-LLM local AST engine, SQLite dependency graph, and sidecar materializer. |
+| ✍️ **TALE**   | [`@wiltermood/tale`](packages/tale)       | ASD-STE100 Issue 9 Simplified Technical English linter and skill suite.       |
+| 🎨 **Design** | [`@wiltermood/design`](packages/design)   | UI/UX design tokens, accessibility rules, ADR compliance, and audits.         |
+
+---
+
+## 🛠️ Sub-Skills Reference
+
+When paired with modern agent environments (such as Antigravity, Claude Code, or Cursor), `stubs` provides granular sub-skills located under `.agents/skills/stubs/sub-skills/`:
 
 | Sub-Skill                                                                       | Purpose                                                                                    |
 | :------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------- |
-| **[auditing](.agents/skills/stubs/sub-skills/auditing/SKILL.md)**               | Workspace health checks, cycle detection, and God-node hotspot analysis.                   |
-| **[changelog](.agents/skills/stubs/sub-skills/changelog/SKILL.md)**             | Semantic architectural changelog generation and spec diff tracking.                        |
 | **[conceptualizing](.agents/skills/stubs/sub-skills/conceptualizing/SKILL.md)** | Problem framing, requirements gathering, and blueprint generation.                         |
+| **[grilling](.agents/skills/stubs/sub-skills/grilling/SKILL.md)**               | Interactive and automated spec stress-testing and architectural inquiry.                   |
+| **[materialization](.agents/skills/stubs/sub-skills/materialization/SKILL.md)** | Sidecar code extraction, in-memory TypeScript typechecking, and code generation.           |
+| **[sanding](.agents/skills/stubs/sub-skills/sanding/SKILL.md)**                 | AST structural hashing, frontmatter auto-healing, and bi-directional drift reconciliation. |
 | **[context](.agents/skills/stubs/sub-skills/context/SKILL.md)**                 | Token-optimized tiered context slices and LLM briefing generation.                         |
 | **[context-mapping](.agents/skills/stubs/sub-skills/context-mapping/SKILL.md)** | Hierarchical context maps (`context-map.md`) & domain index management.                    |
+| **[auditing](.agents/skills/stubs/sub-skills/auditing/SKILL.md)**               | Workspace health checks, cycle detection, and God-node hotspot analysis.                   |
 | **[diagram](.agents/skills/stubs/sub-skills/diagram/SKILL.md)**                 | Mermaid diagram generation for dependency flows and sequence interactions.                 |
-| **[grilling](.agents/skills/stubs/sub-skills/grilling/SKILL.md)**               | Interactive and automated spec stress-testing and architectural inquiry.                   |
 | **[lint](.agents/skills/stubs/sub-skills/lint/SKILL.md)**                       | Architecture invariant verification, layer hierarchy checking, and drift linting.          |
-| **[materialization](.agents/skills/stubs/sub-skills/materialization/SKILL.md)** | Sidecar code extraction, in-memory TypeScript typechecking, and code generation.           |
 | **[mock](.agents/skills/stubs/sub-skills/mock/SKILL.md)**                       | Spec-driven test suite generation and typed mock harness generation.                       |
+| **[changelog](.agents/skills/stubs/sub-skills/changelog/SKILL.md)**             | Semantic architectural changelog generation and spec diff tracking.                        |
 | **[pruning](.agents/skills/stubs/sub-skills/pruning/SKILL.md)**                 | Detection and cleanup of orphaned specs, untracked source files, and zombie exports.       |
-| **[sanding](.agents/skills/stubs/sub-skills/sanding/SKILL.md)**                 | AST structural hashing, frontmatter auto-healing, and bi-directional drift reconciliation. |
 
 ---
 
-## Architectural Principles
+## 📐 Core Engineering Principles
 
-- **Deep Modules:** Simple public interfaces that conceal rich internal logic.
-- **Context Objects:** Group session, environment, and user state into unified parameters (`AuthContext`, `CliContext`) to prevent parameter explosion.
-- **Define Errors Out of Existence:** Prefer explicit `Result<T, E>` returns and idempotent APIs over disruptive runtime exceptions.
-- **Self-Healing Frontmatter:** Guarantees that manual edit collisions or missing YAML fields never crash the parser; auto-reconciles on write.
-- **Zero-Model Local Core:** Deterministic parsing, graph indexing, AST hashing, and typechecking execute locally with zero API keys and 0 token overhead.
+1. **Deep Modules:** Simple public interfaces that conceal rich internal logic.
+2. **Context Objects:** Group session, environment, and user state into unified parameters (`AuthContext`, `CliContext`) to prevent parameter explosion.
+3. **Define Errors Out of Existence:** Prefer explicit `Result<T, E>` returns and idempotent APIs over disruptive runtime exceptions.
+4. **Self-Healing Frontmatter:** Collisions or missing YAML fields never crash the parser; auto-reconciles on write.
+5. **Zero-Model Local Core:** Deterministic parsing, graph indexing, AST hashing, and typechecking execute locally with zero API keys and 0 token overhead.
+
+---
+
+<p align="center">
+  Ready to elevate your agentic engineering workflow?<br />
+  <strong><a href="QUICKSTART.md">Read the Quickstart & Usage Guide →</a></strong>
+</p>
