@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <strong>"AI has changed the way we write code, but it shouldn't change the way we engineer it."</strong>
+  # <strong>AI has changed the way we write code, but it shouldn't change the way we engineer it.</strong>
 </p>
 
 <p align="center">
