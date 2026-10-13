@@ -3,10 +3,6 @@
 </p>
 
 <p align="center">
-  # <strong>AI has changed the way we write code, but it shouldn't change the way we engineer it.</strong>
-</p>
-
-<p align="center">
   <a href="#quick-start"><img src="https://img.shields.io/badge/CLI-npx%20stubs-00E599?style=flat-square&logo=terminal&logoColor=000" alt="CLI" /></a>
   <a href="QUICKSTART.md"><img src="https://img.shields.io/badge/Docs-Quickstart%20Guide-6366F1?style=flat-square" alt="Documentation" /></a>
   <a href="#token-optimal-graphrag"><img src="https://img.shields.io/badge/Context-85%25%20Token%20Savings-EC4899?style=flat-square" alt="Token Savings" /></a>
@@ -16,7 +12,7 @@
 
 ---
 
-## The Engineer-First Platform for the Agentic Era
+## AI has changed the way we write code, but it shouldn't change the way we engineer it.
 
 AI coding assistants write code at blistering speed—yet large codebases are breaking faster than ever. When agents make blind edits, they strip critical docstrings, hallucinate system invariants, trigger compile errors across unfinished files, and incinerate tens of thousands of tokens exploring directory trees they don't comprehend.
 
@@ -46,7 +42,7 @@ Instead of jumping directly from an ambiguous prompt into messy source modificat
 
 ---
 
-## ⚡ Quick Start: Zero to Configured in 60 Seconds
+## Quick Start: Zero to Configured in 60 Seconds
 
 Install `stubs` into your project or launch the global interactive setup with a single terminal command:
 
@@ -56,7 +52,7 @@ npx stubs
 
 The interactive terminal UI (`@clack/prompts`) will immediately guide you through configuring your workspace, selecting modular skills (`tale`, `design`, `stubs`), and binding local or Model Context Protocol (MCP) servers.
 
-> 📖 **Need command flags, CI options, or step-by-step tutorials?**  
+> **Need command flags, CI options, or step-by-step tutorials?**  
 > Check out the complete **[Quickstart & Usage Guide](QUICKSTART.md)**.
 
 ---
@@ -174,20 +170,20 @@ Do not send unverified requests.
 
 ---
 
-## 📦 Modular Package Ecosystem
+## Modular Package Ecosystem
 
 The `stubs` project is organized as a high-performance npm monorepo with modular workspaces:
 
-| Package       | Name                                      | Description                                                                   |
-| :------------ | :---------------------------------------- | :---------------------------------------------------------------------------- |
-| 🚀 **CLI**    | [`@wiltermood/stubs`](packages/cli)       | Interactive Clack TUI orchestrator, project initializer, and workflow runner. |
-| 🧠 **Core**   | [`@wiltermood/stubs-core`](packages/core) | Zero-LLM local AST engine, SQLite dependency graph, and sidecar materializer. |
-| ✍️ **TALE**   | [`@wiltermood/tale`](packages/tale)       | ASD-STE100 Issue 9 Simplified Technical English linter and skill suite.       |
-| 🎨 **Design** | [`@wiltermood/design`](packages/design)   | UI/UX design tokens, accessibility rules, ADR compliance, and audits.         |
+| Package    | Name                                      | Description                                                                   |
+| :--------- | :---------------------------------------- | :---------------------------------------------------------------------------- |
+| **CLI**    | [`@wiltermood/stubs`](packages/cli)       | Interactive Clack TUI orchestrator, project initializer, and workflow runner. |
+| **Core**   | [`@wiltermood/stubs-core`](packages/core) | Zero-LLM local AST engine, SQLite dependency graph, and sidecar materializer. |
+| **TALE**   | [`@wiltermood/tale`](packages/tale)       | ASD-STE100 Issue 9 Simplified Technical English linter and skill suite.       |
+| **Design** | [`@wiltermood/design`](packages/design)   | UI/UX design tokens, accessibility rules, ADR compliance, and audits.         |
 
 ---
 
-## 🛠️ Sub-Skills Reference
+## Sub-Skills Reference
 
 When paired with modern agent environments (such as Antigravity, Claude Code, or Cursor), `stubs` provides granular sub-skills located under `.agents/skills/stubs/sub-skills/`:
 
