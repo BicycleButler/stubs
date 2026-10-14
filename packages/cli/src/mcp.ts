@@ -14,8 +14,8 @@ export function getAvailableMcpServers(): Record<string, McpServerDefinition> {
     stubs: {
       name: 'stubs',
       description: 'Stubs AST Architecture and OKF Sidecar Engine MCP Server',
-      command: 'npx',
-      args: ['-y', '@wiltermood/stubs', 'mcp-serve'],
+      command: 'stubs',
+      args: ['mcp'],
     },
     tale: {
       name: 'tale',

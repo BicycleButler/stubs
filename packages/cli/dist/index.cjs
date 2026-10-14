@@ -935,8 +935,8 @@ function getAvailableMcpServers() {
     stubs: {
       name: "stubs",
       description: "Stubs AST Architecture and OKF Sidecar Engine MCP Server",
-      command: "npx",
-      args: ["-y", "@wiltermood/stubs", "mcp-serve"]
+      command: "stubs",
+      args: ["mcp"]
     },
     tale: {
       name: "tale",
@@ -1130,26 +1130,21 @@ async function main() {
     }
     return;
   }
-  if (command === "mcp") {
-    const subCommand = args[1];
-    if (subCommand === "add") {
-      const server = args[2];
-      if (!server) {
-        console.error(
-          import_picocolors3.default.red('Error: Specify an MCP server name to add, e.g. "npx stubs mcp add stubs"')
-        );
-        process.exit(1);
-      }
-      const res = registerMcpServer(server);
-      if (res.success) {
-        console.log(import_picocolors3.default.green(`\u2713 ${res.message}`));
-      } else {
-        console.error(import_picocolors3.default.red(`\u2717 ${res.message}`));
-        process.exit(1);
-      }
-      return;
+  if (command === "mcp" && args[1] === "add") {
+    const server = args[2];
+    if (!server) {
+      console.error(
+        import_picocolors3.default.red('Error: Specify an MCP server name to add, e.g. "npx stubs mcp add stubs"')
+      );
+      process.exit(1);
     }
-    console.log("Usage: npx stubs mcp add <server>");
+    const res = registerMcpServer(server);
+    if (res.success) {
+      console.log(import_picocolors3.default.green(`\u2713 ${res.message}`));
+    } else {
+      console.error(import_picocolors3.default.red(`\u2717 ${res.message}`));
+      process.exit(1);
+    }
     return;
   }
   if (command === "tale" || command === "lint:tale" || command === "format:tale") {

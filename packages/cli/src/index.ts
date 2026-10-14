@@ -66,27 +66,21 @@ async function main(): Promise<void> {
     return;
   }
 
-  if (command === 'mcp') {
-    const subCommand = args[1];
-    if (subCommand === 'add') {
-      const server = args[2];
-      if (!server) {
-        console.error(
-          pc.red('Error: Specify an MCP server name to add, e.g. "npx stubs mcp add stubs"'),
-        );
-        process.exit(1);
-      }
-      const res = registerMcpServer(server);
-      if (res.success) {
-        console.log(pc.green(`✓ ${res.message}`));
-      } else {
-        console.error(pc.red(`✗ ${res.message}`));
-        process.exit(1);
-      }
-      return;
+  if (command === 'mcp' && args[1] === 'add') {
+    const server = args[2];
+    if (!server) {
+      console.error(
+        pc.red('Error: Specify an MCP server name to add, e.g. "npx stubs mcp add stubs"'),
+      );
+      process.exit(1);
     }
-
-    console.log('Usage: npx stubs mcp add <server>');
+    const res = registerMcpServer(server);
+    if (res.success) {
+      console.log(pc.green(`✓ ${res.message}`));
+    } else {
+      console.error(pc.red(`✗ ${res.message}`));
+      process.exit(1);
+    }
     return;
   }
 
