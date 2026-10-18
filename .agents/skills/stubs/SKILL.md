@@ -52,7 +52,7 @@ The `stubs` skill delegates to modular sub-skills located under `.agents/skills/
 ## Core Commands Reference
 
 ### 0. `stubs run` / `stubs check`
-Consolidated primary command. Executes the complete repository health and sync pipeline in a single pass: AST code scan, domain and context map generation, sidecar bi-directional sanding, architectural linting, and ASD-STE100 TALE governance.
+Consolidated primary command. Executes completed repository health and sync pipeline in a single pass: AST code scan, domain and context map generation, sidecar bi-directional sanding, architectural linting, and ASD-STE100 TALE governance.
 ```bash
 npx stubs run
 npx stubs run --check

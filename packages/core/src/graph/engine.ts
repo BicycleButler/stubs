@@ -372,22 +372,22 @@ export class GraphEngine {
     try {
       await this.run('ALTER TABLE sidecars ADD COLUMN phase TEXT;');
     } catch {
-      // Column may already exist
+      // Column can already exist
     }
     try {
       await this.run('ALTER TABLE sidecars ADD COLUMN initiative TEXT;');
     } catch {
-      // Column may already exist
+      // Column can already exist
     }
     try {
       await this.run('ALTER TABLE sidecars ADD COLUMN community_id INTEGER;');
     } catch {
-      // Column may already exist
+      // Column can already exist
     }
     try {
       await this.run('ALTER TABLE sidecars ADD COLUMN community_label TEXT;');
     } catch {
-      // Column may already exist
+      // Column can already exist
     }
 
     // 2. Create index on file_path for fast lookups
@@ -565,7 +565,7 @@ export class GraphEngine {
     try {
       await this.run("ALTER TABLE graph_edges ADD COLUMN confidence TEXT DEFAULT 'EXTRACTED';");
     } catch {
-      // Column may already exist
+      // Column can already exist
     }
     await this.run(
       `CREATE INDEX IF NOT EXISTS idx_graph_edges_source ON graph_edges(source_id, relation);`,

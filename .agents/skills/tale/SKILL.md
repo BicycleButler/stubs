@@ -22,7 +22,7 @@ All documentation and agent output must obey the writing rules and controlled vo
    - **Maximum 20 words** for procedural instructions (commands).
    - **Maximum 25 words** for descriptive sentences.
 5. **Strict Active Voice & Simple Tenses:** Write in the active voice. Use only Infinitive, Imperative, Simple Present, Simple Past, and Simple Future (_will_).
-6. **No Progressive "-ing" Verbs:** Never use "-ing" words as progressive action verbs (`is running`, `was opening`). Use "-ing" words only as technical nouns (`the bearing`) or modifiers (`cooling system`).
+6. **No Progressive "-ing" Verbs:** Never use "-ing" words as progressive action verbs (`runs`, `was opening`). Use "-ing" words only as technical nouns (`the bearing`) or modifiers (`cooling system`).
 7. **Multi-Word Noun Limit:** Multi-word nouns must not exceed **three words** (for example, _APU shutoff valve_).
 8. **Paragraph Limits:** Maximum of **one topic** and **six sentences** per paragraph.
 
@@ -77,6 +77,9 @@ node packages/tale/src/tale.mjs -t "Your text string" --fix
 
 # Output structured JSON report
 npx stubs tale --json
+
+# Output compact, token-optimized JSON worklist with exact targets and suggested fixes for AI agents
+npx stubs tale --agent
 ```
 
 ## 5. Universal Installation
@@ -94,13 +97,16 @@ bash .agents/skills/tale/scripts/install.sh --project /path/to/project
 bash .agents/skills/tale/scripts/install.sh --global
 ```
 
-## 6. Agent Execution Loop
+## 6. Token-Optimized Agent Remediation Loop
 
 When generating responses, authoring documentation, or writing code comments in this repository:
 
 1. **Write Plain STE:** Follow the Eight Non-Negotiable Rules (short active sentences, no semicolons, no contractions, <=3-word noun clusters).
-2. **Auto-Remediate:** Run `npx stubs tale --fix` (or `npm run tale:fix`) to repair language and formatting violations automatically. This command converts prose semicolons and markdown tables.
-3. **Verify Compliance:** Run `npx stubs tale` (or `npm run tale`) and confirm zero remaining violations across all scanned files.
+2. **Auto-Remediate:** Run `npx stubs tale --fix` (or `npm run tale:fix`) to repair language, formatting, safe vocabulary, code comment keywords, and markdown tables automatically.
+3. **Inspect Remaining Items with Zero File-Reading Overhead:** If violations remain, run `npx stubs tale --agent`.
+   - Each item includes `file`, `line`, `target` (the exact sentence), and `suggestedFix`.
+   - Apply `replace_file_content` directly using `target` and `suggestedFix` without reading the whole file with `view_file`.
+4. **Verify Compliance:** Run `npx stubs tale` (or `npm run tale`) and confirm zero remaining violations across all scanned files.
 
 ## 7. Agent Reasoning & Internal Monologue Standard
 

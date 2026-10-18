@@ -64,7 +64,7 @@ export function parseMarkdown(content: string): MarkdownBlock[] {
  * returns an appropriate error description.
  *
  * Key behavior: finds the ## Implementation heading that has typescript code blocks
- * immediately following it (before any same-level or higher heading), preferring the
+ * immediately following it (before all same-level or higher heading), preferring the
  * last such section when multiple exist (for example, ## Current implementation precedes
  * ## Implementation).
  */
@@ -235,7 +235,7 @@ export function extractDistilledSignatures(sourceCode: string, fileName = 'modul
         continue;
       }
 
-      // Fallback for any other exported statement
+      // Fallback for each other exported statement
       distilledParts.push(statement.getFullText(sourceFile).trim());
     }
 

@@ -203,6 +203,11 @@ export const SAFE_WORD_FIXES = {
   rotating: 'turning',
   via: 'through',
   both: 'the two',
+  avoid: 'prevent',
+  avoids: 'prevents',
+  avoided: 'prevented',
+  avoiding: 'preventing',
+  may: 'can',
 };
 
 // Known progressive nouns/technical terms that are not action verbs
@@ -480,6 +485,7 @@ export function extractCodeComments(content) {
   let currentLine = 1;
   let lastChar = '';
   let lastWord = '';
+  const templateStack = [];
 
   const isRegexStart = (lc, lw) => {
     if (!lc) return true;
@@ -502,6 +508,40 @@ export function extractCodeComments(content) {
     const ch = content[i];
     const next = content[i + 1] || '';
 
+    // If inside a template literal (raw string part, not inside ${...})
+    if (templateStack.length > 0 && !templateStack[templateStack.length - 1].inExpr) {
+      if (ch === '\n') {
+        currentLine++;
+        i++;
+        continue;
+      }
+      if (ch === '\\') {
+        i++;
+        if (i < len) {
+          if (content[i] === '\n') currentLine++;
+          i++;
+        }
+        continue;
+      }
+      if (ch === '`') {
+        templateStack.pop();
+        i++;
+        lastChar = '`';
+        lastWord = '';
+        continue;
+      }
+      if (ch === '$' && next === '{') {
+        templateStack[templateStack.length - 1].inExpr = true;
+        templateStack[templateStack.length - 1].braceDepth = 1;
+        i += 2;
+        lastChar = '{';
+        lastWord = '';
+        continue;
+      }
+      i++;
+      continue;
+    }
+
     if (ch === '\n') {
       currentLine++;
       i++;
@@ -510,13 +550,44 @@ export function extractCodeComments(content) {
       continue;
     }
 
-    // Handle string literals
-    if (ch === '"' || ch === "'" || ch === '`') {
+    // Handle template literal start in code
+    if (ch === '`') {
+      templateStack.push({ inExpr: false, braceDepth: 0 });
+      i++;
+      continue;
+    }
+
+    // Handle curly braces inside template expression ${ ... }
+    if (templateStack.length > 0 && templateStack[templateStack.length - 1].inExpr) {
+      if (ch === '{') {
+        templateStack[templateStack.length - 1].braceDepth++;
+        lastChar = '{';
+        lastWord = '';
+        i++;
+        continue;
+      }
+      if (ch === '}') {
+        templateStack[templateStack.length - 1].braceDepth--;
+        if (templateStack[templateStack.length - 1].braceDepth === 0) {
+          templateStack[templateStack.length - 1].inExpr = false;
+        }
+        lastChar = '}';
+        lastWord = '';
+        i++;
+        continue;
+      }
+    }
+
+    // Handle regular string literals (single and double quotes)
+    if (ch === '"' || ch === "'") {
       const quote = ch;
       i++;
       while (i < len) {
         const cur = content[i];
-        if (cur === '\n') currentLine++;
+        if (cur === '\n') {
+          currentLine++;
+          break;
+        }
         if (cur === '\\') {
           i += 2;
           continue;
@@ -685,6 +756,62 @@ export function extractCodeComments(content) {
 }
 
 /**
+ * Suggests deterministic sentence split points for sentences exceeding STE word limits.
+ */
+export function suggestSentenceSplits(sentence) {
+  if (!sentence || typeof sentence !== 'string') return null;
+
+  // 1. Try colon split
+  const colonIdx = sentence.indexOf(': ');
+  if (colonIdx > 10 && colonIdx < sentence.length - 15) {
+    const p1 = sentence.slice(0, colonIdx).trim() + '.';
+    let p2 = sentence.slice(colonIdx + 2).trim();
+    p2 = p2.charAt(0).toUpperCase() + p2.slice(1);
+    return `${p1} ${p2}`;
+  }
+
+  // 2. Try em-dash or double-hyphen
+  const dashMatch = sentence.match(/^(.*?)\s+(?:—|--)\s+(.*)$/);
+  if (dashMatch && dashMatch[1].length > 10 && dashMatch[2].length > 10) {
+    const p1 = dashMatch[1].trim() + '.';
+    let p2 = dashMatch[2].trim();
+    p2 = p2.charAt(0).toUpperCase() + p2.slice(1);
+    return `${p1} ${p2}`;
+  }
+
+  // 3. Try comma + coordinating conjunction or relative pronoun
+  const conjMatch = sentence.match(/^(.*?),\s+(and|but|which|so|because|while)\s+(.*)$/i);
+  if (conjMatch && conjMatch[1].length > 10 && conjMatch[3].length > 10) {
+    const p1 = conjMatch[1].trim() + '.';
+    const conj = conjMatch[2].toLowerCase();
+    let p2 = conjMatch[3].trim();
+    if (conj === 'which') {
+      p2 = 'This ' + p2;
+    } else {
+      p2 = p2.charAt(0).toUpperCase() + p2.slice(1);
+    }
+    return `${p1} ${p2}`;
+  }
+
+  return null;
+}
+
+/**
+ * Generates candidate rewrites for semantic dictionary and grammar violations.
+ */
+export function generateContextualSuggestion(text) {
+  if (!text || typeof text !== 'string') return null;
+  const split = suggestSentenceSplits(text);
+  if (split) return split;
+
+  const { fixed, fixCount } = autoFixProse(text, true);
+  if (fixCount > 0 && fixed !== text) {
+    return fixed;
+  }
+  return null;
+}
+
+/**
  * Lints text content against ASD-STE100 Issue 9 rules.
  */
 export function lintSTE(content, isCodeFile = false) {
@@ -708,6 +835,7 @@ export function lintSTE(content, isCodeFile = false) {
         rule: 'Rule 8.1',
         message: 'Semicolons (;) are strictly prohibited. Split into separate sentences.',
         context: text,
+        suggestedFix: fixProseSemicolons(text).text,
       });
     }
 
@@ -721,6 +849,7 @@ export function lintSTE(content, isCodeFile = false) {
           rule: 'Rule 4.2',
           message: `Contraction '${match[0]}' found. Contractions are prohibited in STE.`,
           context: text,
+          suggestedFix: generateContextualSuggestion(text),
         });
       }
     }
@@ -735,6 +864,7 @@ export function lintSTE(content, isCodeFile = false) {
           rule: 'GR-6',
           message: `Latin abbreviation '${match[0]}' found. Use '${replacement}' instead.`,
           context: text,
+          suggestedFix: generateContextualSuggestion(text),
         });
       }
     }
@@ -751,6 +881,7 @@ export function lintSTE(content, isCodeFile = false) {
           rule: 'Rule 1.6 / Rule 6',
           message: `Progressive '-ing' construction '${progressiveMatch[0]}' found. Progressive verbs are prohibited in STE; use simple present or past tense.`,
           context: text,
+          suggestedFix: generateContextualSuggestion(text),
         });
       }
     }
@@ -765,6 +896,7 @@ export function lintSTE(content, isCodeFile = false) {
           rule: 'Part 2 Dictionary',
           message: `Unapproved word '${match[0]}' found. Use approved alternative '${replacement}'.`,
           context: text,
+          suggestedFix: generateContextualSuggestion(text),
         });
       }
     }
@@ -778,6 +910,7 @@ export function lintSTE(content, isCodeFile = false) {
           rule: 'Rule 5.1',
           message: `Procedural sentence has ${wordCount} words (Maximum allowed is 20 words).`,
           context: text,
+          suggestedFix: suggestSentenceSplits(text),
         });
       }
     } else {
@@ -787,6 +920,7 @@ export function lintSTE(content, isCodeFile = false) {
           rule: 'Rule 6.3',
           message: `Descriptive sentence has ${wordCount} words (Maximum allowed is 25 words).`,
           context: text,
+          suggestedFix: suggestSentenceSplits(text),
         });
       }
     }
@@ -1142,7 +1276,7 @@ function replacePreservingCase(text, targetWord, replacement) {
 /**
  * Applies prose language fixes (semicolons, contractions, Latin abbreviations, safe words).
  */
-export function autoFixProse(text) {
+export function autoFixProse(text, isCodeComment = false) {
   let fixed = text;
   let fixCount = 0;
 
@@ -1201,6 +1335,52 @@ export function autoFixProse(text) {
     }
   }
 
+  // Contextual code keyword backticking in code comments
+  if (isCodeComment) {
+    const typeKeywordRegex = /\b(as|to|type|cast(?:ing)?\s+to|returns?)\s+any\b/gi;
+    if (typeKeywordRegex.test(fixed)) {
+      fixed = fixed.replace(typeKeywordRegex, (match, prefix) => {
+        fixCount++;
+        return `${prefix} \`any\``;
+      });
+    }
+    const anySymbolRegex = /\bany(\s+(?:type|interface|cast|variable|value|parameter|argument|property|field))\b/gi;
+    if (anySymbolRegex.test(fixed)) {
+      fixed = fixed.replace(anySymbolRegex, (match, suffix) => {
+        fixCount++;
+        return `\`any\`${suffix}`;
+      });
+    }
+  }
+
+  // Contextual idioms & common STE approved alternatives
+  const CONTEXTUAL_REPLACEMENTS = [
+    [/\bfor any given\b/gi, 'for each given'],
+    [/\bfor any\b/gi, 'for each'],
+    [/\bif any\b/gi, 'if present'],
+    [/\bbefore any\b/gi, 'before all'],
+    [/\bin any\b/gi, 'in all'],
+    [/\bpruning any\b/gi, 'pruning all'],
+    [/\bextract any\b/gi, 'extract all'],
+    [/\breturns any\b/gi, 'returns all'],
+    [/\bis running\b/gi, 'runs'],
+    [/\bare missing\b/gi, 'are absent'],
+    [/\bis missing\b/gi, 'is absent'],
+    [/\b(?:the|a|an)\s+complete\b/gi, 'completed'],
+  ];
+
+  for (const [pattern, replacement] of CONTEXTUAL_REPLACEMENTS) {
+    if (pattern.test(fixed)) {
+      fixed = fixed.replace(pattern, (match) => {
+        fixCount++;
+        if (match[0] === match[0].toUpperCase()) {
+          return replacement.charAt(0).toUpperCase() + replacement.slice(1);
+        }
+        return replacement;
+      });
+    }
+  }
+
   return { fixed, fixCount };
 }
 
@@ -1215,6 +1395,7 @@ export function formatCodeComments(codeContent) {
   const len = codeContent.length;
   let lastChar = '';
   let lastWord = '';
+  const templateStack = [];
 
   const isRegexStart = (lc, lw) => {
     if (!lc) return true;
@@ -1237,8 +1418,72 @@ export function formatCodeComments(codeContent) {
     const ch = codeContent[i];
     const next = codeContent[i + 1] || '';
 
-    // Handle string literals: single, double, backtick
-    if (ch === '"' || ch === "'" || ch === '`') {
+    // If inside a template literal (raw string part, not inside ${...})
+    if (templateStack.length > 0 && !templateStack[templateStack.length - 1].inExpr) {
+      if (ch === '\\') {
+        fixed += '\\';
+        i++;
+        if (i < len) {
+          fixed += codeContent[i];
+          i++;
+        }
+        continue;
+      }
+      if (ch === '`') {
+        fixed += '`';
+        templateStack.pop();
+        i++;
+        lastChar = '`';
+        lastWord = '';
+        continue;
+      }
+      if (ch === '$' && next === '{') {
+        fixed += '${';
+        templateStack[templateStack.length - 1].inExpr = true;
+        templateStack[templateStack.length - 1].braceDepth = 1;
+        i += 2;
+        lastChar = '{';
+        lastWord = '';
+        continue;
+      }
+      fixed += ch;
+      i++;
+      continue;
+    }
+
+    // Handle template literal start in code
+    if (ch === '`') {
+      fixed += '`';
+      templateStack.push({ inExpr: false, braceDepth: 0 });
+      i++;
+      continue;
+    }
+
+    // Handle curly braces inside template expression ${ ... }
+    if (templateStack.length > 0 && templateStack[templateStack.length - 1].inExpr) {
+      if (ch === '{') {
+        fixed += '{';
+        templateStack[templateStack.length - 1].braceDepth++;
+        lastChar = '{';
+        lastWord = '';
+        i++;
+        continue;
+      }
+      if (ch === '}') {
+        fixed += '}';
+        templateStack[templateStack.length - 1].braceDepth--;
+        if (templateStack[templateStack.length - 1].braceDepth === 0) {
+          templateStack[templateStack.length - 1].inExpr = false;
+        }
+        lastChar = '}';
+        lastWord = '';
+        i++;
+        continue;
+      }
+    }
+
+    // Handle string literals: single, double quotes
+    if (ch === '"' || ch === "'") {
       const quote = ch;
       fixed += quote;
       i++;
@@ -1306,7 +1551,7 @@ export function formatCodeComments(codeContent) {
       ) {
         fixed += fullCommentLine;
       } else {
-        const { fixed: fixedBody, fixCount: fixes } = autoFixProse(commentBody);
+        const { fixed: fixedBody, fixCount: fixes } = autoFixProse(commentBody, true);
         fixed += prefix + fixedBody;
         fixCount += fixes;
       }
@@ -1347,11 +1592,11 @@ export function formatCodeComments(codeContent) {
             if (tagMatch) {
               const tagHeader = tagMatch[1];
               const tagDesc = tagMatch[2];
-              const { fixed: fixedDesc, fixCount: fixes } = autoFixProse(tagDesc);
+              const { fixed: fixedDesc, fixCount: fixes } = autoFixProse(tagDesc, true);
               formattedLines.push(prefix + tagHeader + fixedDesc + suffix);
               fixCount += fixes;
             } else {
-              const { fixed: fixedBody, fixCount: fixes } = autoFixProse(body);
+              const { fixed: fixedBody, fixCount: fixes } = autoFixProse(body, true);
               formattedLines.push(prefix + fixedBody + suffix);
               fixCount += fixes;
             }
@@ -1776,6 +2021,7 @@ export function runCLI(argv) {
   const args = argv.slice(2);
   let textInput = null;
   let jsonOutput = false;
+  let agentOutput = false;
   let fixMode = false;
   let mode = 'all'; // Default unified mode: audits and fixes docs and code comments
   let forceAgentFirst = false;
@@ -1788,6 +2034,8 @@ export function runCLI(argv) {
       textInput = args[++i];
     } else if (arg === '--json') {
       jsonOutput = true;
+    } else if (arg === '--agent') {
+      agentOutput = true;
     } else if (arg === '--output' || arg === '-o') {
       outputPath = args[++i];
     } else if (arg.startsWith('--output=')) {
@@ -1817,6 +2065,7 @@ Options:
   -d, --docs            Scan and format Markdown documentation only
   -c, --code            Scan and format code comments only
   -t, --text <STRING>   Lint direct inline text string
+  --agent               Output compact, token-optimized JSON worklist with exact targets and suggested fixes for AI agents
   --agent-first         Force ADR-001 Agent-First syntax checks (compact records, no emojis, no redundant links)
   --json                Output results in JSON format
   -h, --help            Show this help message
@@ -1853,7 +2102,17 @@ Default:
     totalViolations += issues.length;
     reports.push({ filePath: 'inline-text', issues });
 
-    if (jsonOutput) {
+    if (agentOutput) {
+      const agentIssues = issues.map((iss) => ({
+        file: 'inline-text',
+        line: iss.lineNum,
+        rule: iss.rule,
+        message: iss.message,
+        target: iss.context,
+        suggestedFix: iss.suggestedFix || null,
+      }));
+      console.log(JSON.stringify(agentIssues, null, 2));
+    } else if (jsonOutput) {
       console.log(JSON.stringify(reports, null, 2));
     } else {
       if (issues.length === 0) {
@@ -1927,6 +2186,31 @@ Default:
     } catch (err) {
       console.error(`Error reading ${target.filePath}:`, err);
     }
+  }
+
+  if (agentOutput) {
+    const agentIssues = [];
+    for (const report of reports) {
+      for (const issue of report.issues) {
+        const relFile = path.relative(rootDir, report.filePath).replace(/\\/g, '/');
+        agentIssues.push({
+          file: relFile,
+          line: issue.lineNum,
+          rule: issue.rule,
+          message: issue.message,
+          target: issue.context,
+          suggestedFix: issue.suggestedFix || null,
+        });
+      }
+    }
+    const jsonStr = JSON.stringify(agentIssues, null, 2);
+    if (outputPath) {
+      fs.writeFileSync(outputPath, jsonStr, 'utf-8');
+    } else {
+      console.log(jsonStr);
+    }
+    process.exitCode = agentIssues.length > 0 ? 1 : 0;
+    return;
   }
 
   if (jsonOutput) {

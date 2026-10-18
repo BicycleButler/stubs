@@ -1,6 +1,6 @@
 {
   "name": "@bicyclebutler/stubs-monorepo",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "private": true,
   "description": "Unified central hub for AI Agent Skills, Rules, CLI, and MCP servers",
   "main": "packages/cli/dist/index.cjs",

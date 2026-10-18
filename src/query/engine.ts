@@ -855,7 +855,7 @@ export class QueryEngine {
     );
     lines.push('');
 
-    // Partition nodes: Seeds and top central nodes get full display; lower nodes get collapsed
+    // Partition nodes: Seeds and top central nodes get full display. Lower nodes get collapsed
     const primaryNodes = nodes.slice(0, 8);
     const secondaryNodes = nodes.slice(8);
 

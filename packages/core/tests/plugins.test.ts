@@ -28,7 +28,7 @@ describe('Pluggable Search Engines (Level 2 & Level 3)', () => {
 
   describe('Level 2 Search Plugin', () => {
     it('should fall back to mock embedding when API key is missing', async () => {
-      // Make sure that API key is missing
+      // Make sure that API key is absent
       const oldKey = process.env.OPENAI_API_KEY;
       delete process.env.OPENAI_API_KEY;
 

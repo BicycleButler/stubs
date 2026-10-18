@@ -70,7 +70,7 @@ AST dependency graph in `.stubs/graph.sqlite` with Louvain community detection, 
 
 ## CLI Commands
 
-- Primary Consolidated Pipeline: `npx stubs run` (runs scan, map generation, sidecar sanding, arch lint, and TALE governance in one pass; use `--check` for read-only audit)
+- Primary Consolidated Pipeline: `npx stubs run` (runs scan, map generation, sidecar sanding, arch lint, and TALE governance in one pass. Use `--check` for read-only audit)
 - Scan & Index Code Graph: `npx stubs scan`
 - Query GraphRAG Subgraph: `npx stubs query "<question>"`
 - Unified Surgical Query: `npx stubs query "explain: <target>"` | `path: <A> to <B>` | `blast: <target>`

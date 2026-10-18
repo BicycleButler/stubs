@@ -330,7 +330,7 @@ This reference contains the writing rules from **Part 1 of ASD-STE100 Simplified
 
 - **Rule:** Use pronouns (_it_, _they_, _this_, _these_) only when the antecedent noun is immediately obvious.
 
-### GR-4: Avoiding Vague "This"
+### GR-4: Preventing Vague "This"
 
 - **Rule:** Never use "This" as a standalone subject. Always pair "this" with a specific noun (for example: "This procedure...").
 

@@ -80,5 +80,5 @@ Before saving source files, verify:
 - [ ] Are variable names limited to 3 words or fewer?
 - [ ] Are comments free of semicolons (`;`)?
 - [ ] Are comments free of contractions (`do not`, `cannot`, `it is`)?
-- [ ] Are comments free of progressive action verbs (`is running`, `calculating`)?
+- [ ] Are comments free of progressive action verbs (`runs`, `calculating`)?
 - [ ] Do comments describe _why_ the code exists, rather than restating syntax?

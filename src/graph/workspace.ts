@@ -161,7 +161,7 @@ export class WorkspaceManager {
   }
 
   /**
-   * Finds the owning workspace package for any given file path.
+   * Finds the owning workspace package for each given file path.
    */
   public getPackageForFile(filePath: string, config: WorkspaceConfig): WorkspacePackage | null {
     const norm = normalizePosixPath(filePath);

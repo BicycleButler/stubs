@@ -8,7 +8,7 @@ export class Level2SearchPlugin extends BaseSearchPlugin {
 
   /**
    * Generates a vector embedding using host-configured OpenAI-compatible API,
-   * falling back to a deterministic local mock embedding if keys are missing or requests fail.
+   * falling back to a deterministic local mock embedding if keys are absent or requests fail.
    */
   public async generateEmbedding(text: string): Promise<number[]> {
     const apiKey = process.env.OPENAI_API_KEY;

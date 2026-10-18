@@ -267,7 +267,7 @@ export class MockEngine {
   }
 
   /**
-   * Renders the complete TypeScript test file code.
+   * Renders completed TypeScript test file code.
    */
   public renderTestCode(scaffold: Omit<MockScaffoldResult, 'generatedCode' | 'written'>): string {
     const lines: string[] = [];

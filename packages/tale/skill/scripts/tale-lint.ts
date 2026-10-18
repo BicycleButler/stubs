@@ -190,6 +190,16 @@ export const SAFE_WORD_FIXES: Record<string, string> = {
   Utilized: 'Used',
   utilizing: 'using',
   Utilizing: 'Using',
+  avoid: 'prevent',
+  Avoid: 'Prevent',
+  avoids: 'prevents',
+  Avoids: 'Prevents',
+  avoided: 'prevented',
+  Avoided: 'Prevented',
+  avoiding: 'preventing',
+  Avoiding: 'Preventing',
+  may: 'can',
+  May: 'Can',
 };
 
 const NOUN_ING_EXCEPTIONS = new Set([

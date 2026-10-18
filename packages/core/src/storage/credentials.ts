@@ -169,7 +169,7 @@ export function maskToken(text: string): string {
 }
 
 /**
- * Applies global console logging interception to automatically mask tokens in any logs.
+ * Applies global console logging interception to automatically mask tokens in all logs.
  */
 let isConsoleMasked = false;
 export function applyGlobalConsoleMasking(): void {

@@ -13,6 +13,8 @@ import {
   formatCodeComments,
   isPathExcluded,
   SAFE_WORD_FIXES,
+  suggestSentenceSplits,
+  generateContextualSuggestion,
 } from './tale.mjs';
 
 console.log('Running TALE Linter Test Suite...\n');
@@ -358,4 +360,67 @@ export function verifyUser(token: string): boolean {
   console.log('✓ Test 24 Passed: Deepened Markdown cleanup handles trailing whitespace.');
 }
 
-console.log('\nAll 24 unit tests passed successfully!');
+// 25. Nested Template Literal and Expression Protection Test
+{
+  const nestedCode = `
+const title = "Module";
+const code = \`\${cond ? \`# Header\\n// Inside nested string stub \${title}\\n\` : ''}\`;
+const headerComment = \`// \${title} — Stub implementation\\n\`;
+await fs.writeFile('path', headerComment);
+`;
+  const comments = extractCodeComments(nestedCode);
+  assert.strictEqual(comments.length, 0, 'No comments should be extracted from template strings');
+  const { fixed } = formatCodeComments(nestedCode);
+  assert.ok(fixed.includes('headerComment = `// ${title} — Stub implementation\\n`;'), 'Semicolon must not be altered');
+  console.log('✓ Test 25 Passed: Nested template strings with `${...}` and `//` are preserved.');
+}
+
+// 26. Additional Safe Words Auto-Fix Test (prevent*, can)
+{
+  const text = 'This avoids collisions. Column may exist. Avoiding issues.';
+  const { fixed, fixCount } = autoFixContent(text, false, false);
+  assert.strictEqual(fixCount, 3, 'Expected 3 fixes for avoids, may, avoiding');
+  assert.strictEqual(fixed, 'This prevents collisions. Column can exist. Preventing issues.');
+  console.log('✓ Test 26 Passed: Additional safe words (avoid*, may) correctly remediated.');
+}
+
+// 27. Sentence Splitting Heuristic Test (suggestSentenceSplits)
+{
+  const longSentenceWithColon =
+    'Filter type 0 on every scanline: the images are flat colour, so the more elaborate filters buy nothing.';
+  const split1 = suggestSentenceSplits(longSentenceWithColon);
+  assert.ok(split1, 'Should split at colon');
+  assert.ok(split1.includes('. The images'), 'Second sentence capitalized');
+
+  const longSentenceWithConj =
+    'Bundling inlines module code, but any dependency that reads a real file off disk breaks.';
+  const split2 = suggestSentenceSplits(longSentenceWithConj);
+  assert.ok(split2, 'Should split at comma + conjunction');
+  assert.ok(split2.includes('. But any dependency') || split2.includes('. Any dependency'), 'Sentence split correctly');
+  console.log('✓ Test 27 Passed: Sentence splitting heuristic divides long compound sentences.');
+}
+
+// 28. Contextual Code Comment Keyword Backticking & Idiomatic STE Test
+{
+  const codeWithComment =
+    '// Explicitly casting config to any because we will add properties\n// Preserve existing credentials if any\n// Check if server is running';
+  const { fixed, fixCount } = formatCodeComments(codeWithComment);
+  assert.ok(fixCount >= 3, `Expected at least 3 contextual fixes, got ${fixCount}`);
+  assert.ok(fixed.includes('to `any`'), 'any keyword wrapped in backticks');
+  assert.ok(fixed.includes('if present'), 'if any converted to if present');
+  assert.ok(fixed.includes('runs'), 'is running converted to runs');
+  console.log('✓ Test 28 Passed: Code comment keyword backticking and contextual idioms remediated.');
+}
+
+// 29. Linter SuggestedFix Attachment Test
+{
+  const sample =
+    'Line with unapproved word: check if local server is running; split this now.\nLong sentence with colon: first part is here and second part is there.';
+  const issues = lintSTE(sample, false);
+  assert.ok(issues.length > 0, 'Should find issues');
+  const semiIssue = issues.find((i) => i.rule === 'Rule 8.1');
+  assert.ok(semiIssue && semiIssue.suggestedFix, 'Semicolon issue should provide suggestedFix');
+  console.log('✓ Test 29 Passed: lintSTE issues attach suggestedFix for zero-token agent resolution.');
+}
+
+console.log('\nAll 29 unit tests passed successfully!');

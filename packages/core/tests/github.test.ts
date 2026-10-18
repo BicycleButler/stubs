@@ -26,14 +26,14 @@ describe('GitHub Client API and Auth Credentials Manager', () => {
   let originalCreds: string | null = null;
 
   beforeAll(() => {
-    // Preserve existing credentials if any
+    // Preserve existing credentials if present
     if (fs.existsSync(mockCredsPath)) {
       originalCreds = fs.readFileSync(mockCredsPath, 'utf8');
     }
   });
 
   afterAll(() => {
-    // Restore original credentials if any
+    // Restore original credentials if present
     if (originalCreds !== null) {
       if (!fs.existsSync(mockCredsDir)) {
         fs.mkdirSync(mockCredsDir, { recursive: true });

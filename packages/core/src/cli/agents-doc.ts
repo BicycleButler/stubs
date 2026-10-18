@@ -71,7 +71,7 @@ export function formatAccordingToAdr001(content: string): string {
 }
 
 /**
- * Audits markdown content for ADR-001 compliance and returns any violations found.
+ * Audits markdown content for ADR-001 compliance and returns `any` violations found.
  */
 export function auditAdr001Compliance(content: string): string[] {
   const violations: string[] = [];

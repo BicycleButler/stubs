@@ -271,11 +271,11 @@
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
 "@bicyclebutler/design@file:/Users/lappier/code/projects/stubs/packages/design":
-  version "1.4.1"
+  version "1.4.2"
   resolved "file:packages/design"
 
 "@bicyclebutler/stubs-core@file:/Users/lappier/code/projects/stubs/packages/core":
-  version "1.4.1"
+  version "1.4.2"
   resolved "file:packages/core"
   dependencies:
     esbuild "^0.24.0"
@@ -286,14 +286,14 @@
     sqlite3 "^6.0.1"
 
 "@bicyclebutler/stubs@file:/Users/lappier/code/projects/stubs/packages/cli":
-  version "1.4.1"
+  version "1.4.2"
   resolved "file:packages/cli"
   dependencies:
     "@clack/prompts" "^0.9.1"
     picocolors "^1.1.1"
 
 "@bicyclebutler/tale@file:/Users/lappier/code/projects/stubs/packages/tale":
-  version "1.4.1"
+  version "1.4.2"
   resolved "file:packages/tale"
 
 "@clack/core@0.4.1":

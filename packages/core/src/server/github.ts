@@ -115,7 +115,7 @@ export function resolveToken(configPath?: string): string {
   // 2. config.json
   try {
     const config = loadConfig(configPath);
-    // Explicitly casting config to any because we will add these properties in next steps
+    // Explicitly casting config to `any` because we will add these properties in next steps
     const rawConfig = config as any;
     const configToken = rawConfig.github_token || rawConfig.remote?.github_token;
     if (configToken) {

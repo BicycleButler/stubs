@@ -90,7 +90,7 @@ let lastProgram: ts.Program | null = null;
 
 /**
  * Executes an in-memory TypeScript compilation and type-check on a virtual overlay file.
- * Automatically loads tsconfig.json options and physical workspace files, avoiding false-negatives.
+ * Automatically loads tsconfig.json options and physical workspace files, preventing false-negatives.
  */
 export function typeCheckVirtualFile(
   targetFilePath: string,

@@ -1,6 +1,6 @@
 {
   "name": "@bicyclebutler/design",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "Codebase-agnostic UI/UX design guidelines, token scales, and automated compliance tools for AI coding agents",
   "main": "rules/design-rules.md",
   "files": [

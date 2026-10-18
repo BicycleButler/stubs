@@ -1,4 +1,4 @@
-// Initialize global environment shim for Node.js modules before any imports
+// Initialize global environment shim for Node.js modules before all imports
 (globalThis as any).process = {
   env: {},
   cwd: () => '/',
@@ -314,7 +314,7 @@ async function startApp() {
     console.warn('graphEngine initialization warning:', e);
   }
 
-  // 1. Check if local server (stubs serve) is running
+  // 1. Check if local server (stubs serve) runs
   const hasLocalServer = await checkLocalServer();
 
   if (hasLocalServer && (workspaceSource === 'local-server' || !currentRepo)) {

@@ -39,7 +39,7 @@ export function extractImplementationCode(body: string, allowFallback = false): 
       }
       if (inCodeBlock) {
         if (line.trim().startsWith('```')) {
-          // We found a complete code block, we are done
+          // We found completed code block, we are done
           break;
         }
         codeBlockLines.push(line);

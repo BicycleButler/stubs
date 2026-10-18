@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Minimal helper: run one or more Jest test files in isolation by spawning
 // a fresh Node child process for each file with its own temp HOME/.stubs dir.
-// This avoids parallel-worker collisions on shared SQLite files and fixture dirs.
+// This prevents parallel-worker collisions on shared SQLite files and fixture dirs.
 const { spawn } = require('node:child_process');
 const path = require('node:path');
 const fs = require('node:fs');
