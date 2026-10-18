@@ -49,8 +49,8 @@ describe('Config Loader & Schema', () => {
   it('should fallback to defaults when some config attributes are malformed', () => {
     const tempConfigPath = path.resolve(__dirname, 'temp_malformed_config.json');
     const malformedConfig = {
-      project_name: 12345, // Invalid: should be string
-      autonomy_level: 'invalid_level', // Invalid: should be strict_gate | guided_execution | autonomous
+      project_name: 12345, // Invalid: must be string
+      autonomy_level: 'invalid_level', // Invalid: must be strict_gate | guided_execution | autonomous
       paths: null, // Invalid
     };
 

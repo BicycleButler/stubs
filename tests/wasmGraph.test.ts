@@ -85,7 +85,7 @@ export interface NodeInfo {
       ['specs/parser_service.ts.md', 'specs/graph_service.ts.md'].sort(),
     );
 
-    // 5. Test 1-Hop Ego Query (Retrieving neighbors in both directions)
+    // 5. Test 1-Hop Ego Query (Retrieving neighbors in the two directions)
     // parser_service has used_by: [specs/graph_service.ts.md]
     const parserNeighbors = await engine.getNeighbors('specs/parser_service.ts.md', 'both');
     expect(parserNeighbors).toContain('specs/graph_service.ts.md');
@@ -100,7 +100,7 @@ export interface NodeInfo {
     expect(searchResults[0].filePath).toBe('specs/graph_service.ts.md');
     expect(searchResults[0].title).toBe('Graph Service');
 
-    // 7. Verify incremental indexing works (should index 0 since nothing changed)
+    // 7. Verify incremental indexing works (must index 0 since nothing changed)
     const incrementalSummary = await engine.indexWorkspace('specs');
     expect(incrementalSummary.indexed).toBe(0);
 

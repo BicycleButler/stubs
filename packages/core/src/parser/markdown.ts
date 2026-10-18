@@ -5,7 +5,7 @@
 /**
  * Extracts the first code block under a section matching "Implementation" (case-insensitive).
  * If allowFallback is true, it falls back to extracting the first code block in the file.
- * Defaults to allowFallback = false to ensure pure specifications, interfaces, and architecture
+ * Defaults to allowFallback = false to make sure that pure specifications, interfaces, and architecture
  * diagrams are not mistakenly extracted as executable code implementations.
  * Returns null if no implementation code block is found.
  */
@@ -20,7 +20,7 @@ export function extractImplementationCode(body: string, allowFallback = false): 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
 
-    // Check for an Implementation header, e.g. "## Implementation" or "## 5. Implementation" or "# Implementation"
+    // Check for an Implementation header, for example, "## Implementation" or "## 5. Implementation" or "# Implementation"
     if (/^\s*#+\s*(?:\d+\.\s*)?Implementation/i.test(line)) {
       inImplementationSection = true;
       continue;

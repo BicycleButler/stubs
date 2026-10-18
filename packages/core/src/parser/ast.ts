@@ -65,7 +65,7 @@ export function parseMarkdown(content: string): MarkdownBlock[] {
  *
  * Key behavior: finds the ## Implementation heading that has typescript code blocks
  * immediately following it (before any same-level or higher heading), preferring the
- * last such section when multiple exist (e.g., ## Current implementation precedes
+ * last such section when multiple exist (for example, ## Current implementation precedes
  * ## Implementation).
  */
 export function extractImplementationCode(blocks: MarkdownBlock[]): {

@@ -55,7 +55,7 @@ describe('GitHub Client API and Auth Credentials Manager', () => {
     if (fs.existsSync(mockCredsPath)) {
       fs.unlinkSync(mockCredsPath);
     }
-    // Set custom API base to intercept requests via fetch mocks easily
+    // Set custom API base to intercept requests through fetch mocks easily
     process.env.GITHUB_API_BASE_URL = 'https://api.github.mock';
   });
 

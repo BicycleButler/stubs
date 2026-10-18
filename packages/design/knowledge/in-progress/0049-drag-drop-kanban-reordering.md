@@ -26,14 +26,14 @@ Without clear guidelines:
 
 ### 1 — Drag States & Visual Elevation
 
-- Dragging Card: Deal: Acme Global Expansion | Value: $45,000 | Contact: Sarah Connor (Elevated shadow-xl, `rotate-[1.5deg]`)
+- Dragging Card: Deal: Acme Global Expansion | Value: $45,000 | Contact: Sarah Connor (Elevated shadow-xl, `turn-[1.5deg]`)
 - Insertion Line: Indicator bar (h-1 bg-primary)
 - Original Slot: Ghost placeholder (opacity-40, dashed border)
 
 - **Resting Affordance:** Draggable cards/rows must show a drag handle icon (`GripVertical className="text-muted-foreground/40 hover:text-foreground cursor-grab"`).
 - **Active Drag State:**
   - Elevation: Rises to `shadow-xl` and scale `scale-[1.02]`.
-  - Subtle Tilt: `rotate-[1.5deg]` to communicate physical detachment.
+  - Subtle Tilt: `turn-[1.5deg]` to communicate physical detachment.
   - Ghost Slot: The origin slot displays a dashed neutral border (`border-2 border-dashed border-border/60 bg-muted/20`).
 - **Drop Target / Insertion Line:**
   - Highlight the exact insertion position with a `h-1 bg-primary rounded-full` indicator bar.

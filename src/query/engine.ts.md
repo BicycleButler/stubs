@@ -34,6 +34,7 @@ depends_on:
   - ../graph/workspace
   - ../storage
   - ../config/schema
+  - ../../path
 used_by:
   - src/cli/router.ts
   - src/server/mcp.ts

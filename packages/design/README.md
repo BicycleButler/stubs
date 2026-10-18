@@ -1,10 +1,10 @@
-# @wiltermood/design
+# @bicyclebutler/design
 
 Codebase-agnostic UI/UX design guidelines, token scales, and automated compliance tools for AI coding agents.
 
 ## Overview
 
-`@wiltermood/design` establishes a consistent, high-polish visual and interaction foundation. It provides:
+`@bicyclebutler/design` establishes a consistent, high-polish visual and interaction foundation. It provides:
 
 1. **Design Tokens & Invariants**: Rules for spacing, typography scale, surface elevations, and color contracts.
 2. **Audit & Remediation Tools**: Automated scripts for scanning and remediating UI violations (static colors, badges, accessibility).
@@ -14,10 +14,10 @@ Codebase-agnostic UI/UX design guidelines, token scales, and automated complianc
 
 ```bash
 # Add via unified stubs CLI
-npx stubs add design
+npx @bicyclebutler/stubs add design
 
 # Or install package
-npm install --save-dev @wiltermood/design
+npm install --save-dev @bicyclebutler/design
 ```
 
 ## Running Audits

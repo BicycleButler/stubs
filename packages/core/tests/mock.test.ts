@@ -158,7 +158,7 @@ exports:
     expect(res1.written).toBe(true);
     expect(await fs.stat(outTestPath)).toBeDefined();
 
-    // 2. Second write without force should not overwrite
+    // 2. Second write without force must not overwrite
     const res2 = await mockEngine.generateTestScaffold(sidecarPath, {
       outputPath: outTestPath,
       dryRun: false,
@@ -166,7 +166,7 @@ exports:
     });
     expect(res2.written).toBe(false);
 
-    // 3. Third write with force should overwrite
+    // 3. Third write with force must overwrite
     const res3 = await mockEngine.generateTestScaffold(sidecarPath, {
       outputPath: outTestPath,
       dryRun: false,

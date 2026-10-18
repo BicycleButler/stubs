@@ -16,7 +16,7 @@ export interface SyncResult {
   error?: string;
   /** Set to true when a non-structural conflict was auto-resolved (newer file wins). */
   conflict_resolved?: boolean;
-  /** Set when status is 'conflict'; describes the resolution strategy. */
+  /** Set when status is 'conflict'. Describes the resolution strategy. */
   resolution?: string;
 }
 
@@ -232,7 +232,7 @@ export function syncFrontmatterDependencies(
     const codeImports = graph.edges.filter((e) => e.relation === 'imports').map((e) => e.target_id);
 
     const existingDeps = Array.isArray(frontmatter.depends_on) ? [...frontmatter.depends_on] : [];
-    // Separate spec dependencies (e.g. *.md or non-code files) from code dependencies
+    // Separate spec dependencies (for example, *.md or non-code files) from code dependencies
     const specDeps = existingDeps.filter(
       (d) => d.endsWith('.md') || !d.match(/\.(ts|tsx|js|jsx|py|rs|go)$/),
     );
@@ -329,7 +329,7 @@ export class SandingEngine {
     }
 
     // 1. Distinguish between code sidecars (sidecar-spec, module-stub) and pure
-    // architectural documents (subsystem-index, concept-doc, planning-map, architecture-doc, etc.).
+    // architectural documents (subsystem-index, concept-doc, planning-map, architecture-doc, and so on.).
     const isCodeSidecar = frontmatter.type === 'sidecar-spec' || frontmatter.type === 'module-stub';
     const targetCodeFile = frontmatter.target_code_file;
 
@@ -359,10 +359,10 @@ export class SandingEngine {
     }
 
     // Resolve target_code_file. The value can be:
-    // (a) workspace-root-relative (e.g. "src/lib/firebase.ts") — resolve against process.cwd().
+    // (a) workspace-root-relative (for example, "src/lib/firebase.ts") — resolve against process.cwd().
     //     This is the B1 fix: paths without a "./" or "../" prefix are treated as relative to
     //     the workspace root (process.cwd()), not the sidecar's directory.
-    // (b) sidecar-relative (e.g. "./auth-spec.ts", "../foo.ts") — resolve against the sidecar's
+    // (b) sidecar-relative (for example, "./auth-spec.ts", "../foo.ts") — resolve against the sidecar's
     //     parent directory. Paths starting with "./" or "../" preserve the pre-B1 convention
     //     where target_code_file was relative to the sidecar's location.
     //
@@ -377,7 +377,7 @@ export class SandingEngine {
       ? resolveContainedPath(sidecarDir, targetCodeFile)
       : resolveContainedPath(workspaceRoot, targetCodeFile);
 
-    // Guard: ensure resolved path stays within workspace root
+    // Guard: make sure that resolved path stays within workspace root
     const relativeCheck = path.relative(workspaceRoot, resolvedTarget);
     if (path.isAbsolute(relativeCheck) || relativeCheck.startsWith('..')) {
       return {
@@ -529,7 +529,7 @@ export class SandingEngine {
       };
     }
 
-    // Both files exist. Detect changes.
+    // The two files exist. Detect changes.
     let codeContent: string;
     try {
       codeContent = readFileSync(resolvedTarget, 'utf8');
@@ -657,7 +657,7 @@ export class SandingEngine {
       };
     }
 
-    // Conflict path: Both files were modified
+    // Conflict path: The two files were modified
     const cleanCode = stripSidecarHeader(codeContent);
     const sidecarAstHash = getAstStructuralHash(extractedCode);
     const codeAstHash = getAstStructuralHash(cleanCode);
@@ -822,7 +822,7 @@ export class SandingEngine {
     for (const file of files) {
       try {
         const content = readFileSync(path.resolve(file), 'utf8');
-        // Ignore files that don't have valid OKF layout structure
+        // Ignore files that do not have valid OKF layout structure
         if (!content.trim().startsWith('---')) {
           continue;
         }

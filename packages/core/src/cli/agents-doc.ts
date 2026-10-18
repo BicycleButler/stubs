@@ -57,7 +57,7 @@ export function formatAccordingToAdr001(content: string): string {
   formatted = formatted.replace(/^ {4}- /gm, '  - ');
   formatted = formatted.replace(/^ {4}\* /gm, '  - ');
 
-  // Rule 5: Ensure single blank line between logical sections (no \n\n\n+)
+  // Rule 5: Make sure that single blank line between logical sections (no \n\n\n+)
   formatted = formatted.replace(/\n{3,}/g, '\n\n');
 
   // Trim trailing whitespace per line
@@ -66,7 +66,7 @@ export function formatAccordingToAdr001(content: string): string {
     .map((line) => line.trimEnd())
     .join('\n');
 
-  // Ensure single trailing newline
+  // Make sure that single trailing newline
   return formatted.trim() + '\n';
 }
 
@@ -254,6 +254,31 @@ export function generateStubsInstructionBlock(targetDir: string, _projectName?: 
   lines.push('- Export Knowledge Graph: `npx stubs export <obsidian|wiki> [--out <dir>]`');
   lines.push('- Start MCP Stdio Server: `npx stubs mcp`');
   lines.push('- Install Assistant Rules: `npx stubs hook install`');
+
+  const hasTale =
+    fs.existsSync(path.join(targetDir, '.agents/skills/tale')) ||
+    fs.existsSync(path.join(targetDir, 'packages/tale'));
+  if (hasTale) {
+    lines.push('- Audit ASD-STE100 Compliance: `npx stubs tale` (or `npm run tale`)');
+    lines.push(
+      '- Auto-Remediate Prose & Formatting: `npx stubs tale --fix` (or `npm run tale:fix`)',
+    );
+    lines.push('');
+    lines.push('### ASD-STE100 Technical English & Formatting (Tale)');
+    lines.push('');
+    lines.push(
+      'The repository enforces ASD-STE100 Issue 9 Simplified Technical English for documentation (*.md) and code comments.',
+    );
+    lines.push(
+      '- Audit Language & Formatting: `npx stubs tale` (or `npm run tale` / `npm run lint:tale`) — audits both Markdown files and code comments across the workspace.',
+    );
+    lines.push(
+      '- Auto-Remediate Violations: `npx stubs tale --fix` (or `npm run tale:fix` / `npm run format:tale`) — safely fixes prose semicolons, contractions, Latin abbreviations, Markdown tables, and safe vocabulary in docs and comments without modifying executable code.',
+    );
+    lines.push(
+      '- File Scope & Exclusions: automatically skips build and test artifacts (`dist`, `node_modules`, `coverage`, `.stubs`), `.gitignore` paths, and strictly ignores `README.md` and `QUICKSTART.md`.',
+    );
+  }
 
   return lines.join('\n');
 }

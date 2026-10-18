@@ -77,7 +77,7 @@ export class ServiceWorker {
     expect(distilled).toContain('public id: string;');
     expect(distilled).toContain('public async runTask(name: string): Promise<boolean>;');
 
-    // Ensure implementation bodies and internal unexported functions are stripped
+    // Make sure that implementation bodies and internal unexported functions are stripped
     expect(distilled).not.toContain('return c * 2');
     expect(distilled).not.toContain('internalHelper');
     expect(distilled).not.toContain('private secret');

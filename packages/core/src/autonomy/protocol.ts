@@ -348,7 +348,7 @@ export class AutonomyProtocol {
   public threeWayMerge(draft: Proposal, report: DriftReport): Proposal {
     const proposal = { ...draft };
 
-    // If there is drift on both developer side (code/sidecar modified) and template side,
+    // If there is drift on the two developer side (code/sidecar modified) and template side,
     // we do a simple merge. If conflicts are unresolvable, mark as conflict.
     if (report.templateChanged && report.codeChanged) {
       // Simple conflict simulation
@@ -368,7 +368,7 @@ export class AutonomyProtocol {
 
   /**
    * Phase 4: Validation / Dry-Run Type-Check.
-   * Performs high-fidelity validation of TS syntax and structure.
+   * Does high-fidelity validation of TS syntax and structure.
    */
   public dryRunValidation(proposal: Proposal): { success: boolean; errors: string[] } {
     const errors: string[] = [];
@@ -383,7 +383,7 @@ export class AutonomyProtocol {
     if (proposal.proposedCodeContent) {
       try {
         // Quick syntax check: can we run basic syntactic verification?
-        // For a dry-run in this phase, we ensure it is syntactically sound (e.g., matching brackets/braces/quotes)
+        // For a dry-run in this phase, we make sure that it is syntactically sound (for example, matching brackets/braces/quotes)
         const openBraces = (proposal.proposedCodeContent.match(/\{/g) || []).length;
         const closeBraces = (proposal.proposedCodeContent.match(/\}/g) || []).length;
         if (openBraces !== closeBraces) {

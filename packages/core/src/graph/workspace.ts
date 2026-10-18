@@ -4,7 +4,7 @@ import { normalizePosixPath } from './engine';
 
 export interface WorkspacePackage {
   name: string;
-  rootDir: string; // Relative POSIX path, e.g. "packages/core"
+  rootDir: string; // Relative POSIX path, for example, "packages/core"
   version?: string;
   mainFile?: string;
   exports?: Record<string, string>;
@@ -16,7 +16,7 @@ export interface WorkspaceConfig {
   monorepoType?: 'pnpm' | 'npm' | 'yarn' | 'cargo' | 'go' | 'lerna' | 'turbo';
   packages: Map<string, WorkspacePackage>;
   packageByDir: Map<string, WorkspacePackage>;
-  pathAliases: Map<string, string[]>; // e.g. "@/*" => ["src/*"]
+  pathAliases: Map<string, string[]>; // for example, "@/*" => ["src/*"]
 }
 
 /**
@@ -106,7 +106,7 @@ export class WorkspaceManager {
   }
 
   /**
-   * Resolves an import specifier (e.g. "@stubs/core" or "@/components/Button")
+   * Resolves an import specifier (for example, "@stubs/core" or "@/components/Button")
    * to a canonical repository relative file path.
    */
   public resolveImportPath(
@@ -116,7 +116,7 @@ export class WorkspaceManager {
   ): string | null {
     const trimmed = importSpecifier.trim();
 
-    // 1. Direct workspace package match (e.g. "package-name" or "@scope/pkg")
+    // 1. Direct workspace package match (for example, "package-name" or "@scope/pkg")
     const matchedPkg = config.packages.get(trimmed);
     if (matchedPkg) {
       if (matchedPkg.mainFile) {
@@ -125,7 +125,7 @@ export class WorkspaceManager {
       return matchedPkg.rootDir;
     }
 
-    // 2. Package subpath match (e.g. "@scope/pkg/subpath")
+    // 2. Package subpath match (for example, "@scope/pkg/subpath")
     for (const [pkgName, pkg] of config.packages.entries()) {
       if (trimmed.startsWith(`${pkgName}/`)) {
         const sub = trimmed.slice(pkgName.length + 1);
@@ -136,7 +136,7 @@ export class WorkspaceManager {
       }
     }
 
-    // 3. tsconfig path aliases (e.g. "@/*" => "src/*")
+    // 3. tsconfig path aliases (for example, "@/*" => "src/*")
     for (const [aliasPattern, targetPatterns] of config.pathAliases.entries()) {
       if (aliasPattern.endsWith('/*') && trimmed.startsWith(aliasPattern.slice(0, -1))) {
         const suffix = trimmed.slice(aliasPattern.length - 2);

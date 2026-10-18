@@ -116,7 +116,7 @@ export class ArchLintEngine {
       'DOMAIN_LEAK',
     ];
 
-    // Ensure graph has indexed nodes and sidecars
+    // Make sure that graph has indexed nodes and sidecars
     const config = loadConfig(options.configPath);
     let existingNodes = await this.graphEngine.getGraphNodes();
     if (existingNodes.length === 0) {
@@ -209,7 +209,7 @@ export class ArchLintEngine {
       }
     }
 
-    // 3. Check Sidecar Manifest Parity (depends_on frontmatter vs actual code imports)
+    // 3. Check Sidecar Manifest Parity (depends_on frontmatter against actual code imports)
     if (enabledRules.includes('UNMANIFESTED_DEPENDENCY')) {
       for (const filePath of indexedFiles) {
         if (!filePath.endsWith('.ts.md')) continue;

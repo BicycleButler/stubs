@@ -421,24 +421,21 @@ title: "Temp Spec"
       expect(code).toBe(0);
 
       // Default autonomy_level is 'strict_gate' which blocks materialize_code,
-      // so pre-flight returns exit code 2 (blocked). JSON should still contain blastGuard and autonomyCheck.
-      const preflightCode = await router.route(['pre-flight', 'src/target.ts', '--json', '--context']);
+      // so pre-flight returns exit code 2 (blocked). JSON must still contain blastGuard and autonomyCheck.
+      const preflightCode = await router.route([
+        'pre-flight',
+        'src/target.ts',
+        '--json',
+        '--context',
+      ]);
       expect(preflightCode).toBe(2);
-      expect(logSpy).toHaveBeenCalledWith(
-        expect.stringContaining('"blastGuard"'),
-      );
-      expect(logSpy).toHaveBeenCalledWith(
-        expect.stringContaining('"autonomyCheck"'),
-      );
+      expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('"blastGuard"'));
+      expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('"autonomyCheck"'));
     });
 
     it('should run pre-flight with topological edit order', async () => {
       fs.mkdirSync(path.join(tempDir, 'src'), { recursive: true });
-      fs.writeFileSync(
-        path.join(tempDir, 'src', 'a.ts'),
-        'export class A {}',
-        'utf8',
-      );
+      fs.writeFileSync(path.join(tempDir, 'src', 'a.ts'), 'export class A {}', 'utf8');
       fs.writeFileSync(
         path.join(tempDir, 'src', 'b.ts'),
         'import { A } from "./a"; export class B {}',
@@ -449,12 +446,34 @@ title: "Temp Spec"
       expect(code).toBe(0);
 
       const preflightCode = await router.route([
-        'pre-flight', 'src/a.ts', '--order', 'src/a.ts', 'src/b.ts', '--json',
+        'pre-flight',
+        'src/a.ts',
+        '--order',
+        'src/a.ts',
+        'src/b.ts',
+        '--json',
       ]);
       expect(preflightCode).toBe(2);
-      expect(logSpy).toHaveBeenCalledWith(
-        expect.stringContaining('"editOrder"'),
-      );
+      expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('"editOrder"'));
+    });
+
+    it('should route run command with --json and output structured scorecard', async () => {
+      const exitCode = await router.route(['run', '--json', '--check']);
+      expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('"stages"'));
+      expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('"scan"'));
+      expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('"map"'));
+      expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('"sand"'));
+      expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('"lintArch"'));
+      expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('"tale"'));
+      expect([0, 1]).toContain(exitCode);
+    });
+
+    it('should display run and check in help text', async () => {
+      const exitCode = await router.route(['--help']);
+      expect(exitCode).toBe(0);
+      expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('run, check [options]'));
+      expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('--check'));
     });
   });
 });
+

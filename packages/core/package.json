@@ -1,6 +1,6 @@
 {
-  "name": "@wiltermood/stubs-core",
-  "version": "1.2.4",
+  "name": "@bicyclebutler/stubs-core",
+  "version": "1.4.0",
   "description": "stubs AST graph engine, OKF parser, and architecture sidecar compiler",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -25,7 +25,7 @@
     "ast",
     "graph"
   ],
-  "author": "Wiltermood",
+  "author": "BicycleButler",
   "license": "ISC",
   "repository": {
     "type": "git",

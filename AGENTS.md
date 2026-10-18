@@ -61,7 +61,7 @@ AST dependency graph in `.stubs/graph.sqlite` with Louvain community detection, 
     }
   }
   ```
-  (or `"command": "npx", "args": ["stubs", "mcp"]`). Ultra-lean suite exposes `stubs_query` and `stubs_scan`.
+  (or `"command": "npx", "args": ["@bicyclebutler/stubs", "mcp"]`). Ultra-lean suite exposes `stubs_query` and `stubs_scan`.
 - Monorepo & workspace boundary resolution:
   - Discovers package boundaries through `package.json` (`workspaces`), `pnpm-workspace.yaml`, `Cargo.toml` (`[workspace]`), `go.work`.
   - Path aliases in `tsconfig.json` (`compilerOptions.paths`) and package exports map directly to canonical source files.
@@ -70,6 +70,7 @@ AST dependency graph in `.stubs/graph.sqlite` with Louvain community detection, 
 
 ## CLI Commands
 
+- Primary Consolidated Pipeline: `npx stubs run` (runs scan, map generation, sidecar sanding, arch lint, and TALE governance in one pass; use `--check` for read-only audit)
 - Scan & Index Code Graph: `npx stubs scan`
 - Query GraphRAG Subgraph: `npx stubs query "<question>"`
 - Unified Surgical Query: `npx stubs query "explain: <target>"` | `path: <A> to <B>` | `blast: <target>`
@@ -79,6 +80,16 @@ AST dependency graph in `.stubs/graph.sqlite` with Louvain community detection, 
 - Export Knowledge Graph: `npx stubs export <obsidian|wiki> [--out <dir>]`
 - Start MCP Stdio Server: `npx stubs mcp`
 - Install Assistant Rules: `npx stubs hook install`
+- Audit ASD-STE100 Compliance: `npx stubs tale` (or `npm run tale`)
+- Auto-Remediate Prose & Formatting: `npx stubs tale --fix` (or `npm run tale:fix`)
+
+### ASD-STE100 Technical English & Formatting (Tale)
+
+The repository enforces ASD-STE100 Issue 9 Simplified Technical English for documentation (*.md) and code comments (*.ts, *.js, and so on).
+
+- Audit Language & Formatting: `npx stubs tale` (or `npm run tale` / `npm run lint:tale`) — audits Markdown files and code comments across the workspace.
+- Auto-Remediate Violations: `npx stubs tale --fix` (or `npm run tale:fix` / `npm run format:tale`) — fixes prose semicolons, contractions, Latin abbreviations, and safe vocabulary without changing executable code.
+- File Scope & Exclusions: automatically skips build and test artifacts (`dist`, `node_modules`, `coverage`, `.stubs`), `.gitignore` paths, and strictly ignores `README.md` and `QUICKSTART.md`.
 
 <!-- stubs-instructions-end -->
 
@@ -86,10 +97,10 @@ AST dependency graph in `.stubs/graph.sqlite` with Louvain community detection, 
 
 The repository is organized as an npm workspaces monorepo:
 
-- `packages/cli` (`@wiltermood/stubs`): Unified interactive CLI & TUI orchestrator.
-- `packages/core` (`@wiltermood/stubs-core`): Graph engine, parser, and sidecar compiler.
-- `packages/tale` (`@wiltermood/tale`): ASD-STE100 technical English linter & skill.
-- `packages/design` (`@wiltermood/design`): UI/UX design tokens, ADRs, and compliance scripts.
+- `packages/cli` (`@bicyclebutler/stubs`): Unified interactive CLI & TUI orchestrator.
+- `packages/core` (`@bicyclebutler/stubs-core`): Graph engine, parser, and sidecar compiler.
+- `packages/tale` (`@bicyclebutler/tale`): ASD-STE100 technical English linter & skill.
+- `packages/design` (`@bicyclebutler/design`): UI/UX design tokens, ADRs, and compliance scripts.
 
 - Package manager: npm workspaces (npx for binaries)
 - Build Project: `npm run build`
@@ -97,7 +108,8 @@ The repository is organized as an npm workspaces monorepo:
 - Build Core: `npm run build:core`
 - Run Tests: `npm test`
 - Lint Code: `npm run lint`
-- Lint TALE: `npm run lint:tale`
+- Audit TALE: `npm run tale` (or `npm run lint:tale`)
+- Remediate TALE: `npm run tale:fix` (or `npm run format:tale`)
 - Format Code: `npm run format`
 
 ## stubs CLI Binary

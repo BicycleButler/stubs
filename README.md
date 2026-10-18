@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <a href="#quick-start"><img src="https://img.shields.io/badge/CLI-npx%20stubs-00E599?style=flat-square&logo=terminal&logoColor=000" alt="CLI" /></a>
+  <a href="#quick-start"><img src="https://img.shields.io/badge/CLI-npx%20%40bicyclebutler%2Fstubs-00E599?style=flat-square&logo=terminal&logoColor=000" alt="CLI" /></a>
   <a href="QUICKSTART.md"><img src="https://img.shields.io/badge/Docs-Quickstart%20Guide-6366F1?style=flat-square" alt="Documentation" /></a>
   <a href="#token-optimal-graphrag"><img src="https://img.shields.io/badge/Context-85%25%20Token%20Savings-EC4899?style=flat-square" alt="Token Savings" /></a>
   <a href="packages/tale"><img src="https://img.shields.io/badge/STE-ASD--STE100%20Issue%209-F59E0B?style=flat-square" alt="TALE" /></a>
@@ -47,8 +47,10 @@ Instead of jumping directly from an ambiguous prompt into messy source modificat
 Install `stubs` into your project or launch the global interactive setup with a single terminal command:
 
 ```bash
-npx stubs
+npx @bicyclebutler/stubs
 ```
+
+> **Note:** Once `@bicyclebutler/stubs` is installed locally in your project (`npm install -D @bicyclebutler/stubs`), you can invoke commands directly with `stubs <command>` or `npx stubs <command>`. Use `npx @bicyclebutler/stubs` for one-shot, bootstrap, or global runs.
 
 The interactive terminal UI (`@clack/prompts`) will immediately guide you through configuring your workspace, selecting modular skills (`tale`, `design`, `stubs`), and binding local or Model Context Protocol (MCP) servers.
 
@@ -147,7 +149,7 @@ AI agents do not need your entire codebase dumped into their context window. In 
 
 ### 4. TALE: Halving Markdown Tokens with Simplified Technical English
 
-AI agents become inconsistent, verbose, and erratic when prompted with conversational filler. `stubs` integrates **`tale`** (`@wiltermood/tale`), enforcing **ASD-STE100 Issue 9 Simplified Technical English (STE)** across specs, agent prompts, and documentation.
+AI agents become inconsistent, verbose, and erratic when prompted with conversational filler. `stubs` integrates **`tale`** (`@bicyclebutler/tale`), enforcing **ASD-STE100 Issue 9 Simplified Technical English (STE)** across specs, agent prompts, and documentation.
 
 - **Cuts Markdown Tokens in Half:** Eliminates conversational pleasantries, ambiguous qualifiers, and passive voice overhead.
 - **Unambiguous Directives:** One word, one meaning. Prevents agents from misinterpreting constraints or misapplying design tokens.
@@ -174,12 +176,12 @@ Do not send unverified requests.
 
 The `stubs` project is organized as a high-performance npm monorepo with modular workspaces:
 
-| Package    | Name                                      | Description                                                                   |
-| :--------- | :---------------------------------------- | :---------------------------------------------------------------------------- |
-| **CLI**    | [`@wiltermood/stubs`](packages/cli)       | Interactive Clack TUI orchestrator, project initializer, and workflow runner. |
-| **Core**   | [`@wiltermood/stubs-core`](packages/core) | Zero-LLM local AST engine, SQLite dependency graph, and sidecar materializer. |
-| **TALE**   | [`@wiltermood/tale`](packages/tale)       | ASD-STE100 Issue 9 Simplified Technical English linter and skill suite.       |
-| **Design** | [`@wiltermood/design`](packages/design)   | UI/UX design tokens, accessibility rules, ADR compliance, and audits.         |
+| Package    | Name                                            | Description                                                                   |
+| :--------- | :---------------------------------------------- | :---------------------------------------------------------------------------- |
+| **CLI**    | [`@bicyclebutler/stubs`](packages/cli)          | Interactive Clack TUI orchestrator, project initializer, and workflow runner. |
+| **Core**   | [`@bicyclebutler/stubs-core`](packages/core)   | Zero-LLM local AST engine, SQLite dependency graph, and sidecar materializer. |
+| **TALE**   | [`@bicyclebutler/tale`](packages/tale)         | ASD-STE100 Issue 9 Simplified Technical English linter and skill suite.       |
+| **Design** | [`@bicyclebutler/design`](packages/design)     | UI/UX design tokens, accessibility rules, ADR compliance, and audits.         |
 
 ---
 

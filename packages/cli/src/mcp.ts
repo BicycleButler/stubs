@@ -21,13 +21,13 @@ export function getAvailableMcpServers(): Record<string, McpServerDefinition> {
       name: 'tale',
       description: 'ASD-STE100 Simplified Technical English Linter MCP Server',
       command: 'npx',
-      args: ['-y', '@wiltermood/tale', 'mcp-serve'],
+      args: ['-y', '@bicyclebutler/tale', 'mcp-serve'],
     },
     design: {
       name: 'design',
       description: 'Design Guidelines and Compliance Auditor MCP Server',
       command: 'npx',
-      args: ['-y', '@wiltermood/design', 'mcp-serve'],
+      args: ['-y', '@bicyclebutler/design', 'mcp-serve'],
     },
   };
 }

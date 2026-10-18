@@ -24,7 +24,7 @@ export function stringifyOkfSpec(frontmatter: OkfFrontmatter, body: string): str
 
 /**
  * MaterializerEngine encapsulates the logic to extract implementation code blocks,
- * run the in-memory compiler, perform atomic file writes, hash files, and sync frontmatter/databases.
+ * run the in-memory compiler, do atomic file writes, hash files, and sync frontmatter/databases.
  */
 export class MaterializerEngine {
   private graphEngine: GraphEngine;
@@ -113,7 +113,7 @@ export class MaterializerEngine {
     const resolvedBase = isSidecarRelative ? sidecarDir : workspaceRoot;
     const absoluteTargetFilePath = resolveContainedPath(resolvedBase, targetCodeFile);
 
-    // Guard: ensure resolved path stays within workspace root
+    // Guard: make sure that resolved path stays within workspace root
     const relativeCheck = path.relative(workspaceRoot, absoluteTargetFilePath);
     if (path.isAbsolute(relativeCheck) || relativeCheck.startsWith('..')) {
       return {

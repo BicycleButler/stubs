@@ -53,7 +53,7 @@ export function decrypt(encryptedText: string): string {
   try {
     payload = JSON.parse(encryptedText);
   } catch {
-    // If it's not valid JSON, it might be plaintext or corrupted.
+    // If it is not valid JSON, it might be plaintext or corrupted.
     return encryptedText;
   }
 
@@ -110,7 +110,7 @@ export function loadCredentials(): Record<string, any> {
     const decrypted = decrypt(raw);
     return JSON.parse(decrypted);
   } catch (err: any) {
-    // If it's plaintext JSON (for migration from older versions), return it
+    // If it is plaintext JSON (for migration from older versions), return it
     try {
       const parsed = JSON.parse(raw);
       if (parsed && typeof parsed === 'object' && !parsed.encrypted) {

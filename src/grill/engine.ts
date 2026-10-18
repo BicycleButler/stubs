@@ -155,7 +155,7 @@ export class GrillEngine {
 
     fs.writeFileSync(resolvedPath, finalContent, 'utf8');
 
-    // Re-index sidecar via GraphEngine
+    // Re-index sidecar through GraphEngine
     try {
       const graphEngine = new GraphEngine(config.paths.db_path);
       await graphEngine.initialize();

@@ -42,44 +42,41 @@ When crafting text, consult these specialized sub-references:
 ## 3. High-Impact Quick Replacement Matrix
 
 - Non-STE Word / Phrasing | Approved STE Equivalent | Example Revision
-- `acceptable` _(adj)_ | **PERMITTED** _(adj)_ | "A delay of 5 ms is permitted."
+- `permitted` _(adj)_ | **PERMITTED** _(adj)_ | "A delay of 5 ms is permitted."
 - `check` _(verb)_ | **CHECK** _(noun)_ / **EXAMINE** _(verb)_ | "Do a check of the response payload."
 - `make sure that` _(verb)_ | **MAKE SURE** _(verb)_ | "Make sure that the database connection is open."
-- `perform` / `execute` _(verb)_ | **DO** _(verb)_ | "Do the migration script."
-- `rotate` _(verb)_ | **TURN** _(verb)_ | "Turn the dial clockwise."
-- `should` / `shall` _(verb)_ | **MUST** _(verb)_ | "The client must send the authentication token."
+- `do` / `execute` _(verb)_ | **DO** _(verb)_ | "Do the migration script."
+- `turn` _(verb)_ | **TURN** _(verb)_ | "Turn the dial clockwise."
+- `must` / `must` _(verb)_ | **MUST** _(verb)_ | "The client must send the authentication token."
 - `since` _(as because)_ | **BECAUSE** _(conj)_ | "Because the lock expired, the task aborted."
 - `therefore` _(adv)_ | **THUS** _(adv)_ / **AS A RESULT** | "Thus, the transaction rolls back."
 - `under` _(for values)_ | **LESS THAN** / **BELOW** | "When latency is less than 50 ms..."
 - `using` / `use` _(verb)_ | **USE** _(verb)_ / **WITH** _(prep)_ | "Use the CLI tool to inspect the state."
 - `for example,.`, `that is,.`, `and so on.` | **for example**, **that is**, **and so on** | Replace all Latin abbreviations.
 
-## 4. Automated CLI Linter
+## 4. Unified CLI Orchestrator
 
-Validate and format markdown files, directories, text strings, or code comments against ASD-STE100 Issue 9 and ADR-001 rules:
+Audit and auto-remediate all repository Markdown files and source code comments against ASD-STE100 Issue 9 and ADR-001 rules:
 
 ```bash
-# Automatically format and convert tables, strip dividers/frames, and fix terms
-npm run format:tale
-node .agents/skills/tale/scripts/tale-lint.mjs --fix
-node .agents/skills/tale/scripts/tale-lint.mjs --fix docs/
-
-# Run through stubs CLI orchestrator
+# Audit both documentation and code comments across the entire project
 npx stubs tale
+npm run tale
+
+# Automatically remediate language, formatting, tables, box frames, and prose semicolons
 npx stubs tale --fix
+npm run tale:fix
 
-# Validate all markdown documentation across current repository
-npm run lint:tale:all
-node .agents/skills/tale/scripts/tale-lint.mjs
+# Audit or format specific target files or directories
+npx stubs tale docs/
+npx stubs tale --fix src/
 
-# Validate code comments and docstrings in TypeScript/JavaScript files
-node .agents/skills/tale/scripts/tale-lint.mjs --code src/
-
-# Validate both documentation and code comments
-node .agents/skills/tale/scripts/tale-lint.mjs --all src/ docs/
+# Audit or format direct inline text string
+node packages/tale/src/tale.mjs -t "Your text string"
+node packages/tale/src/tale.mjs -t "Your text string" --fix
 
 # Output structured JSON report
-node .agents/skills/tale/scripts/tale-lint.mjs knowledge/architecture/ --json
+npx stubs tale --json
 ```
 
 ## 5. Universal Installation
@@ -99,13 +96,11 @@ bash .agents/skills/tale/scripts/install.sh --global
 
 ## 6. Agent Execution Loop
 
-When generating responses or authoring documentation in this repository:
+When generating responses, authoring documentation, or writing code comments in this repository:
 
-1. **Auto-Format:** Run `npm run format:tale` or `--fix` to convert tables to compact records, collapse blanks, and strip dividers.
-2. **Remove ASCII Art:** Replace mock UI boxes, trees, or ASCII diagrams with plain indented bullet lists or compact text specs.
-3. **Analyze:** Check sentence word lengths (<=20 for procedures, <=25 for descriptions), scan for semicolons, and scan for unapproved words or passive voice.
-4. **Replace:** Convert unapproved terms using [references/dictionary_recurring_errors.md](references/dictionary_recurring_errors.md) and [references/approved_verbs.md](references/approved_verbs.md).
-5. **Verify:** Run `node .agents/skills/tale/scripts/tale-lint.mjs <file>` on authored markdown files or code comments and confirm zero violations.
+1. **Write Plain STE:** Follow the Eight Non-Negotiable Rules (short active sentences, no semicolons, no contractions, <=3-word noun clusters).
+2. **Auto-Remediate:** Run `npx stubs tale --fix` (or `npm run tale:fix`) to repair language and formatting violations automatically. This command converts prose semicolons and markdown tables.
+3. **Verify Compliance:** Run `npx stubs tale` (or `npm run tale`) and confirm zero remaining violations across all scanned files.
 
 ## 7. Agent Reasoning & Internal Monologue Standard
 
@@ -130,7 +125,7 @@ Enforce across all repository Markdown files and sidecars (excluding only `READM
 
 1. **No Decorative Elements or ASCII Art:** Prohibit emojis, Unicode box-drawing, ASCII box diagrams, and decorative dividers outside frontmatter.
 2. **Compact Records:** Multi-column Markdown tables are strictly prohibited. Use single-line pipe-delimited records (`- Col1 | Col2 | Col3`) instead of table rows and alignment dividers (`:--`).
-   - Run `npm run format:tale` or `node .agents/skills/tale/scripts/tale-lint.mjs --fix` to convert tables automatically.
+   - Run `npx stubs tale --fix` or `npm run tale:fix` to convert tables automatically.
 3. **Single-Occurrence Links:** Use direct path anchors (for example, `[src/auth.ts]`) without duplicate labels.
 4. **Strict STE Primacy:** Keep sentences short, active, and fully compliant with ASD-STE100 rules.
 5. **Indentation and Spacing:** Use two spaces for indentation and single blank lines between sections.

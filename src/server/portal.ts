@@ -8,7 +8,7 @@ import { GraphEngine } from '../graph/engine';
 
 function resolveWebPath(...segments: string[]): string {
   const candidates = [
-    // Adjacent to bundle in dist (e.g. dist/web or .agents/skills/stubs/dist/web)
+    // Adjacent to bundle in dist (for example, dist/web or .agents/skills/stubs/dist/web)
     path.resolve(__dirname, 'web', ...segments),
     path.resolve(__dirname, '../web', ...segments),
     path.resolve(__dirname, '../dist/web', ...segments),
@@ -111,7 +111,7 @@ export class PortalServer {
       }
       const files = fs.readdirSync(templatesDir);
 
-      // Ensure we have at least one provisional draft template for the workbench
+      // Make sure that we have at least one provisional draft template for the workbench
       const hasProvisional = files.some((f) => f.toLowerCase().includes('provisional'));
       if (!hasProvisional) {
         fs.writeFileSync(
@@ -404,7 +404,7 @@ Using EJS/Handlebars to render a standard service module.
         try {
           const repos = await listAccessibleRepositories();
 
-          // Let's flag repositories containing `.stubs/` or `*.ts.md` sidecar specifications
+          // Let us flag repositories containing `.stubs/` or `*.ts.md` sidecar specifications
           const enrichedRepos = await Promise.all(
             repos.map(async (repo) => {
               let hasStubs = false;
@@ -910,11 +910,11 @@ Using EJS/Handlebars to render a standard service module.
               branch,
             );
 
-            // Delete old provisional draft (by committing empty or mock delete via createOrUpdateFile/GitHub APIs as needed,
+            // Delete old provisional draft (by committing empty or mock delete through createOrUpdateFile/GitHub APIs as needed,
             // or simply updating the file contents of the template to be active - in typical GitHub we commit the file name change).
             // For simplicty & robustness on standard GitHub API contents PUT, writing the approved and leaving provisional is fine or deleting it.
-            // Let's delete it if possible, or commit with deletion if GitHub API supports. In GitHub REST API we can delete a file using DELETE /repos/{owner}/{repo}/contents/{path}.
-            // Let's trigger a DELETE or just create approved and remove provisional from cache.
+            // Let us delete it if possible, or commit with deletion if GitHub API supports. In GitHub REST API we can delete a file using DELETE /repos/{owner}/{repo}/contents/{path}.
+            // Let us trigger a DELETE or just create approved and remove provisional from cache.
             try {
               const client = new GitHubClient();
               const metaUrl = `${client['baseUrl']}/repos/${owner}/${repoName}/contents/${oldPath}?ref=${branch}`;

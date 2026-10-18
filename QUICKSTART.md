@@ -11,17 +11,20 @@ This guide walks you through installing, initializing, and using `stubs` in your
 To add `stubs` as a development dependency in your project:
 
 ```bash
-npm install --save-dev github:BicycleButler/stubs
-# or: pnpm add -D github:BicycleButler/stubs
+npm install --save-dev @bicyclebutler/stubs
+# or: npm install --save-dev github:BicycleButler/stubs
+# or: pnpm add -D @bicyclebutler/stubs
 ```
 
 ### 2. Launch Interactive Installer (TUI)
 
-Run `npx stubs` (or invoke directly if installed) to launch the interactive terminal interface:
+Run `npx @bicyclebutler/stubs` to launch the interactive terminal interface:
 
 ```bash
-npx stubs
+npx @bicyclebutler/stubs
 ```
+
+> **Note:** Once `@bicyclebutler/stubs` is installed in your project dependencies, you can invoke it directly via `stubs` or `npx stubs`. For one-shot or global execution without local installation, use `npx @bicyclebutler/stubs`.
 
 Select any combination of skills (`tale`, `design`, `stubs`), target destination (local workspace `./.agents` or global `~/.gemini/config`), and optional MCP servers.
 
@@ -29,13 +32,13 @@ Select any combination of skills (`tale`, `design`, `stubs`), target destination
 
 ```bash
 # Install tale and design into current project
-npx stubs add tale design
+npx @bicyclebutler/stubs add tale design
 
 # Install all skills and configure workspace hooks
-npx stubs add all
+npx @bicyclebutler/stubs add all
 
 # Install globally for all repositories
-npx stubs add --global all
+npx @bicyclebutler/stubs add --global all
 ```
 
 ### 4. Register MCP Servers
@@ -61,7 +64,24 @@ npx stubs update
 
 ## Quickstart Guide
 
-Get your repository initialized, mapped, and indexed in four simple steps:
+### Primary Unified Pipeline
+
+Run all essential maintenance operations in a single consolidated pass:
+
+```bash
+# Full auto-remediating pipeline (scan, map, sand, lint-arch, tale --fix)
+npx stubs run
+
+# Read-only audit mode (for CI pipelines)
+npx stubs run --check
+
+# Structured JSON scorecard
+npx stubs run --json
+```
+
+### Step-by-Step Granular Commands
+
+Or initialize, map, and query your repository using granular commands:
 
 ```bash
 # 1. Initialize stubs configuration, agent skills, and templates

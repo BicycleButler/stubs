@@ -15,14 +15,15 @@ tags:
 Parent Context Map: knowledge/architecture/context-map.md
 
 ## Domain Purpose & Responsibilities
-The **Sanding Engine** is responsible for bi-directional synchronization between sidecar specs (`*.<ext>.md`) and actual source code files (`*.ts`, `*.py`, `*.go`, and so on.). It uses AST structural hashing (ignoring trivial whitespace/comment changes) to detect changes, heal frontmatter hashes, and cleanly synchronize code edits back into sidecar specs or vice versa.
+The Sanding & Sync Engine coordinates domain logic, core types, and services for the sanding subsystem.
 
 ## Key Modules & Files
-- src/sanding/engine.ts (Hub) -> deps: src/storage/containment.ts.md | caps: SyncResult, sha256, stripSyncStateFromYaml, stripSyncStateFromContent, healCorruptedFrontmatter, stripSidecarHeader, syncFrontmatterDependencies, SandingEngine
-- src/sanding/engine.ts.md -> deps: none | caps: SyncResult, SandingEngine, stripSyncStateFromYaml, stripSyncStateFromContent, healCorruptedFrontmatter
-- src/sanding/ast.ts -> deps: none | caps: getAstStructuralHash, visit, typeCheckCode, InterfaceDriftReport, checkInterfaceDrift
-- src/sanding/ast.ts.md -> deps: none | caps: TypeCheckResult, getAstStructuralHash, typeCheckCode
+src/sanding/engine.ts (Hub) -> deps: none | caps: SyncResult, sha256, stripSyncStateFromYaml, stripSyncStateFromContent, healCorruptedFrontmatter, stripSidecarHeader, syncFrontmatterDependencies, SandingEngine
+src/sanding/ast.ts -> deps: none | caps: getAstStructuralHash, visit, typeCheckCode, InterfaceDriftReport, checkInterfaceDrift
+src/sanding/engine.ts.md -> deps: none | caps: SyncResult, SandingEngine, stripSyncStateFromYaml, stripSyncStateFromContent, healCorruptedFrontmatter
+src/sanding/ast.ts.md -> deps: none | caps: TypeCheckResult, getAstStructuralHash, typeCheckCode
 
 ## Domain Invariants
-- Two files with differing whitespace/comments but identical AST structures produce identical AST structural hashes (`ast_hash`).
-- Conflicts are raised only when  the sidecar and the code file have changed with conflicting structural AST differences.
+- Downward dependencies only: cross-domain calls must target canonical domain hubs.
+- External consumers must interface through engine.ts, never private internal helpers.
+- State changes must adhere to lifecycle and containment invariants.

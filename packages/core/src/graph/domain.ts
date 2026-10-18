@@ -485,7 +485,7 @@ export class DomainEngine {
 
   /**
    * Generates a single domain context map document adhering to ADR-001.
-   * Performs non-destructive synchronization to preserve human-authored sections.
+   * Does non-destructive synchronization to preserve human-authored sections.
    */
   public async generateDomainMap(
     domain: DomainInfo,

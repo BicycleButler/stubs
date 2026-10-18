@@ -41,7 +41,7 @@ export function translateHandlebarsToEjs(templateText: string): string {
 }
 
 /**
- * Compiles template text (supporting both EJS-style and Handlebars-style tags)
+ * Compiles template text (supporting the two EJS-style and Handlebars-style tags)
  * into an executable JavaScript function.
  */
 export function compileTemplate(templateText: string): (data: any) => string {
@@ -96,7 +96,7 @@ export class TemplateEngine {
 
   /**
    * Scans the templates directory recursively for files.
-   * Returns empty array if directory doesn't exist, defining error out of existence.
+   * Returns empty array if directory does not exist, defining error out of existence.
    */
   public async listTemplates(): Promise<string[]> {
     if (!fs.existsSync(this.templatesDir)) {

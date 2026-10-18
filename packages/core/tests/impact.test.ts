@@ -45,7 +45,7 @@ describe('Impact Engine & Blast-Radius Tests', () => {
 
     const impactEngine = new ImpactEngine({ graphEngine });
 
-    // Analyze impact of changing root.ts (should affect mid.ts and leaf.ts downstream)
+    // Analyze impact of changing root.ts (must affect mid.ts and leaf.ts downstream)
     const rootImpact = await impactEngine.analyzeImpact(rootPath, {
       depth: 3,
       direction: 'inbound',

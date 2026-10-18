@@ -76,7 +76,7 @@ Before printing responses or saving documentation, verify:
 All git commit messages must be written in the **Imperative Mood** using approved ASD-STE100 vocabulary and sentence length rules:
 
 - **Title Line:** Imperative command, maximum 50 characters, no period, no contractions.
-  - _Non-STE:_ `Fixing the register bug and ensuring items will not desync`
+  - _Non-STE:_ `Fixing the register bug and making sure that items will not desync`
   - _STE:_ `Fix register desync bug and store amount in cents`
 - **Body:** Active voice, max 25 words per sentence, no semicolons.
   - _Example:_

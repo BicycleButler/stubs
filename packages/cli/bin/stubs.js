@@ -9,7 +9,7 @@ if (!fs.existsSync(bundlePath)) {
     const { execSync } = require('child_process');
     execSync('npm run build', { cwd: path.resolve(__dirname, '..'), stdio: 'inherit' });
   } catch (err) {
-    console.error('Failed to build @wiltermood/stubs CLI bundle:', err);
+    console.error('Failed to build @bicyclebutler/stubs CLI bundle:', err);
     process.exit(1);
   }
 }

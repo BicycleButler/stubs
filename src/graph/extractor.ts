@@ -8,7 +8,7 @@ import { extractFrameworkRoutes } from './routes';
 export type EdgeConfidence = 'EXTRACTED' | 'DECLARED' | 'INFERRED' | 'AMBIGUOUS';
 
 export interface GraphNode {
-  id: string; // e.g. "src/services/bike-service.ts" or "src/services/bike-service.ts#BikeService"
+  id: string; // for example, "src/services/bike-service.ts" or "src/services/bike-service.ts#BikeService"
   file_path: string;
   symbol_name?: string | null;
   kind:
@@ -42,7 +42,7 @@ export interface ExtractedGraph {
 }
 
 /**
- * Resolves a module specifier (e.g. "./other", "../utils") relative to a source file path.
+ * Resolves a module specifier (for example, "./other", "../utils") relative to a source file path.
  */
 export function resolveRelativeImport(sourceFilePath: string, importSpecifier: string): string {
   if (!importSpecifier.startsWith('.')) {
@@ -69,7 +69,7 @@ export function extractFileGraph(
   const nodes: GraphNode[] = [];
   const edges: GraphEdge[] = [];
 
-  // 1. If it's a Markdown OKF sidecar or blueprint
+  // 1. If it is a Markdown OKF sidecar or blueprint
   if (ext === '.md') {
     return extractMarkdownGraph(normPath, content, domain, phase);
   }
@@ -676,7 +676,7 @@ function extractRustGraph(
     const line = lines[i];
     const lineNum = i + 1;
 
-    // use crate::foo::bar; or use foo::{bar, baz};
+    // use crate::foo::bar. Or use foo::{bar, baz}.
     const useMatch = line.match(/^\s*(?:pub\s+)?use\s+([^;]+);/);
     if (useMatch) {
       const rawUse = useMatch[1].trim();

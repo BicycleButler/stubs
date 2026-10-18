@@ -17,7 +17,7 @@ export class Level2SearchPlugin extends BaseSearchPlugin {
     }
 
     try {
-      // Perform direct HTTP post fetch request with a timeout
+      // Do direct HTTP post fetch request with a timeout
       const controller = new AbortController();
       const id = setTimeout(() => controller.abort(), 8000);
 

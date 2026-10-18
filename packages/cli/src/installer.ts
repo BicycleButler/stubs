@@ -3,7 +3,7 @@ import * as path from 'node:path';
 import * as os from 'node:os';
 
 export interface InstallOptions {
-  skills: string[]; // e.g. ['tale', 'design', 'stubs']
+  skills: string[]; // for example, ['tale', 'design', 'stubs']
   target: 'local' | 'global';
   targetDir?: string;
   installHooks?: boolean;
@@ -134,7 +134,7 @@ export function installSkills(options: InstallOptions): { installed: string[]; e
         hooks: [
           {
             event: 'file_changed',
-            command: 'npx stubs scan',
+            command: 'npx --no-install stubs scan',
             description: 'Synchronizes AST architecture graph on source file changes',
           },
         ],
@@ -147,7 +147,86 @@ export function installSkills(options: InstallOptions): { installed: string[]; e
     }
   }
 
+  // 5. Update AGENTS.md if tale is installed or updated in local target
+  if (options.target === 'local' && installed.includes('tale')) {
+    updateAgentsDocForTale(baseDir);
+  }
+
   return { installed, errors };
+}
+
+export function updateAgentsDocForTale(targetDir: string): boolean {
+  try {
+    let targetFileName = 'AGENTS.md';
+    let isNew = true;
+    if (fs.existsSync(targetDir)) {
+      const entries = fs.readdirSync(targetDir);
+      if (entries.includes('agents.md') && !entries.includes('AGENTS.md')) {
+        targetFileName = 'agents.md';
+        isNew = false;
+      } else if (entries.includes('AGENTS.md')) {
+        targetFileName = 'AGENTS.md';
+        isNew = false;
+      }
+    }
+    const fullPath = path.join(targetDir, targetFileName);
+
+    const taleSection = [
+      '<!-- tale-instructions-start -->',
+      '## ASD-STE100 Technical English & Formatting (Tale)',
+      '',
+      'The repository enforces ASD-STE100 Issue 9 Simplified Technical English for documentation (*.md) and code comments (*.ts, *.js, and so on).',
+      '',
+      '- Audit Language & Formatting: `npx stubs tale` (or `npm run tale` / `npm run lint:tale`) — audits Markdown files and code comments across the workspace.',
+      '- Auto-Remediate Violations: `npx stubs tale --fix` (or `npm run tale:fix` / `npm run format:tale`) — fixes prose semicolons, contractions, Latin abbreviations, and safe vocabulary without changing executable code.',
+      '- File Scope & Exclusions: automatically skips build and test artifacts (`dist`, `node_modules`, `coverage`, `.stubs`), `.gitignore` paths, and strictly ignores `README.md` and `QUICKSTART.md`.',
+      '<!-- tale-instructions-end -->',
+    ].join('\n');
+
+    if (isNew) {
+      const initialContent = `# Agent Instructions\n\n${taleSection}\n`;
+      fs.writeFileSync(fullPath, initialContent, 'utf-8');
+      return true;
+    }
+
+    let content = fs.readFileSync(fullPath, 'utf-8');
+
+    // 1. If tale sentinel markers already exist, replace block
+    if (content.includes('<!-- tale-instructions-start -->')) {
+      content = content.replace(
+        /<!-- tale-instructions-start -->[\s\S]*?<!-- tale-instructions-end -->/,
+        taleSection,
+      );
+    } else {
+      // 2. Check if a legacy Tale section exists
+      const legacyRegex = /## (?:ASD-STE100[^\n]*|TALE[^\n]*|Tale[^\n]*)[\s\S]*?(?=\n##\s+|$)/;
+      if (legacyRegex.test(content)) {
+        content = content.replace(legacyRegex, taleSection);
+      } else {
+        // 3. Append to file
+        content = content.trimEnd() + '\n\n' + taleSection + '\n';
+      }
+    }
+
+    // Also make sure npx stubs tale commands are present in CLI Commands section if one exists
+    if (content.includes('## CLI Commands') && !content.includes('stubs tale')) {
+      content = content.replace(
+        /(## CLI Commands[\s\S]*?)(?=\n##|\n<!-- stubs-instructions-end -->|$)/,
+        (match) => {
+          return (
+            match.trimEnd() +
+            '\n- Audit ASD-STE100 Compliance: `npx stubs tale` (or `npm run tale`)' +
+            '\n- Auto-Remediate Prose & Formatting: `npx stubs tale --fix` (or `npm run tale:fix`)\n'
+          );
+        },
+      );
+    }
+
+    fs.writeFileSync(fullPath, content, 'utf-8');
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function copyRecursive(src: string, dest: string): void {

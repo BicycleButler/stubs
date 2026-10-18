@@ -84,7 +84,7 @@ describe('Graphing & Mapping Optimizations', () => {
 
       const topology = new TopologyEngine(nodes, edges);
 
-      // Low threshold should fail
+      // Low threshold must fail
       const lowCheck = topology.checkBlastGuard('god-node', 'low');
       expect(lowCheck.safe).toBe(false);
       expect(lowCheck.impactCount).toBe(15);
@@ -131,12 +131,12 @@ describe('Graphing & Mapping Optimizations', () => {
       expect(scan1.indexed).toBe(2);
       expect(scan1.skipped).toBe(0);
 
-      // Second scan without modifications should skip both
+      // Second scan without modifications must skip the two
       const scan2 = await graphEngine.indexCodeWorkspace('src');
       expect(scan2.indexed).toBe(0);
       expect(scan2.skipped).toBe(2);
 
-      // Modifying one file should index 1 and skip 1
+      // Modifying one file must index 1 and skip 1
       await vfs.writeFile('src/test1.ts', 'export const a = 2;');
       const scan3 = await graphEngine.indexCodeWorkspace('src');
       expect(scan3.indexed).toBe(1);

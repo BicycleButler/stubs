@@ -1,6 +1,7 @@
 {
-  "name": "stubs",
-  "version": "1.3.0",
+  "name": "@bicyclebutler/stubs-monorepo",
+  "version": "1.4.0",
+  "private": true,
   "description": "Unified central hub for AI Agent Skills, Rules, CLI, and MCP servers",
   "main": "packages/cli/dist/index.cjs",
   "bin": {
@@ -21,16 +22,19 @@
   ],
   "scripts": {
     "build": "npm run build --workspaces --if-present",
-    "build:cli": "npm run build --workspace=@wiltermood/stubs",
-    "build:core": "npm run build --workspace=@wiltermood/stubs-core",
-    "test": "npm run test:tale && npm run test:core",
-    "test:tale": "npm run test --workspace=@wiltermood/tale",
-    "test:core": "npm run test --workspace=@wiltermood/stubs-core",
+    "build:cli": "npm run build --workspace=@bicyclebutler/stubs",
+    "build:core": "npm run build --workspace=@bicyclebutler/stubs-core",
+    "test": "npm run test:tale && npm run test:cli && npm run test:core",
+    "test:tale": "npm run test --workspace=@bicyclebutler/tale",
+    "test:cli": "npm run test --workspace=@bicyclebutler/stubs",
+    "test:core": "npm run test --workspace=@bicyclebutler/stubs-core",
     "lint": "eslint packages/core/src packages/cli/src",
-    "lint:tale": "node packages/tale/src/tale-lint.mjs packages/tale packages/cli",
-    "lint:tale:all": "node packages/tale/src/tale-lint.mjs",
+    "tale": "node packages/tale/src/tale.mjs",
+    "tale:fix": "node packages/tale/src/tale.mjs --fix",
+    "lint:tale": "node packages/tale/src/tale.mjs",
+    "lint:tale:all": "node packages/tale/src/tale.mjs",
     "format": "prettier --write .",
-    "format:tale": "node packages/tale/src/tale-lint.mjs --fix",
+    "format:tale": "node packages/tale/src/tale.mjs --fix",
     "start": "node bin/stubs.js"
   },
   "repository": {
@@ -51,7 +55,7 @@
     "architecture",
     "cli"
   ],
-  "author": "Wiltermood",
+  "author": "BicycleButler",
   "license": "ISC",
 
   "devDependencies": {

@@ -181,7 +181,7 @@ function connectLocalSse() {
   }
 }
 
-// Open a local directory directly via HTML5 File System Access API
+// Open a local directory directly through HTML5 File System Access API
 async function openLocalDirectoryPicker() {
   if (typeof (window as any).showDirectoryPicker !== 'function') {
     showToast(

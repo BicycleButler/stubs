@@ -114,7 +114,7 @@ export function greet(): string {
     const modifiedSidecar = updatedSidecar.replace('v1', 'v2');
     fs.writeFileSync(sidecarFile, modifiedSidecar, 'utf8');
 
-    // 3. Sync again — should push sidecar change to code
+    // 3. Sync again — must push sidecar change to code
     const result = await engine.syncFile(sidecarFile);
     expect(result.status).toBe('synced');
     expect(result.direction).toBe('sidecar_to_code');
@@ -151,7 +151,7 @@ export function greet(): string {
     const modifiedCode = 'export function greet(): string {\n  return "v2";\n}\n';
     fs.writeFileSync(codeFile, modifiedCode, 'utf8');
 
-    // 3. Sync again — should pull code change to sidecar
+    // 3. Sync again — must pull code change to sidecar
     const result = await engine.syncFile(sidecarFile);
     expect(result.status).toBe('synced');
     expect(result.direction).toBe('code_to_sidecar');
@@ -184,7 +184,7 @@ export function greet(): string {
     const engine = new SandingEngine();
     await engine.syncFile(sidecarFile);
 
-    // 2. Modify both files (simulated conflict)
+    // 2. Modify the two files (simulated conflict)
     const modifiedSidecar = fs.readFileSync(sidecarFile, 'utf8').replace('v1', 'sidecar-v2');
     fs.writeFileSync(sidecarFile, modifiedSidecar, 'utf8');
 
@@ -244,7 +244,7 @@ export function greet(name: string): string {
     const modifiedCode = 'export function greet(): string {\n  return "v2";\n}\n';
     fs.writeFileSync(codeFile, modifiedCode, 'utf8');
 
-    // 3. Sync — should detect structural conflict
+    // 3. Sync — must detect structural conflict
     const result = await engine.syncFile(sidecarFile);
     expect(result.status).toBe('conflict');
     expect(result.resolution).toBe('needs-human-review-resolution');

@@ -278,7 +278,7 @@ export function verify();
     const data = (await res.json()) as any;
     expect(data.templates.length).toBeGreaterThanOrEqual(1);
 
-    // One of them should be a draft template containing "-provisional"
+    // One of them must be a draft template containing "-provisional"
     const provisional = data.templates.find((t: any) => t.isDraft === true);
     expect(provisional).toBeDefined();
     expect(provisional.name).toContain('provisional');
@@ -302,7 +302,7 @@ export function verify();
     expect(data.success).toBe(true);
     expect(data.message).toContain('approved and renamed');
 
-    // Check templates list again, the draft should be renamed (so no drafts or different name)
+    // Check templates list again, the draft must be renamed (so no drafts or different name)
     const templatesRes2 = await fetch(getUrl('/api/v1/templates'));
     const templatesData2 = (await templatesRes2.json()) as any;
     const provisionalAfter = templatesData2.templates.find((t: any) => t.name === provisional.name);
@@ -318,7 +318,7 @@ export function verify();
     expect(res.status).toBe(200);
     const data = (await res.json()) as any;
     expect(data.files).toBeDefined();
-    // It should find 'tests/temp_specs_dir/unbootstrapped.ts' as un-bootstrapped because there is no 'tests/temp_specs_dir/unbootstrapped.ts.md'
+    // It must find 'tests/temp_specs_dir/unbootstrapped.ts' as un-bootstrapped because there is no 'tests/temp_specs_dir/unbootstrapped.ts.md'
     expect(data.files.some((f: string) => f.includes('unbootstrapped.ts'))).toBe(true);
 
     // Clean up
@@ -518,7 +518,7 @@ export function remoteVerify();
       const originalPat = process.env.STUBS_GITHUB_PAT;
       process.env.STUBS_GITHUB_PAT = 'mock-pat';
 
-      // Pre-populate remote Graph cache by calling resolveGraphEngine first via a fetch to api/graph
+      // Pre-populate remote Graph cache by calling resolveGraphEngine first through a fetch to api/graph
       mockFetchQueue.push({
         ok: true,
         status: 200,

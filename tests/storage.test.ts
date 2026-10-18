@@ -101,7 +101,7 @@ export interface Session {
     });
     await wasmEngine.initialize();
 
-    // 3. Index Workspace on both engines
+    // 3. Index Workspace on the two engines
     const nodeSummary = await nodeEngine.indexWorkspace(tempSpecsDir, { force: true });
     const wasmSummary = await wasmEngine.indexWorkspace(tempSpecsDir, { force: true });
 
@@ -149,7 +149,7 @@ export interface Session {
     const wasmDirectives = await wasmEngine.getPendingDirectives();
     expect(wasmDirectives).toEqual(nodeDirectives);
 
-    // 9. Verify search query matches (FTS5 search on Node vs LIKE fallback or FTS5 on WASM)
+    // 9. Verify search query matches (FTS5 search on Node against LIKE fallback or FTS5 on WASM)
     const nodeSearchResults = await nodeEngine.search('Session');
     const wasmSearchResults = await wasmEngine.search('Session');
 
@@ -158,7 +158,7 @@ export interface Session {
     const wasmSearchPaths = wasmSearchResults.map((r) => r.filePath).sort();
     expect(wasmSearchPaths).toEqual(nodeSearchPaths);
 
-    // 10. Close both engines
+    // 10. Close the two engines
     await nodeEngine.close();
     await wasmEngine.close();
   });

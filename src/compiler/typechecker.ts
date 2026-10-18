@@ -162,7 +162,7 @@ export function typeCheckVirtualFile(
     );
   };
 
-  // Ensure target code file is treated as a root of compilation
+  // Make sure that target code file is treated as a root of compilation
   const rootNames = Array.from(new Set([...fileNames, absoluteTargetFilePath]));
 
   try {

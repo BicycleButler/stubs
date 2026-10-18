@@ -28,7 +28,7 @@ describe('Pluggable Search Engines (Level 2 & Level 3)', () => {
 
   describe('Level 2 Search Plugin', () => {
     it('should fall back to mock embedding when API key is missing', async () => {
-      // Ensure API key is missing
+      // Make sure that API key is missing
       const oldKey = process.env.OPENAI_API_KEY;
       delete process.env.OPENAI_API_KEY;
 
@@ -36,7 +36,7 @@ describe('Pluggable Search Engines (Level 2 & Level 3)', () => {
         const plugin = new Level2SearchPlugin(engine);
         const vector = await plugin.generateEmbedding('hello world');
         expect(vector.length).toBe(1536);
-        // Normalized vector should have magnitude of 1 (approx)
+        // Normalized vector must have magnitude of 1 (approx)
         const magnitude = Math.sqrt(vector.reduce((sum, v) => sum + v * v, 0));
         expect(magnitude).toBeCloseTo(1, 5);
       } finally {
@@ -218,11 +218,11 @@ describe('Pluggable Search Engines (Level 2 & Level 3)', () => {
         body: 'User API profile endpoint',
       });
 
-      // Search using the engine, it should route to Level 2
+      // Search using the engine, it must route to Level 2
       const results = await engine.search('User profile');
       expect(results.length).toBeGreaterThanOrEqual(1);
       expect(results.some((r) => r.filePath === 'src/api/user.ts.md')).toBe(true);
-      // For level 2 similarity search, rank represents cosine similarity which should be positive/close to 1
+      // For level 2 similarity search, rank represents cosine similarity which must be positive/close to 1
       expect(results.find((r) => r.filePath === 'src/api/user.ts.md')?.rank).toBeGreaterThan(0);
     });
 
@@ -265,7 +265,7 @@ describe('Pluggable Search Engines (Level 2 & Level 3)', () => {
         body: 'Billing invoice payment gateways',
       });
 
-      // Search using the engine, it should route to Level 3
+      // Search using the engine, it must route to Level 3
       const results = await engine.search('invoice gateways');
       expect(results.length).toBeGreaterThanOrEqual(1);
       expect(results.some((r) => r.filePath === 'src/api/billing.ts.md')).toBe(true);

@@ -10,10 +10,10 @@
  * Two dependencies do exactly that:
  *
  *   - sql.js  -> loads `sql-wasm.wasm`
- *   - typescript -> loads `lib.*.d.ts` (the standard library) via the compiler
+ *   - typescript -> loads `lib.*.d.ts` (the standard library) through the compiler
  *     host's getDefaultLibLocation().
  *
- * Both are therefore staged next to the bundle in both target dist locations.
+ * The two are therefore staged next to the bundle in the two target dist locations.
  */
 const fs = require('fs');
 const path = require('path');

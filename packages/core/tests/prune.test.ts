@@ -91,7 +91,7 @@ target_code_file: ./phantom-service.ts
     const fixResult = await pruneEngine.fixOrphans(auditBefore);
     expect(fixResult.staleNodesRemoved).toBeGreaterThanOrEqual(1);
 
-    // Audit again should be clean of stale nodes
+    // Audit again must be clean of stale nodes
     const auditAfter = await pruneEngine.auditWorkspace({ specsDir: testDir });
     expect(auditAfter.summary.staleDbNodes).toBe(0);
 

@@ -1,7 +1,7 @@
 import * as path from 'path';
 
 /**
- * Resolves a relative path against a base directory, ensuring the result
+ * Resolves a relative path against a base directory, making sure that the result
  * is contained within the base directory (fail-closed path containment).
  *
  * This is the single source of truth for resolving `target_code_file`
@@ -16,7 +16,7 @@ export function resolveContainedPath(baseDir: string, relativePath: string): str
   const absoluteBase = path.resolve(baseDir);
   const absoluteTarget = path.resolve(absoluteBase, relativePath);
 
-  // Normalize both paths for comparison (handle symlinks, case sensitivity, etc.)
+  // Normalize the two paths for comparison (handle symlinks, case sensitivity, and so on.)
   const normalizedBase = path.resolve(absoluteBase);
   const normalizedTarget = path.resolve(absoluteTarget);
 
@@ -35,7 +35,7 @@ export function resolveContainedPath(baseDir: string, relativePath: string): str
 }
 
 /**
- * Validates that a path is safe (no directory traversal, absolute paths, etc.)
+ * Validates that a path is safe (no directory traversal, absolute paths, and so on.)
  * without resolving it against a base directory.
  */
 export function isSafeRelativePath(relativePath: string): boolean {
@@ -53,7 +53,7 @@ export function isSafeRelativePath(relativePath: string): boolean {
     return false;
   }
 
-  // Reject paths that attempt to traverse up via path normalization
+  // Reject paths that attempt to traverse up through path normalization
   const normalized = path.normalize(relativePath);
   if (normalized.startsWith('..') || path.isAbsolute(normalized)) {
     return false;
@@ -75,7 +75,7 @@ export function validateTargetCodeFile(targetCodeFile: string): string | null {
     return 'target_code_file contains invalid path traversal (.. or absolute path)';
   }
 
-  // Ensure target_code_file has an extension and is not an unadorned directory or bare file
+  // Make sure that target_code_file has an extension and is not an unadorned directory or bare file
   const base = targetCodeFile.replace(/\\/g, '/').split('/').pop() || '';
   if (!base.includes('.') || base.endsWith('.')) {
     return 'target_code_file must specify a target file extension';

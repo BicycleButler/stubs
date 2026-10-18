@@ -101,7 +101,7 @@ export class QueryEngine {
   }
 
   /**
-   * Performs lazy incremental mtime check on workspace files before query execution (<30ms).
+   * Does lazy incremental mtime check on workspace files before query execution (<30ms).
    */
   public async autoSyncModifiedFiles(): Promise<number> {
     try {
@@ -450,7 +450,7 @@ export class QueryEngine {
       packageScope,
     );
 
-    // Expand Subgraph via BFS/DFS
+    // Expand Subgraph through BFS/DFS
     const visitedNodes = new Set<string>(seedNodes);
     const collectedEdges: QuerySubGraphEdge[] = [];
 

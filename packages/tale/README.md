@@ -1,10 +1,10 @@
-# @wiltermood/tale
+# @bicyclebutler/tale
 
 ASD-STE100 Issue 9 Simplified Technical English (STE) governance, rules, and linter for AI coding agents.
 
 ## Overview
 
-`@wiltermood/tale` enforces concise, unambiguous technical documentation and code comments. It provides:
+`@bicyclebutler/tale` enforces concise, unambiguous technical documentation and code comments. It provides:
 
 1. **Rule Engine**: Validates sentence lengths, active voice, approved vocabulary, and ADR-001 structural formatting.
 2. **Linter CLI**: `tale-lint` can scan markdown documents and source code comments.
@@ -14,10 +14,10 @@ ASD-STE100 Issue 9 Simplified Technical English (STE) governance, rules, and lin
 
 ```bash
 # Add via unified stubs CLI
-npx stubs add tale
+npx @bicyclebutler/stubs add tale
 
 # Or install package
-npm install --save-dev @wiltermood/tale
+npm install --save-dev @bicyclebutler/tale
 ```
 
 ## Usage

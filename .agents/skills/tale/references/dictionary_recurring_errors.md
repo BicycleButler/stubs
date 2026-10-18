@@ -20,7 +20,7 @@ The table below catalogs the most common non-STE words and their approved ASD-ST
 - `` _(v)_ | **INSTALL** _(v)_ | `Fit the gasket into the groove.` | `Install the gasket in the groove.`
 - `` _(v)_ | **OBEY** _(v)_ | `Follow these instructions.` | `Obey these instructions.`
 - `` _(adj/adv)_ | **MORE** _(adj/adv)_ | `For further details...` | `For more details...`
-- `` _(v)_ | _Use imperative action verb_ | `You have to remove the nut.` | `Remove the nut.`
+- `` _(v)_ | _Use imperative action verb_ | `You must remove the nut.` | `Remove the nut.`
 - `` _(adv)_ | **BUT** _(conj)_ | `The light came on. However...` | `The light came on, but...`
 - `` _(v)_ | **PUT** _(v)_ / **INSTALL** _(v)_ | `Insert the pin into the slot.` | `Put the pin into the slot.`
 - `` _(adj)_ | **PRIMARY** _(adj)_ | `The primary power supply...` | `The primary power supply...`
@@ -36,7 +36,7 @@ The table below catalogs the most common non-STE words and their approved ASD-ST
 - `` _(v)_ | **GET** _(v)_ | `Until values reach 100.` | `Until values get to 100.`
 - `` _(v)_ | **DO ... AGAIN** | `Repeat steps 1 to 3.` | `Do steps 1 to 3 again.`
 - `` _(v)_ | **NECESSARY** _(adj)_ | `Tools required for this job...` | `Tools that are necessary for this job...`
-- `` _(v)_ | **TURN** _(v)_ | `Rotate the shaft clockwise.` | `Turn the shaft clockwise.`
+- `` _(v)_ | **TURN** _(v)_ | `Turn the shaft clockwise.` | `Turn the shaft clockwise.`
 - `` _(v)_ | **ATTACH** _(v)_ / **SAFETY** _(v)_ | `Secure the bracket with bolts.` | `Attach the bracket with bolts.`
 - `` _(v)_ | **MUST** _(v)_ | `The operator must verify...` | `The operator must make sure that...`
 - `` _(v)_ | **MUST** _(v)_ | `The valve must be closed.` | `The valve must be closed.`

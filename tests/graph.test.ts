@@ -9,7 +9,7 @@ describe('Graph Adjacency & SQLite Search Engine', () => {
   let engine: GraphEngine;
 
   beforeEach(async () => {
-    // Ensure clean state before each test
+    // Make sure that clean state before each test
     if (fs.existsSync(dbPath)) {
       fs.unlinkSync(dbPath);
     }
@@ -286,7 +286,7 @@ export interface AuthContext {
     await engine.upsertSidecar({ filePath: 'src/a.ts.md', frontmatter: specA, body: '' });
     await engine.upsertSidecar({ filePath: 'src/b.ts.md', frontmatter: specB, body: '' });
 
-    // Should complete sorting without throwing errors
+    // Must complete sorting without throwing errors
     const sorted = await engine.getTopologicalSort();
     expect(sorted.length).toBe(2);
     expect(sorted.sort()).toEqual(['src/a.ts.md', 'src/b.ts.md'].sort());
@@ -386,7 +386,7 @@ export interface AuthContext {
     // 1. Setup workspace directory structure and files
     fs.mkdirSync(workspacePath, { recursive: true });
     fs.mkdirSync(path.join(workspacePath, 'sub'), { recursive: true });
-    fs.mkdirSync(path.join(workspacePath, 'node_modules'), { recursive: true }); // should be ignored
+    fs.mkdirSync(path.join(workspacePath, 'node_modules'), { recursive: true }); // must be ignored
 
     const validSpecA = `---
 title: "Spec A"
@@ -440,10 +440,10 @@ type: "sidecar-spec"
     fs.writeFileSync(path.join(workspacePath, 'a.ts.md'), validSpecA);
     fs.writeFileSync(path.join(workspacePath, 'sub/b.md'), validSpecB);
     fs.writeFileSync(path.join(workspacePath, 'node_modules/c.ts.md'), validSpecA); // in ignored folder
-    fs.writeFileSync(path.join(workspacePath, 'normal.md'), nonOkfFile); // non-OKF, should be skipped
-    fs.writeFileSync(path.join(workspacePath, 'invalid.ts.md'), invalidSpec); // invalid frontmatter, should record error
+    fs.writeFileSync(path.join(workspacePath, 'normal.md'), nonOkfFile); // non-OKF, must be skipped
+    fs.writeFileSync(path.join(workspacePath, 'invalid.ts.md'), invalidSpec); // invalid frontmatter, must record error
 
-    // 2. Perform initial index Workspace
+    // 2. Do initial index Workspace
     const summary1 = await engine.indexWorkspace(workspacePath);
     expect(summary1.scanned).toBe(4); // a.ts.md, sub/b.md, normal.md, invalid.ts.md (node_modules is ignored)
     expect(summary1.indexed).toBe(2); // a.ts.md and sub/b.md (normal.md is skipped, invalid.ts.md has error)

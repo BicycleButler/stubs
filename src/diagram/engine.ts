@@ -113,7 +113,7 @@ export class DiagramEngine {
     lines.push('flowchart TD');
 
     // Filter file-level nodes (exclude fine-grained symbol-only nodes for readability)
-    // If physical code files exist, prioritize them; otherwise include sidecars
+    // If physical code files exist, prioritize them. Otherwise include sidecars
     const fileNodes = nodes.filter(
       (n) =>
         n.kind === 'file' ||

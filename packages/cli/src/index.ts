@@ -3,8 +3,11 @@ import path from 'path';
 import { spawnSync } from 'child_process';
 import pc from 'picocolors';
 import { runInteractiveTui } from './tui';
-import { getAvailableSkills, installSkills } from './installer';
+import { getAvailableSkills, installSkills, updateAgentsDocForTale } from './installer';
 import { getAvailableMcpServers, registerMcpServer } from './mcp';
+
+export { getAvailableSkills, installSkills, updateAgentsDocForTale };
+export { getAvailableMcpServers, registerMcpServer };
 
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
@@ -84,12 +87,21 @@ async function main(): Promise<void> {
     return;
   }
 
-  if (command === 'tale' || command === 'lint:tale' || command === 'format:tale') {
+  if (
+    command === 'tale' ||
+    command === 'tale:fix' ||
+    command === 'lint:tale' ||
+    command === 'format:tale'
+  ) {
     const taleArgs = process.argv.slice(3);
-    if (command === 'format:tale' && !taleArgs.includes('--fix')) {
+    if ((command === 'format:tale' || command === 'tale:fix') && !taleArgs.includes('--fix')) {
       taleArgs.unshift('--fix');
     }
     const candidatePaths = [
+      path.resolve(__dirname, '../../tale/src/tale.mjs'),
+      path.resolve(process.cwd(), 'packages/tale/src/tale.mjs'),
+      path.resolve(process.cwd(), '.agents/skills/tale/scripts/tale.mjs'),
+      path.resolve(__dirname, '../../../packages/tale/src/tale.mjs'),
       path.resolve(__dirname, '../../tale/src/tale-lint.mjs'),
       path.resolve(process.cwd(), 'packages/tale/src/tale-lint.mjs'),
       path.resolve(process.cwd(), '.agents/skills/tale/scripts/tale-lint.mjs'),
@@ -101,7 +113,9 @@ async function main(): Promise<void> {
       process.exit(res.status ?? 0);
     }
     console.error(
-      pc.red('Error: Could not locate tale-lint.mjs. Make sure @wiltermood/tale is installed.'),
+      pc.red(
+        'Error: Could not locate tale.mjs or tale-lint.mjs. Make sure @bicyclebutler/tale is installed.',
+      ),
     );
     process.exit(1);
   }
@@ -112,25 +126,31 @@ ${pc.bold('Stubs AI Agent Skills & Tools Hub')}
 
 ${pc.bold('Usage:')}
   stubs                     Launch interactive TUI
+  stubs run [options]       Unified pipeline: scan, map, sand, lint-arch & tale
   stubs init                Guided project workspace setup
   stubs add <items...>      Install specific skills (e.g. tale, design, stubs, all)
   stubs list                List all available skills, rules, and MCP servers
   stubs mcp add <server>    Register an MCP server into .agents/mcp_config.json
-  stubs tale [options]      Lint or format documentation & code comments (--fix)
+  stubs tale [options]      Unified audit & format of docs and code comments (--fix)
 
 ${pc.bold('Flags:')}
+  --check                   Run in read-only audit mode without auto-remediation
+  --json                    Output structured JSON scorecard results
   --global, -g              Install globally into ~/.gemini/config instead of local workspace
 
 ${pc.bold('Core Architecture Commands:')}
+  stubs run                 Run unified pipeline: scan, map, sand, lint-arch & tale
   stubs scan                Scan codebase and update AST graph
+  stubs map                 Generate or audit architecture domain maps
+  stubs sand                Run bidirectional sync between specs and code
+  stubs lint-arch           Check architectural guardrails (hierarchy, cycles)
   stubs status              Check architecture and sidecar drift status
-  stubs material            Materialize code from sidecars
-  stubs sanding             Run bidirectional sync between specs and code
+  stubs materialize         Materialize code from sidecars
 `);
     return;
   }
 
-  // Fallback: Delegate to core stubs CLI engine if it's a core stubs command
+  // Fallback: Delegate to core stubs CLI engine if it is a core stubs command
   try {
     const path = require('path');
     const fs = require('fs');
@@ -156,7 +176,16 @@ ${pc.bold('Core Architecture Commands:')}
   process.exit(1);
 }
 
-main().catch((err) => {
-  console.error(pc.red('Unexpected error:'), err);
-  process.exit(1);
-});
+const isCliEntry =
+  require.main === module ||
+  (process.argv[1] &&
+    (process.argv[1].endsWith('stubs') ||
+      process.argv[1].endsWith('stubs.js') ||
+      process.argv[1].endsWith('index.cjs')));
+
+if (isCliEntry) {
+  main().catch((err) => {
+    console.error(pc.red('Unexpected error:'), err);
+    process.exit(1);
+  });
+}

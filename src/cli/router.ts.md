@@ -52,6 +52,8 @@ depends_on:
   - ../export/engine
   - ../server/mcp
   - ../storage/credentials
+  - ../graph/domain
+  - ./agents-doc
 used_by:
   - src/cli.ts
 stale_details: null

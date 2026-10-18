@@ -61,7 +61,7 @@ describe('Fast Incremental Scan via Filesystem mtime (Q10 / Q2)', () => {
 
     await graphEngine.indexCodeWorkspace(tmpDir);
 
-    // Wait slightly or update mtime to ensure stat detects modification
+    // Wait slightly or update mtime to make sure that stat detects modification
     const futureTime = new Date(Date.now() + 5000);
     fs.writeFileSync(fileA, 'export class ServiceA { run() { return 42; } }', 'utf8');
     fs.utimesSync(fileA, futureTime, futureTime);

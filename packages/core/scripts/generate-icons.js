@@ -1,6 +1,6 @@
 // Deterministic, dependency-free PNG icon generation for the PWA manifest (B-6).
 //
-// The manifest previously declared both its 192x192 and 512x512 entries as the SAME inline
+// The manifest previously declared the two its 192x192 and 512x512 entries as the SAME inline
 // SVG data URI. Chromium's install criteria require at least one PNG/raster icon >= 192px and
 // a `maskable` entry for a non-letterboxed adaptive icon, so that manifest never produced an
 // install prompt. Rasterising here (rather than committing binaries) keeps the icons a build
@@ -102,7 +102,7 @@ function insideRoundedRect(x, y, left, top, right, bottom, radius) {
 /**
  * Render the stubs mark: two stacked rounded bars -- the upper one the code file, the lower
  * (dimmer, inset) one its Markdown sidecar. `glyphScale` is the fraction of the canvas the
- * mark occupies; the maskable variant uses a smaller value so the whole mark sits inside the
+ * mark occupies. The maskable variant uses a smaller value so the whole mark sits inside the
  * central 80% safe zone that Android's adaptive-icon mask can crop to.
  *
  * Coverage is supersampled SSAA_N x SSAA_N per pixel and the sampled colours averaged: a hard
@@ -178,7 +178,7 @@ function renderIcon(size, glyphScale) {
 
 /**
  * The icon set emitted into dist/web/ and declared by public/manifest.json.
- * `purpose: 'any'` at 192 and 512 satisfies the installability minimum; the maskable entry
+ * `purpose: 'any'` at 192 and 512 satisfies the installability minimum. The maskable entry
  * keeps the mark inside the safe zone so Android does not letterbox it.
  */
 const ICONS = [

@@ -314,7 +314,7 @@ export class GitHubClient {
     // Try parsing as text first
     const text = await response.text();
     try {
-      // In case GitHub returns JSON structure with base64 (if headers weren't processed correctly or mock responded with JSON)
+      // In case GitHub returns JSON structure with base64 (if headers were not processed correctly or mock responded with JSON)
       const parsed = JSON.parse(text);
       if (parsed && typeof parsed === 'object' && typeof parsed.content === 'string') {
         const encoding = parsed.encoding || 'base64';

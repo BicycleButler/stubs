@@ -121,7 +121,7 @@ export class JwtManager {
 
     const result = await queryEngine.query('pkg:@stubs/auth index', { skipAutoSync: true });
     expect(result.packageScope).toBe('@stubs/auth');
-    // Result seeds should only match auth package
+    // Result seeds must only match auth package
     expect(result.seedNodes.every((s) => s.startsWith('packages/auth'))).toBe(true);
   });
 

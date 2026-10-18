@@ -13,7 +13,7 @@ describe('Phase 3: Markdown AST Parsing, In-Memory Type-Checking & Materializati
   let graphEngine: GraphEngine;
 
   beforeAll(() => {
-    // Ensure fixture directory exists
+    // Make sure that fixture directory exists
     const dir = path.dirname(testSidecarPath);
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
@@ -21,7 +21,7 @@ describe('Phase 3: Markdown AST Parsing, In-Memory Type-Checking & Materializati
   });
 
   beforeEach(async () => {
-    // Ensure fixture directory exists
+    // Make sure that fixture directory exists
     const dir = path.dirname(testSidecarPath);
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });

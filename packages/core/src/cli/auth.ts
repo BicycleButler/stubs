@@ -4,7 +4,7 @@ import { GitHubClient, encryptToken } from '../server/github';
 import { loadCredentials, saveCredentials } from '../storage/credentials';
 
 /**
- * Handles the login workflow interactive or via provided token option.
+ * Handles the login workflow interactive or through provided token option.
  * Stores global credentials in ~/.stubs/credentials.json (chmod 600).
  */
 /**
@@ -105,7 +105,7 @@ export async function handleLogin(
       return 1;
     }
 
-    // Prompt user for GitHub Personal Access Token via CLI with masking
+    // Prompt user for GitHub Personal Access Token through CLI with masking
     token = await askTokenMasked('Please enter your GitHub Personal Access Token (PAT):\n> ');
   }
 
@@ -122,7 +122,7 @@ export async function handleLogin(
       `Successfully authenticated as GitHub user: ${user.login} (${user.name || 'No Name'})`,
     );
 
-    // Read current credentials via secure storage
+    // Read current credentials through secure storage
     let credentials: Record<string, any> = {};
     try {
       credentials = loadCredentials();

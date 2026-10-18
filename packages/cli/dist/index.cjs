@@ -8,6 +8,10 @@ var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __commonJS = (cb, mod) => function __require() {
   return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
 };
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
 var __copyProps = (to, from, except, desc) => {
   if (from && typeof from === "object" || typeof from === "function") {
     for (let key of __getOwnPropNames(from))
@@ -24,6 +28,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
   mod
 ));
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
 // ../../node_modules/picocolors/picocolors.js
 var require_picocolors = __commonJS({
@@ -154,6 +159,15 @@ var require_src = __commonJS({
 });
 
 // src/index.ts
+var index_exports = {};
+__export(index_exports, {
+  getAvailableMcpServers: () => getAvailableMcpServers,
+  getAvailableSkills: () => getAvailableSkills,
+  installSkills: () => installSkills,
+  registerMcpServer: () => registerMcpServer,
+  updateAgentsDocForTale: () => updateAgentsDocForTale
+});
+module.exports = __toCommonJS(index_exports);
 var import_fs = __toESM(require("fs"));
 var import_path = __toESM(require("path"));
 var import_child_process = require("child_process");
@@ -902,7 +916,7 @@ function installSkills(options) {
         hooks: [
           {
             event: "file_changed",
-            command: "npx stubs scan",
+            command: "npx --no-install stubs scan",
             description: "Synchronizes AST architecture graph on source file changes"
           }
         ]
@@ -913,7 +927,72 @@ function installSkills(options) {
     } catch {
     }
   }
+  if (options.target === "local" && installed.includes("tale")) {
+    updateAgentsDocForTale(baseDir);
+  }
   return { installed, errors };
+}
+function updateAgentsDocForTale(targetDir) {
+  try {
+    let targetFileName = "AGENTS.md";
+    let isNew = true;
+    if (fs.existsSync(targetDir)) {
+      const entries = fs.readdirSync(targetDir);
+      if (entries.includes("agents.md") && !entries.includes("AGENTS.md")) {
+        targetFileName = "agents.md";
+        isNew = false;
+      } else if (entries.includes("AGENTS.md")) {
+        targetFileName = "AGENTS.md";
+        isNew = false;
+      }
+    }
+    const fullPath = path.join(targetDir, targetFileName);
+    const taleSection = [
+      "<!-- tale-instructions-start -->",
+      "## ASD-STE100 Technical English & Formatting (Tale)",
+      "",
+      "The repository enforces ASD-STE100 Issue 9 Simplified Technical English for documentation (*.md) and code comments (*.ts, *.js, and so on).",
+      "",
+      "- Audit Language & Formatting: `npx stubs tale` (or `npm run tale` / `npm run lint:tale`) \u2014 audits Markdown files and code comments across the workspace.",
+      "- Auto-Remediate Violations: `npx stubs tale --fix` (or `npm run tale:fix` / `npm run format:tale`) \u2014 fixes prose semicolons, contractions, Latin abbreviations, and safe vocabulary without changing executable code.",
+      "- File Scope & Exclusions: automatically skips build and test artifacts (`dist`, `node_modules`, `coverage`, `.stubs`), `.gitignore` paths, and strictly ignores `README.md` and `QUICKSTART.md`.",
+      "<!-- tale-instructions-end -->"
+    ].join("\n");
+    if (isNew) {
+      const initialContent = `# Agent Instructions
+
+${taleSection}
+`;
+      fs.writeFileSync(fullPath, initialContent, "utf-8");
+      return true;
+    }
+    let content = fs.readFileSync(fullPath, "utf-8");
+    if (content.includes("<!-- tale-instructions-start -->")) {
+      content = content.replace(
+        /<!-- tale-instructions-start -->[\s\S]*?<!-- tale-instructions-end -->/,
+        taleSection
+      );
+    } else {
+      const legacyRegex = /## (?:ASD-STE100[^\n]*|TALE[^\n]*|Tale[^\n]*)[\s\S]*?(?=\n##\s+|$)/;
+      if (legacyRegex.test(content)) {
+        content = content.replace(legacyRegex, taleSection);
+      } else {
+        content = content.trimEnd() + "\n\n" + taleSection + "\n";
+      }
+    }
+    if (content.includes("## CLI Commands") && !content.includes("stubs tale")) {
+      content = content.replace(
+        /(## CLI Commands[\s\S]*?)(?=\n##|\n<!-- stubs-instructions-end -->|$)/,
+        (match) => {
+          return match.trimEnd() + "\n- Audit ASD-STE100 Compliance: `npx stubs tale` (or `npm run tale`)\n- Auto-Remediate Prose & Formatting: `npx stubs tale --fix` (or `npm run tale:fix`)\n";
+        }
+      );
+    }
+    fs.writeFileSync(fullPath, content, "utf-8");
+    return true;
+  } catch {
+    return false;
+  }
 }
 function copyRecursive(src, dest) {
   const stat = fs.statSync(src);
@@ -942,13 +1021,13 @@ function getAvailableMcpServers() {
       name: "tale",
       description: "ASD-STE100 Simplified Technical English Linter MCP Server",
       command: "npx",
-      args: ["-y", "@wiltermood/tale", "mcp-serve"]
+      args: ["-y", "@bicyclebutler/tale", "mcp-serve"]
     },
     design: {
       name: "design",
       description: "Design Guidelines and Compliance Auditor MCP Server",
       command: "npx",
-      args: ["-y", "@wiltermood/design", "mcp-serve"]
+      args: ["-y", "@bicyclebutler/design", "mcp-serve"]
     }
   };
 }
@@ -1147,12 +1226,16 @@ async function main() {
     }
     return;
   }
-  if (command === "tale" || command === "lint:tale" || command === "format:tale") {
+  if (command === "tale" || command === "tale:fix" || command === "lint:tale" || command === "format:tale") {
     const taleArgs = process.argv.slice(3);
-    if (command === "format:tale" && !taleArgs.includes("--fix")) {
+    if ((command === "format:tale" || command === "tale:fix") && !taleArgs.includes("--fix")) {
       taleArgs.unshift("--fix");
     }
     const candidatePaths = [
+      import_path.default.resolve(__dirname, "../../tale/src/tale.mjs"),
+      import_path.default.resolve(process.cwd(), "packages/tale/src/tale.mjs"),
+      import_path.default.resolve(process.cwd(), ".agents/skills/tale/scripts/tale.mjs"),
+      import_path.default.resolve(__dirname, "../../../packages/tale/src/tale.mjs"),
       import_path.default.resolve(__dirname, "../../tale/src/tale-lint.mjs"),
       import_path.default.resolve(process.cwd(), "packages/tale/src/tale-lint.mjs"),
       import_path.default.resolve(process.cwd(), ".agents/skills/tale/scripts/tale-lint.mjs"),
@@ -1164,7 +1247,9 @@ async function main() {
       process.exit(res.status ?? 0);
     }
     console.error(
-      import_picocolors3.default.red("Error: Could not locate tale-lint.mjs. Make sure @wiltermood/tale is installed.")
+      import_picocolors3.default.red(
+        "Error: Could not locate tale.mjs or tale-lint.mjs. Make sure @bicyclebutler/tale is installed."
+      )
     );
     process.exit(1);
   }
@@ -1174,20 +1259,26 @@ ${import_picocolors3.default.bold("Stubs AI Agent Skills & Tools Hub")}
 
 ${import_picocolors3.default.bold("Usage:")}
   stubs                     Launch interactive TUI
+  stubs run [options]       Unified pipeline: scan, map, sand, lint-arch & tale
   stubs init                Guided project workspace setup
   stubs add <items...>      Install specific skills (e.g. tale, design, stubs, all)
   stubs list                List all available skills, rules, and MCP servers
   stubs mcp add <server>    Register an MCP server into .agents/mcp_config.json
-  stubs tale [options]      Lint or format documentation & code comments (--fix)
+  stubs tale [options]      Unified audit & format of docs and code comments (--fix)
 
 ${import_picocolors3.default.bold("Flags:")}
+  --check                   Run in read-only audit mode without auto-remediation
+  --json                    Output structured JSON scorecard results
   --global, -g              Install globally into ~/.gemini/config instead of local workspace
 
 ${import_picocolors3.default.bold("Core Architecture Commands:")}
+  stubs run                 Run unified pipeline: scan, map, sand, lint-arch & tale
   stubs scan                Scan codebase and update AST graph
+  stubs map                 Generate or audit architecture domain maps
+  stubs sand                Run bidirectional sync between specs and code
+  stubs lint-arch           Check architectural guardrails (hierarchy, cycles)
   stubs status              Check architecture and sidecar drift status
-  stubs material            Materialize code from sidecars
-  stubs sanding             Run bidirectional sync between specs and code
+  stubs materialize         Materialize code from sidecars
 `);
     return;
   }
@@ -1207,7 +1298,18 @@ ${import_picocolors3.default.bold("Core Architecture Commands:")}
   console.log('Run "stubs help" or "stubs" without arguments for the interactive menu.');
   process.exit(1);
 }
-main().catch((err) => {
-  console.error(import_picocolors3.default.red("Unexpected error:"), err);
-  process.exit(1);
+var isCliEntry = require.main === module || process.argv[1] && (process.argv[1].endsWith("stubs") || process.argv[1].endsWith("stubs.js") || process.argv[1].endsWith("index.cjs"));
+if (isCliEntry) {
+  main().catch((err) => {
+    console.error(import_picocolors3.default.red("Unexpected error:"), err);
+    process.exit(1);
+  });
+}
+// Annotate the CommonJS export names for ESM import in node:
+0 && (module.exports = {
+  getAvailableMcpServers,
+  getAvailableSkills,
+  installSkills,
+  registerMcpServer,
+  updateAgentsDocForTale
 });

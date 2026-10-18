@@ -183,4 +183,18 @@ Contextloop orchestrator info here.
       expect(updated).toContain(STUBS_MANAGED_START);
     });
   });
+
+  describe('syncAgentsDoc with Tale skill present', () => {
+    it('should include Tale CLI commands and ASD-STE100 instructions when Tale skill is detected', async () => {
+      fs.mkdirSync(path.join(tempDir, '.agents/skills/tale'), { recursive: true });
+      const result = await syncAgentsDoc(tempDir, { projectName: 'tale-repo' });
+      const content = fs.readFileSync(result.filePath, 'utf8');
+
+      expect(content).toContain('npx stubs tale');
+      expect(content).toContain('npx stubs tale --fix');
+      expect(content).toContain('ASD-STE100 Technical English & Formatting (Tale)');
+      expect(content).toContain('Audit Language & Formatting');
+      expect(content).toContain('Auto-Remediate Violations');
+    });
+  });
 });

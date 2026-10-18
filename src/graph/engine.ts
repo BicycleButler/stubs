@@ -1249,7 +1249,7 @@ Decisions: ${decisionsText}
   }
 
   /**
-   * Performs high-speed lazy JIT incremental sync across workspace files.
+   * Does high-speed lazy JIT incremental sync across workspace files.
    * Compares disk hashes with SQLite file_meta and updates only modified/added files.
    */
   public async syncWorkspaceFiles(rootDir: string = '.'): Promise<{
@@ -1583,7 +1583,7 @@ Decisions: ${decisionsText}
 
   /**
    * Batch retrieves all indexed sidecars with all child entities aggregated in memory.
-   * Performs 7 batch queries instead of 7*N sequential round-trips.
+   * Does 7 batch queries instead of 7*N sequential round-trips.
    */
   public async getAllSidecars(): Promise<any[]> {
     await this.ensureInitialized();
@@ -2175,7 +2175,7 @@ Decisions: ${decisionsText}
 
         const content = await this.fsDriver.readFile(normPath);
 
-        // Ignore files that don't start with YAML frontmatter marker
+        // Ignore files that do not start with YAML frontmatter marker
         if (!content.trim().startsWith('---')) {
           continue;
         }

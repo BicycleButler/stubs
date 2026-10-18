@@ -159,7 +159,7 @@ This is the specification body.
         expect.stringContaining('requires a file path argument'),
       );
 
-      // 2. Fail if target file doesn't exist
+      // 2. Fail if target file does not exist
       code = await router.route(['grill', 'non-existent.ts.md']);
       expect(code).toBe(1);
       expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('File not found at'));

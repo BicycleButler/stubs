@@ -1,6 +1,6 @@
 {
-  "name": "@wiltermood/design",
-  "version": "1.0.0",
+  "name": "@bicyclebutler/design",
+  "version": "1.4.0",
   "description": "Codebase-agnostic UI/UX design guidelines, token scales, and automated compliance tools for AI coding agents",
   "main": "rules/design-rules.md",
   "files": [
@@ -23,7 +23,7 @@
     "accessibility",
     "design-tokens"
   ],
-  "author": "Wiltermood",
+  "author": "BicycleButler",
   "license": "MIT",
   "repository": {
     "type": "git",

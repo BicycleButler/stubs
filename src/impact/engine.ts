@@ -61,7 +61,7 @@ export class ImpactEngine {
       normalized = normalized.substring(2);
     }
 
-    // Ensure graph nodes exist via TopologyEngine
+    // Make sure that graph nodes exist through TopologyEngine
     let topology = await this.graphEngine.getTopologyEngine();
     if (topology.getAllNodes().length === 0) {
       const config = loadConfig();

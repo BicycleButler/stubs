@@ -247,7 +247,7 @@ export class TopologyEngine {
       this.nodes.set(node.id, node);
     }
 
-    // Quick lookup for resolving extensionless imports (e.g. "./engine" -> "src/services/engine.ts")
+    // Quick lookup for resolving extensionless imports (for example, "./engine" -> "src/services/engine.ts")
     const fileNodeLookup = new Map<string, string>();
     for (const node of nodes) {
       if (node.kind === 'file' || node.kind === 'sidecar') {
@@ -272,7 +272,7 @@ export class TopologyEngine {
       const targetId = resolveTargetId(rawEdge.target_id);
       const edge = { ...rawEdge, source_id: sourceId, target_id: targetId };
 
-      // Ensure target node exists or create a stub node
+      // Make sure that target node exists or create a stub node
       if (!this.nodes.has(edge.source_id)) {
         this.nodes.set(edge.source_id, {
           id: edge.source_id,
@@ -975,7 +975,7 @@ export class TopologyEngine {
   }
 
   /**
-   * Performs Louvain modularity-based community detection across graph nodes.
+   * Does Louvain modularity-based community detection across graph nodes.
    */
   public getCommunities(): CommunityDetectionResult {
     if (this.cachedCommunities) {
@@ -1481,8 +1481,8 @@ export class TopologyEngine {
 
   /**
    * Computes the topologically ordered sequence of files to edit.
-   * 'dependencies_first' ensures base/imported modules are updated before consumers.
-   * 'dependents_first' ensures consumers are updated before leaf dependencies.
+   * 'dependencies_first' makes sure that base/imported modules are updated before consumers.
+   * 'dependents_first' makes sure that consumers are updated before leaf dependencies.
    */
   public getTopologicalEditOrder(
     filePaths: string[],

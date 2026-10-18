@@ -944,6 +944,6 @@ export function autoFixContent(
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
-  // Can be executed directly via tsx/ts-node
+  // Can be executed directly with tsx or ts-node
   import('./tale-lint.mjs').then((mod) => mod.runCLI(process.argv));
 }

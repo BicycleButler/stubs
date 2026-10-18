@@ -215274,7 +215274,7 @@ var init_topology = __esm({
         return lines.join("\n");
       }
       /**
-       * Performs Louvain modularity-based community detection across graph nodes.
+       * Does Louvain modularity-based community detection across graph nodes.
        */
       getCommunities() {
         if (this.cachedCommunities) {
@@ -215674,8 +215674,8 @@ var init_topology = __esm({
       }
       /**
        * Computes the topologically ordered sequence of files to edit.
-       * 'dependencies_first' ensures base/imported modules are updated before consumers.
-       * 'dependents_first' ensures consumers are updated before leaf dependencies.
+       * 'dependencies_first' makes sure that base/imported modules are updated before consumers.
+       * 'dependents_first' makes sure that consumers are updated before leaf dependencies.
        */
       getTopologicalEditOrder(filePaths, direction = "dependencies_first") {
         const inputSet = /* @__PURE__ */ new Set();
@@ -217052,7 +217052,7 @@ Decisions: ${decisionsText}
         );
       }
       /**
-       * Performs high-speed lazy JIT incremental sync across workspace files.
+       * Does high-speed lazy JIT incremental sync across workspace files.
        * Compares disk hashes with SQLite file_meta and updates only modified/added files.
        */
       async syncWorkspaceFiles(rootDir = ".") {
@@ -217331,7 +217331,7 @@ ${parseResult.errors.join("\n")}`
       }
       /**
        * Batch retrieves all indexed sidecars with all child entities aggregated in memory.
-       * Performs 7 batch queries instead of 7*N sequential round-trips.
+       * Does 7 batch queries instead of 7*N sequential round-trips.
        */
       async getAllSidecars() {
         await this.ensureInitialized();
@@ -219101,7 +219101,7 @@ var TemplateEngine = class {
   }
   /**
    * Scans the templates directory recursively for files.
-   * Returns empty array if directory doesn't exist, defining error out of existence.
+   * Returns empty array if directory does not exist, defining error out of existence.
    */
   async listTemplates() {
     if (!fs4.existsSync(this.templatesDir)) {
@@ -219419,7 +219419,7 @@ var AutonomyProtocol = class {
   }
   /**
    * Phase 4: Validation / Dry-Run Type-Check.
-   * Performs high-fidelity validation of TS syntax and structure.
+   * Does high-fidelity validation of TS syntax and structure.
    */
   dryRunValidation(proposal) {
     const errors = [];
@@ -219896,7 +219896,7 @@ var MaterializerEngine = class {
 init_github();
 function resolveWebPath(...segments) {
   const candidates = [
-    // Adjacent to bundle in dist (e.g. dist/web or .agents/skills/stubs/dist/web)
+    // Adjacent to bundle in dist (for example, dist/web or .agents/skills/stubs/dist/web)
     path11.resolve(__dirname, "web", ...segments),
     path11.resolve(__dirname, "../web", ...segments),
     path11.resolve(__dirname, "../dist/web", ...segments),
@@ -224599,7 +224599,7 @@ var WorkspaceManager = class {
     return config;
   }
   /**
-   * Resolves an import specifier (e.g. "@stubs/core" or "@/components/Button")
+   * Resolves an import specifier (for example, "@stubs/core" or "@/components/Button")
    * to a canonical repository relative file path.
    */
   resolveImportPath(importSpecifier, importerFilePath, config) {
@@ -224813,7 +224813,7 @@ var QueryEngine = class {
     this.workspaceManager = new WorkspaceManager({ fsDriver: this.fsDriver });
   }
   /**
-   * Performs lazy incremental mtime check on workspace files before query execution (<30ms).
+   * Does lazy incremental mtime check on workspace files before query execution (<30ms).
    */
   async autoSyncModifiedFiles() {
     try {
@@ -226519,7 +226519,7 @@ var DomainEngine = class {
   }
   /**
    * Generates a single domain context map document adhering to ADR-001.
-   * Performs non-destructive synchronization to preserve human-authored sections.
+   * Does non-destructive synchronization to preserve human-authored sections.
    */
   async generateDomainMap(domain, domainsDir, options = {}) {
     await fs10.promises.mkdir(domainsDir, { recursive: true });
@@ -226886,6 +226886,28 @@ function generateStubsInstructionBlock(targetDir, _projectName) {
   lines.push("- Export Knowledge Graph: `npx stubs export <obsidian|wiki> [--out <dir>]`");
   lines.push("- Start MCP Stdio Server: `npx stubs mcp`");
   lines.push("- Install Assistant Rules: `npx stubs hook install`");
+  const hasTale = fs11.existsSync(path26.join(targetDir, ".agents/skills/tale")) || fs11.existsSync(path26.join(targetDir, "packages/tale"));
+  if (hasTale) {
+    lines.push("- Audit ASD-STE100 Compliance: `npx stubs tale` (or `npm run tale`)");
+    lines.push(
+      "- Auto-Remediate Prose & Formatting: `npx stubs tale --fix` (or `npm run tale:fix`)"
+    );
+    lines.push("");
+    lines.push("### ASD-STE100 Technical English & Formatting (Tale)");
+    lines.push("");
+    lines.push(
+      "The repository enforces ASD-STE100 Issue 9 Simplified Technical English for documentation (*.md) and code comments."
+    );
+    lines.push(
+      "- Audit Language & Formatting: `npx stubs tale` (or `npm run tale` / `npm run lint:tale`) \u2014 audits both Markdown files and code comments across the workspace."
+    );
+    lines.push(
+      "- Auto-Remediate Violations: `npx stubs tale --fix` (or `npm run tale:fix` / `npm run format:tale`) \u2014 safely fixes prose semicolons, contractions, Latin abbreviations, Markdown tables, and safe vocabulary in docs and comments without modifying executable code."
+    );
+    lines.push(
+      "- File Scope & Exclusions: automatically skips build and test artifacts (`dist`, `node_modules`, `coverage`, `.stubs`), `.gitignore` paths, and strictly ignores `README.md` and `QUICKSTART.md`."
+    );
+  }
   return lines.join("\n");
 }
 async function syncAgentsDoc(targetDir, options = {}) {
@@ -227036,6 +227058,9 @@ var CliRouter = class {
         return 0;
       }
       switch (context.command) {
+        case "run":
+        case "check":
+          return await this.handleRun(context);
         case "init":
           return await this.handleInit(context);
         case "serve":
@@ -227162,6 +227187,7 @@ Usage:
   stubs <command> [options]
 
 Commands:
+  run, check [options] Run consolidated pipeline: scan, map, sand, lint-arch, and tale.
   init                Initialize workspace configuration (.stubs/config.json).
   scan, index [dir]   Scan physical codebase, run AST extraction, and populate the SQLite graph.
   auth login          Authenticate via Personal Access Tokens (PATs) and store globally.
@@ -227208,6 +227234,7 @@ Options:
   --cycles             Detect circular dependency loops (audit)
   --upstream           Traverse upstream dependencies (blast)
   --depth <N>          Specify search depth limit (blast / tree)
+  --check              Run pipeline in read-only audit mode without auto-remediation
   --json               Output structured JSON results
   --no-graph-sync      Disable automatic depends_on frontmatter sync (sand)
   --all                Display all files and directories
@@ -227298,7 +227325,7 @@ Options:
         if ((0, import_fs4.existsSync)(pkgPath)) {
           const content = await import_fs4.promises.readFile(pkgPath, "utf8");
           const pkg = JSON.parse(content);
-          if (pkg.name === "stubs" && pkg.version) {
+          if ((pkg.name === "stubs" || pkg.name === "@bicyclebutler/stubs" || pkg.name === "@bicyclebutler/stubs-monorepo" || pkg.name === "@bicyclebutler/stubs-core") && pkg.version) {
             console.log(`stubs version ${pkg.version}`);
             return;
           }
@@ -227670,6 +227697,416 @@ Options:
       }
       return hasError ? 1 : 0;
     }
+  }
+  /**
+   * Primary consolidated pipeline command (stubs run).
+   * Executes scan, map, sand, lint-arch, and tale in a unified pass.
+   */
+  async handleRun(ctx) {
+    const isJson = ctx.args.includes("--json");
+    const isCheck = ctx.args.includes("--check") || ctx.command === "check";
+    const totalStart = Date.now();
+    const config = loadConfig(ctx.configPath);
+    let scanDir = "src";
+    if (!(0, import_fs4.existsSync)(scanDir)) {
+      scanDir = config.paths?.specs_dir && (0, import_fs4.existsSync)(config.paths.specs_dir) ? config.paths.specs_dir : ".";
+    }
+    const graphEngine = new GraphEngine(config.paths.db_path);
+    await graphEngine.initialize();
+    if (!isJson) {
+      console.log(`
+============================================================`);
+      console.log(`  STUBS RUN \u2014 Unified Repository Pipeline`);
+      console.log(`  Mode: ${isCheck ? "Read-Only Audit (--check)" : "Auto-Remediation (Default)"}`);
+      console.log(`============================================================
+`);
+    }
+    const scanStart = Date.now();
+    if (!isJson) {
+      console.log(`[1/5] AST Codebase Scan & Graph Indexing...`);
+    }
+    const codeSummary = await graphEngine.indexCodeWorkspace(scanDir);
+    const sidecarSummary = await graphEngine.indexWorkspace(scanDir);
+    let communitiesCount = 0;
+    try {
+      const topology = await graphEngine.getTopologyEngine();
+      const communityRes = topology.getCommunities();
+      const labels = {};
+      for (const info of communityRes.communityInfo) {
+        labels[info.id] = info.label;
+      }
+      await graphEngine.assignCommunities(communityRes.communities, labels);
+      communitiesCount = communityRes.totalCommunities;
+    } catch {
+    }
+    const nodes = await graphEngine.getGraphNodes();
+    const edges = await graphEngine.getGraphEdges();
+    const scanPassed = codeSummary.errors.length === 0;
+    const scanDuration = Date.now() - scanStart;
+    if (!isJson) {
+      if (scanPassed) {
+        console.log(
+          `  \u2713 Indexed ${codeSummary.indexed} code files & ${sidecarSummary.indexed} sidecars (${nodes.length} nodes, ${edges.length} edges, ${communitiesCount} communities) [${scanDuration}ms]`
+        );
+      } else {
+        console.log(`  \u26A0 Indexed with ${codeSummary.errors.length} error(s) [${scanDuration}ms]`);
+        for (const err of codeSummary.errors.slice(0, 5)) {
+          console.log(`    - [${err.filePath}]: ${err.error}`);
+        }
+      }
+    }
+    const mapStart = Date.now();
+    if (!isJson) {
+      console.log(`
+[2/5] Architecture Context & Domain Mapping...`);
+    }
+    let mapPassed = true;
+    let domainsCount = 0;
+    let mapDetails = "";
+    try {
+      const architectureDir = path29.join(process.cwd(), "knowledge", "architecture");
+      const domainsDir = path29.join(architectureDir, "domains");
+      const rootMapFile = path29.join(architectureDir, "context-map.md");
+      const visualMapFile = path29.join(architectureDir, "visual-map.md");
+      await import_fs4.promises.mkdir(domainsDir, { recursive: true });
+      const domainEngine = new DomainEngine(graphEngine, process.cwd(), config);
+      if (isCheck) {
+        const domains = await domainEngine.discoverDomains();
+        domainsCount = domains.size;
+        const missing = [];
+        if (!(0, import_fs4.existsSync)(rootMapFile)) missing.push("context-map.md");
+        for (const d of domains.keys()) {
+          const dPath = path29.join(domainsDir, `${d}-domain-map.md`);
+          if (!(0, import_fs4.existsSync)(dPath)) missing.push(`domains/${d}-domain-map.md`);
+        }
+        if (missing.length > 0) {
+          mapPassed = false;
+          mapDetails = `Missing maps: ${missing.join(", ")}`;
+          if (!isJson) console.log(`  \u2717 Missing required architecture maps: ${missing.join(", ")}`);
+        } else {
+          mapPassed = true;
+          mapDetails = `${domainsCount} domain maps & root context-map verified`;
+          if (!isJson) {
+            console.log(
+              `  \u2713 Verified ${domainsCount} domain maps & root context-map [${Date.now() - mapStart}ms]`
+            );
+          }
+        }
+      } else {
+        const domains = await domainEngine.generateAllDomainMaps(domainsDir, { force: true });
+        domainsCount = domains.size;
+        await domainEngine.generateContextMap(domains, rootMapFile, { force: true });
+        try {
+          const diagramEngine = new DiagramEngine({ graphEngine });
+          const diagResult = await diagramEngine.generateDiagram(void 0, {
+            type: "architecture"
+          });
+          const visualContent = `---
+title: Project Architecture Visual Diagram
+type: visual-diagram
+audience: human-developer
+tags:
+  - architecture
+  - visual
+  - mermaid
+---
+
+# Architecture Visual Map
+
+<!-- For AI coding agents: read knowledge/architecture/context-map.md or run npx stubs query "map:" -->
+
+${diagResult.mermaidCode}
+`;
+          await import_fs4.promises.writeFile(visualMapFile, visualContent, "utf8");
+        } catch {
+        }
+        mapPassed = true;
+        mapDetails = `${domainsCount} domain maps & root context-map synthesized`;
+        if (!isJson) {
+          console.log(
+            `  \u2713 Synthesized ${domainsCount} domain maps, root context-map & visual diagram [${Date.now() - mapStart}ms]`
+          );
+        }
+      }
+    } catch (mapErr) {
+      mapPassed = false;
+      mapDetails = mapErr.message || String(mapErr);
+      if (!isJson) console.log(`  \u2717 Map generation error: ${mapDetails}`);
+    }
+    const mapDuration = Date.now() - mapStart;
+    const sandStart = Date.now();
+    if (!isJson) {
+      console.log(`
+[3/5] Sidecar Bi-directional Sanding...`);
+    }
+    let sandPassed = true;
+    let sandSyncedCount = 0;
+    let sandConflictsCount = 0;
+    let sandDetails = "";
+    try {
+      const specsDir = config.paths?.specs_dir || "src";
+      const sandEngine = new SandingEngine();
+      const sandResults = await sandEngine.syncWorkspace(specsDir, { noGraphSync: false });
+      sandSyncedCount = sandResults.length;
+      const conflicts = sandResults.filter((r) => r.status === "conflict" || r.status === "error");
+      sandConflictsCount = conflicts.length;
+      if (conflicts.length > 0) {
+        sandPassed = false;
+        sandDetails = `${conflicts.length} conflict(s) detected`;
+        if (!isJson) {
+          console.log(`  \u2717 ${conflicts.length} sidecar sanding conflict(s) detected:`);
+          for (const c of conflicts) {
+            console.log(`    - ${c.filePath} <-> ${c.targetCodeFile}: ${c.error || c.status}`);
+          }
+        }
+      } else {
+        sandPassed = true;
+        sandDetails = `${sandSyncedCount} sidecar(s) in sync`;
+        if (!isJson) {
+          console.log(
+            `  \u2713 ${sandSyncedCount} sidecar(s) synchronized with implementation code [${Date.now() - sandStart}ms]`
+          );
+        }
+      }
+    } catch (sandErr) {
+      sandPassed = false;
+      sandDetails = sandErr.message || String(sandErr);
+      if (!isJson) console.log(`  \u2717 Sanding error: ${sandDetails}`);
+    }
+    const sandDuration = Date.now() - sandStart;
+    const lintStart = Date.now();
+    if (!isJson) {
+      console.log(`
+[4/5] Architectural Linting (Hierarchy, Cycles, Parity)...`);
+    }
+    let lintPassed = true;
+    let lintViolationCount = 0;
+    let lintDetails = "";
+    let lintResultObj = null;
+    try {
+      const lintEngine = new ArchLintEngine({ graphEngine });
+      lintResultObj = await lintEngine.lintWorkspace({
+        strict: false,
+        configPath: ctx.configPath
+      });
+      lintViolationCount = lintResultObj.violations.length;
+      lintPassed = lintResultObj.summary.passed;
+      if (lintPassed) {
+        lintDetails = `0 violations across ${lintResultObj.summary.totalFilesChecked} files`;
+        if (!isJson) {
+          console.log(
+            `  \u2713 Passed: 0 layer violations, 0 circular cycles, 0 unmanifested dependencies [${Date.now() - lintStart}ms]`
+          );
+        }
+      } else {
+        lintDetails = `${lintViolationCount} architectural violation(s)`;
+        if (!isJson) {
+          console.log(`  \u2717 ${lintViolationCount} architectural violation(s) found:`);
+          for (const v of lintResultObj.violations.slice(0, 5)) {
+            console.log(
+              `    - [${v.rule}] ${v.sourceFile}${v.targetFile ? ` -> ${v.targetFile}` : ""}: ${v.message}`
+            );
+          }
+          if (lintResultObj.violations.length > 5) {
+            console.log(`    ... and ${lintResultObj.violations.length - 5} more.`);
+          }
+        }
+      }
+    } catch (lintErr) {
+      lintPassed = false;
+      lintDetails = lintErr.message || String(lintErr);
+      if (!isJson) console.log(`  \u2717 Arch lint error: ${lintDetails}`);
+    }
+    const lintDuration = Date.now() - lintStart;
+    const taleStart = Date.now();
+    if (!isJson) {
+      console.log(`
+[5/5] TALE Technical English & Documentation Governance...`);
+    }
+    let talePassed = true;
+    let taleViolationsRemaining = 0;
+    let taleDetails = "";
+    let taleReports = [];
+    const candidatePaths = [
+      path29.resolve(__dirname, "../../tale/src/tale.mjs"),
+      path29.resolve(process.cwd(), "packages/tale/src/tale.mjs"),
+      path29.resolve(process.cwd(), ".agents/skills/tale/scripts/tale.mjs"),
+      path29.resolve(__dirname, "../../../packages/tale/src/tale.mjs"),
+      path29.resolve(__dirname, "../../tale/src/tale-lint.mjs"),
+      path29.resolve(process.cwd(), "packages/tale/src/tale-lint.mjs"),
+      path29.resolve(process.cwd(), ".agents/skills/tale/scripts/tale-lint.mjs"),
+      path29.resolve(__dirname, "../../../packages/tale/src/tale-lint.mjs")
+    ];
+    const taleScript = candidatePaths.find((p) => (0, import_fs4.existsSync)(p));
+    if (!taleScript) {
+      talePassed = false;
+      taleDetails = "tale.mjs script not found";
+      if (!isJson) console.log(`  \u2717 Error: Could not locate tale.mjs`);
+    } else {
+      try {
+        const os4 = require("os");
+        const tmpJsonPath = path29.join(
+          os4.tmpdir(),
+          `stubs-tale-${Date.now()}-${Math.random().toString(36).slice(2)}.json`
+        );
+        const taleArgs = ["--json", "--output", tmpJsonPath];
+        if (!isCheck) {
+          taleArgs.push("--fix");
+        }
+        const { spawnSync } = require("child_process");
+        const proc = spawnSync(process.execPath, [taleScript, ...taleArgs], {
+          cwd: process.cwd(),
+          encoding: "utf-8",
+          maxBuffer: 50 * 1024 * 1024
+        });
+        if ((0, import_fs4.existsSync)(tmpJsonPath)) {
+          try {
+            const rawOutput = await import_fs4.promises.readFile(tmpJsonPath, "utf-8");
+            taleReports = JSON.parse(rawOutput);
+            for (const rep of taleReports) {
+              taleViolationsRemaining += rep.issues ? rep.issues.length : 0;
+            }
+          } catch {
+          } finally {
+            try {
+              await import_fs4.promises.unlink(tmpJsonPath);
+            } catch {
+            }
+          }
+        }
+        talePassed = taleViolationsRemaining === 0 && proc.status === 0;
+        if (talePassed) {
+          taleDetails = `0 violations remaining`;
+          if (!isJson) {
+            console.log(
+              `  \u2713 All scanned files compliant with ASD-STE100 Issue 9 & ADR-001 [${Date.now() - taleStart}ms]`
+            );
+          }
+        } else {
+          taleDetails = `${taleViolationsRemaining} violation(s) remaining`;
+          if (!isJson) {
+            console.log(
+              `  \u2717 ${taleViolationsRemaining} violation(s) remaining across scanned files [${Date.now() - taleStart}ms]:`
+            );
+            let displayed = 0;
+            for (const rep of taleReports) {
+              if (rep.issues && rep.issues.length > 0) {
+                for (const issue of rep.issues) {
+                  if (displayed < 8) {
+                    console.log(
+                      `    - ${rep.filePath}:${issue.lineNum} [${issue.rule}]: ${issue.message}`
+                    );
+                    displayed++;
+                  }
+                }
+              }
+            }
+            if (taleViolationsRemaining > displayed) {
+              console.log(`    ... and ${taleViolationsRemaining - displayed} more.`);
+            }
+          }
+        }
+      } catch (taleErr) {
+        talePassed = false;
+        taleDetails = taleErr.message || String(taleErr);
+        if (!isJson) console.log(`  \u2717 TALE execution error: ${taleDetails}`);
+      }
+    }
+    const taleDuration = Date.now() - taleStart;
+    try {
+      await graphEngine.close();
+    } catch {
+    }
+    const totalDuration = Date.now() - totalStart;
+    const allPassed = scanPassed && mapPassed && sandPassed && lintPassed && talePassed;
+    if (isJson) {
+      console.log(
+        JSON.stringify(
+          {
+            summary: {
+              passed: allPassed,
+              totalDurationMs: totalDuration,
+              mode: isCheck ? "check" : "remediate",
+              stagesPassed: [scanPassed, mapPassed, sandPassed, lintPassed, talePassed].filter(
+                Boolean
+              ).length,
+              stagesFailed: [scanPassed, mapPassed, sandPassed, lintPassed, talePassed].filter(
+                (p) => !p
+              ).length
+            },
+            stages: {
+              scan: {
+                passed: scanPassed,
+                durationMs: scanDuration,
+                nodes: nodes.length,
+                edges: edges.length,
+                communities: communitiesCount
+              },
+              map: {
+                passed: mapPassed,
+                durationMs: mapDuration,
+                domains: domainsCount,
+                details: mapDetails
+              },
+              sand: {
+                passed: sandPassed,
+                durationMs: sandDuration,
+                synced: sandSyncedCount,
+                conflicts: sandConflictsCount
+              },
+              lintArch: {
+                passed: lintPassed,
+                durationMs: lintDuration,
+                violations: lintViolationCount,
+                details: lintDetails
+              },
+              tale: {
+                passed: talePassed,
+                durationMs: taleDuration,
+                violations: taleViolationsRemaining,
+                details: taleDetails,
+                reports: taleReports
+              }
+            }
+          },
+          null,
+          2
+        )
+      );
+    } else {
+      console.log(`
+============================================================`);
+      console.log(`  PIPELINE HEALTH SCORECARD`);
+      console.log(`============================================================`);
+      console.log(`  Stage                   Status    Duration  Details`);
+      console.log(`  ----------------------------------------------------------`);
+      console.log(
+        `  1. AST Graph Scan       ${scanPassed ? "PASSED " : "FAILED "}  ${(scanDuration + "ms").padEnd(8)}  ${nodes.length} nodes, ${edges.length} edges`
+      );
+      console.log(
+        `  2. Domain Maps          ${mapPassed ? "PASSED " : "FAILED "}  ${(mapDuration + "ms").padEnd(8)}  ${mapDetails}`
+      );
+      console.log(
+        `  3. Sidecar Sanding      ${sandPassed ? "PASSED " : "FAILED "}  ${(sandDuration + "ms").padEnd(8)}  ${sandDetails}`
+      );
+      console.log(
+        `  4. Architectural Lint   ${lintPassed ? "PASSED " : "FAILED "}  ${(lintDuration + "ms").padEnd(8)}  ${lintDetails}`
+      );
+      console.log(
+        `  5. TALE Governance      ${talePassed ? "PASSED " : "FAILED "}  ${(taleDuration + "ms").padEnd(8)}  ${taleDetails}`
+      );
+      console.log(`============================================================`);
+      if (allPassed) {
+        console.log(`\u2713 All stages passed successfully (total: ${totalDuration}ms).
+`);
+      } else {
+        console.log(
+          `\u2717 Pipeline failed: one or more stages reported errors (total: ${totalDuration}ms).
+`
+        );
+      }
+    }
+    return allPassed ? 0 : 1;
   }
   async handleScan(ctx) {
     const isJson = ctx.args.includes("--json");
@@ -228235,7 +228672,7 @@ This project uses the \`stubs\` architecture-as-code sidecar framework.
           {
             event: "post_tool_execution",
             matcher: "replace_file_content|write_to_file|multi_replace_file_content",
-            command: "npx stubs scan",
+            command: "npx --no-install stubs scan",
             description: "Automatically synchronizes .stubs/graph.sqlite when files are modified"
           }
         ]
@@ -228255,7 +228692,7 @@ This project uses the \`stubs\` architecture-as-code sidecar framework.
     const hookScript = `
 ${stubsHookMarker}
 if command -v npx >/dev/null 2>&1; then
-  npx stubs scan >/dev/null 2>&1 || true
+  npx --no-install stubs scan >/dev/null 2>&1 || true
 fi
 `;
     try {

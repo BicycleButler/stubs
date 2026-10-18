@@ -36,7 +36,7 @@ All layout and spacing code must adopt CSS logical properties instead of physica
 
 ### 2 — Icon & Asset RTL Mirroring Rules
 
-- **Mirrorable Icons:** Directional navigation arrows (`ArrowLeft`, `ChevronRight`), undo/redo icons, and reading direction indicators must mirror automatically in RTL (`rtl:rotate-180` or `rtl:scale-x-[-1]`).
+- **Mirrorable Icons:** Directional navigation arrows (`ArrowLeft`, `ChevronRight`), undo/redo icons, and reading direction indicators must mirror automatically in RTL (`rtl:turn-180` or `rtl:scale-x-[-1]`).
 - **Non-Mirrorable Icons:** Media playback controls (`Play`, `Pause`), clocks, checkmarks, search magnifying glasses, and hardware icons (for example,. phone, battery) must **never** mirror.
 
 ### 3 — Text Expansion Budget (i18n Headroom)

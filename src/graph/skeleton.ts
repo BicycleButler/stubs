@@ -13,7 +13,7 @@ export interface SkeletonResult {
   skeletonText: string;
   originalLines: number;
   skeletonLines: number;
-  tokenSavingsPercent: number; // approximate savings e.g. 85%
+  tokenSavingsPercent: number; // approximate savings for example, 85%
   symbolCount: number;
 }
 

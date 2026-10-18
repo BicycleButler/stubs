@@ -1,10 +1,11 @@
 {
-  "name": "@wiltermood/tale",
-  "version": "1.0.0",
+  "name": "@bicyclebutler/tale",
+  "version": "1.4.0",
   "description": "ASD-STE100 Simplified Technical English (STE) governance, rules, and linter for AI coding agents",
-  "main": "src/tale-lint.mjs",
+  "main": "src/tale.mjs",
   "bin": {
-    "tale-lint": "src/tale-lint.mjs"
+    "tale": "src/tale.mjs",
+    "tale-lint": "src/tale.mjs"
   },
   "files": [
     "skill/",
@@ -13,9 +14,12 @@
     "README.md"
   ],
   "scripts": {
-    "lint": "node src/tale-lint.mjs",
-    "lint:tale": "node src/tale-lint.mjs",
-    "format": "node src/tale-lint.mjs --fix",
+    "tale": "node src/tale.mjs",
+    "tale:fix": "node src/tale.mjs --fix",
+    "lint": "node src/tale.mjs",
+    "lint:tale": "node src/tale.mjs",
+    "format": "node src/tale.mjs --fix",
+    "format:tale": "node src/tale.mjs --fix",
     "test": "node skill/scripts/test-linter.mjs"
   },
   "keywords": [
@@ -26,7 +30,7 @@
     "linter",
     "governance"
   ],
-  "author": "Wiltermood",
+  "author": "BicycleButler",
   "license": "MIT",
   "repository": {
     "type": "git",
