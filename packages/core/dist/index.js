@@ -228146,7 +228146,9 @@ Options:
       console.log(`
 ============================================================`);
       console.log(`  STUBS RUN \u2014 Unified Repository Pipeline`);
-      console.log(`  Mode: ${isCheck ? "Read-Only Audit (--check)" : "Auto-Remediation (Default)"}`);
+      console.log(
+        `  Mode: ${isCheck ? "Read-Only Audit (--check)" : "Auto-Remediation (Default)"}`
+      );
       console.log(`============================================================
 `);
     }
@@ -228189,9 +228191,9 @@ Options:
       console.log(`
 [2/5] Architecture Context & Domain Mapping...`);
     }
-    let mapPassed = true;
+    let mapPassed;
     let domainsCount = 0;
-    let mapDetails = "";
+    let mapDetails;
     try {
       const architectureDir = path29.join(process.cwd(), "knowledge", "architecture");
       const domainsDir = path29.join(architectureDir, "domains");
@@ -228268,10 +228270,10 @@ ${diagResult.mermaidCode}
       console.log(`
 [3/5] Sidecar Bi-directional Sanding...`);
     }
-    let sandPassed = true;
+    let sandPassed;
     let sandSyncedCount = 0;
     let sandConflictsCount = 0;
-    let sandDetails = "";
+    let sandDetails;
     try {
       const specsDir = config.paths?.specs_dir || "src";
       const sandEngine = new SandingEngine();
@@ -228308,10 +228310,10 @@ ${diagResult.mermaidCode}
       console.log(`
 [4/5] Architectural Linting (Hierarchy, Cycles, Parity)...`);
     }
-    let lintPassed = true;
+    let lintPassed;
     let lintViolationCount = 0;
-    let lintDetails = "";
-    let lintResultObj = null;
+    let lintDetails;
+    let lintResultObj;
     try {
       const lintEngine = new ArchLintEngine({ graphEngine });
       lintResultObj = await lintEngine.lintWorkspace({
@@ -228352,9 +228354,9 @@ ${diagResult.mermaidCode}
       console.log(`
 [5/5] TALE Technical English & Documentation Governance...`);
     }
-    let talePassed = true;
+    let talePassed;
     let taleViolationsRemaining = 0;
-    let taleDetails = "";
+    let taleDetails;
     let taleReports = [];
     const candidatePaths = [
       path29.resolve(__dirname, "../../tale/src/tale.mjs"),

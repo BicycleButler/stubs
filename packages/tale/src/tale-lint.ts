@@ -220,7 +220,7 @@ const NOUN_ING_EXCEPTIONS = new Set([
 export function calculateSTEWordCount(sentence: string): number {
   let text = sentence;
   text = text.replace(/"[^"]*"/g, ' QUOTED_TOKEN ');
-  text = text.replace(/(?<=^|[\s([{\<])'([^'\n]+)'(?=[\s)\]}>.,:;!?]|$)/g, ' QUOTED_TOKEN ');
+  text = text.replace(/(?<=^|[\s([<{])'([^'\n]+)'(?=[\s)\]}>.,:;!?]|$)/g, ' QUOTED_TOKEN ');
   text = text.replace(/\([^)]*\)/g, ' PAREN_TOKEN ');
   text = text.replace(
     /\b\d+(\.\d+)?\s*(mA|ms|s|min|h|mm|cm|m|km|kg|g|psi|V|A|Byte|MB|GB|KB|%|cents|USD)\b/gi,
@@ -755,14 +755,11 @@ export function lintAgentFirst(content: string): STEIssue[] {
   const issues: STEIssue[] = [];
   const lines = content.split('\n');
 
-  let inFrontmatter = false;
   let frontmatterEndLine = 0;
   if (lines.length > 0 && lines[0]?.trim() === '---') {
-    inFrontmatter = true;
     for (let i = 1; i < lines.length; i++) {
       if (lines[i]?.trim() === '---') {
         frontmatterEndLine = i + 1;
-        inFrontmatter = false;
         break;
       }
     }

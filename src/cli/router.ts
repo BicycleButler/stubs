@@ -812,7 +812,9 @@ Options:
     if (!isJson) {
       console.log(`\n============================================================`);
       console.log(`  STUBS RUN — Unified Repository Pipeline`);
-      console.log(`  Mode: ${isCheck ? 'Read-Only Audit (--check)' : 'Auto-Remediation (Default)'}`);
+      console.log(
+        `  Mode: ${isCheck ? 'Read-Only Audit (--check)' : 'Auto-Remediation (Default)'}`,
+      );
       console.log(`============================================================\n`);
     }
 
@@ -861,9 +863,9 @@ Options:
     if (!isJson) {
       console.log(`\n[2/5] Architecture Context & Domain Mapping...`);
     }
-    let mapPassed = true;
+    let mapPassed: boolean;
     let domainsCount = 0;
-    let mapDetails = '';
+    let mapDetails: string;
 
     try {
       const architectureDir = path.join(process.cwd(), 'knowledge', 'architecture');
@@ -947,10 +949,10 @@ ${diagResult.mermaidCode}
     if (!isJson) {
       console.log(`\n[3/5] Sidecar Bi-directional Sanding...`);
     }
-    let sandPassed = true;
+    let sandPassed: boolean;
     let sandSyncedCount = 0;
     let sandConflictsCount = 0;
-    let sandDetails = '';
+    let sandDetails: string;
 
     try {
       const specsDir = config.paths?.specs_dir || 'src';
@@ -990,10 +992,10 @@ ${diagResult.mermaidCode}
     if (!isJson) {
       console.log(`\n[4/5] Architectural Linting (Hierarchy, Cycles, Parity)...`);
     }
-    let lintPassed = true;
+    let lintPassed: boolean;
     let lintViolationCount = 0;
-    let lintDetails = '';
-    let lintResultObj: ArchLintResult | null = null;
+    let lintDetails: string;
+    let lintResultObj: ArchLintResult | null;
 
     try {
       const lintEngine = new ArchLintEngine({ graphEngine });
@@ -1038,9 +1040,9 @@ ${diagResult.mermaidCode}
       console.log(`\n[5/5] TALE Technical English & Documentation Governance...`);
     }
 
-    let talePassed = true;
+    let talePassed: boolean;
     let taleViolationsRemaining = 0;
-    let taleDetails = '';
+    let taleDetails: string;
     let taleReports: any[] = [];
 
     const candidatePaths = [

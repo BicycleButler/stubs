@@ -20,7 +20,7 @@ remediationScripts.forEach((scriptName) => {
     console.log(`▶ Running ${scriptName}...`);
     try {
       execSync(`npx tsx "${scriptPath}" "${TARGET_DIR}"`, { stdio: 'inherit' });
-    } catch (err) {
+    } catch {
       console.error(`⚠️ Warning: Error executing ${scriptName}`);
     }
     console.log('');

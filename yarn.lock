@@ -270,6 +270,32 @@
   resolved "https://registry.npmjs.org/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
+"@bicyclebutler/design@file:/Users/lappier/code/projects/stubs/packages/design":
+  version "1.4.1"
+  resolved "file:packages/design"
+
+"@bicyclebutler/stubs-core@file:/Users/lappier/code/projects/stubs/packages/core":
+  version "1.4.1"
+  resolved "file:packages/core"
+  dependencies:
+    esbuild "^0.24.0"
+    js-yaml "^5.2.3"
+    sql.js "^1.14.1"
+    typescript "^5.5.4"
+  optionalDependencies:
+    sqlite3 "^6.0.1"
+
+"@bicyclebutler/stubs@file:/Users/lappier/code/projects/stubs/packages/cli":
+  version "1.4.1"
+  resolved "file:packages/cli"
+  dependencies:
+    "@clack/prompts" "^0.9.1"
+    picocolors "^1.1.1"
+
+"@bicyclebutler/tale@file:/Users/lappier/code/projects/stubs/packages/tale":
+  version "1.4.1"
+  resolved "file:packages/tale"
+
 "@clack/core@0.4.1":
   version "0.4.1"
   resolved "https://registry.npmjs.org/@clack/core/-/core-0.4.1.tgz"
@@ -922,32 +948,6 @@
   version "1.12.2"
   resolved "https://registry.npmjs.org/@unrs/resolver-binding-darwin-arm64/-/resolver-binding-darwin-arm64-1.12.2.tgz"
   integrity sha512-u9DiNT1auQMO20A9SyTuG3wUgQWB9Z7KjAg0uFuCDR1FsAY8A0CG2S6JpHS1xwm/w1G08bjXZDcyOCjv1WAm2w==
-
-"@wiltermood/design@file:/Users/lappier/code/projects/stubs/packages/design":
-  version "1.0.0"
-  resolved "file:packages/design"
-
-"@wiltermood/stubs-core@file:/Users/lappier/code/projects/stubs/packages/core":
-  version "1.2.4"
-  resolved "file:packages/core"
-  dependencies:
-    esbuild "^0.24.0"
-    js-yaml "^5.2.3"
-    sql.js "^1.14.1"
-    typescript "^5.5.4"
-  optionalDependencies:
-    sqlite3 "^6.0.1"
-
-"@wiltermood/stubs@file:/Users/lappier/code/projects/stubs/packages/cli":
-  version "1.3.0"
-  resolved "file:packages/cli"
-  dependencies:
-    "@clack/prompts" "^0.9.1"
-    picocolors "^1.1.1"
-
-"@wiltermood/tale@file:/Users/lappier/code/projects/stubs/packages/tale":
-  version "1.0.0"
-  resolved "file:packages/tale"
 
 abbrev@^4.0.0:
   version "4.0.0"

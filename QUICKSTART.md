@@ -126,54 +126,48 @@ stubs materialize src/auth.ts.md
 # 4. Sand: Reconcile AST drift automatically whenever code or spec edits occur
 stubs sand
 
-# 5. Audit: Audit workspace health, cycles, and God-node hotspots
+# 5. Sand & Audit: Reconcile drift, check architecture health, or execute the full unified pipeline
 stubs audit --hotspots --cycles
+stubs run
 ```
 
-### Domain Mapping (CLI-only)
+### Domain Mapping & Architecture Discovery
 
-We provide a CLI-driven workflow that automatically creates domain maps from the codebase:
+`stubs` provides native commands to discover domains, generate prerequisite domain maps, synthesize root context maps, and produce visual Mermaid diagrams:
 
-1. **Install the Stubs CLI** (once per repo):
+1. **Synthesize Full Architecture Map Hierarchy:**
 
 ```bash
-pnpm add -D github:BicycleButler/stubs
-# or: npm i -D github:BicycleButler/stubs
+# Refreshes prerequisite domain maps + root context-map.md and visual-map.md:
+npx stubs map --generate
 ```
 
-Ensure `pnpm-workspace.yaml` (or root `package.json`) has:
-
-```yaml
-allowBuilds:
-  stubs@git+https://github.com/BicycleButler/stubs.git#15795266c6ca874580ad0305efaf33396cd5f790: true
-```
-
-2. **Run the discovery script** (creates domain maps):
+2. **Generate Prerequisite Domain Maps Only:**
 
 ```bash
-./scripts/create-domain-maps.sh
+# Discovers codebase domains and writes knowledge/architecture/domains/*-domain-map.md:
+npx stubs map --domains
 ```
 
-Writes OKF front-matter + section placeholders to `knowledge/architecture/domains/*.md` using the SQLite graph (`file_path` column), `subsystem-index` type, and adds `description`.
+3. **Generate or Refresh a Specific Domain Map:**
 
-3. **Fill in the descriptive sections** (agent/LLM task):
+```bash
+npx stubs map --domain <name>
+```
 
-Edit each `*-domain-map.md` to replace the placeholders for:
-- `## Key concepts`
-- `## Decisions (locked)`
-- `## Open questions (frontier)`
-- `## Implementation plan`
+4. **Synthesize Visual Mermaid Architecture Diagram:**
 
-Then run the grill to lock decisions and record outcomes:
+```bash
+# Writes visual Mermaid flowchart to knowledge/architecture/visual-map.md:
+npx stubs map --visual
+```
+
+5. **Grill and Lock Decisions:**
+
+Run the interactive grill engine on any domain map or concept spec to stress-test decisions:
 
 ```bash
 npx stubs grill knowledge/architecture/domains/<domain>-domain-map.md
-```
-
-4. **Validate** (optional, for index sidecars):
-
-```bash
-npx stubs validate knowledge/architecture/domains/*.md
 ```
 
 ---
@@ -239,12 +233,15 @@ The MCP surface exposes two high-impact tools (`stubs_query` and `stubs_scan`), 
 
 | Command                               | Description                                                                                                                      |
 | :------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------- |
+| **`run`**, **`check`** `[options]`    | **Primary Consolidated Pipeline:** Executes scan, domain map generation, sidecar sanding, arch lint, and TALE in one pass (`--check`, `--json`). |
 | **`query`** `[query]`                 | **Primary Intelligence Entrypoint:** Progressive disclosure & GraphRAG (`map:`, `stub:`, `explain:`, `path:`, `blast:`, `pkg:`). |
+| **`pre-flight`** `<target>`           | Runs pre-execution safety checks: blast guard, autonomy check, tiered context, and edit order (`--guard`, `--context`, `--order`). |
 | **`mcp`**                             | Starts JSON-RPC 2.0 Model Context Protocol stdio server for IDE agents (`stubs_query`, `stubs_scan`).                            |
 | **`init`**                            | Initializes `.stubs/config.json`, template molds, and agent skill configurations.                                                |
 | **`scan`**, **`index`** `[dir]`       | Scans source code, extracts AST symbols/imports, and populates the SQLite graph.                                                 |
-| **`map`** `[--scaffold]`              | Scaffolds or validates architectural context maps (`knowledge/architecture/context-map.md`).                                     |
+| **`map`** `[options]`                 | Generates, audits, or scaffolds domain maps and root context maps (`--generate`, `--domains`, `--domain <name>`, `--visual`, `--scaffold`). |
 | **`tree`** `[--status\|--graph]`      | Visualizes ASCII/Unicode file tree annotated with lifecycle phase and node degree centrality.                                    |
+| **`tale`**, **`tale:fix`** `[options]`| Audits and auto-remediates documentation and code comments against ASD-STE100 Issue 9 and ADR-001 (`--fix`, `--json`).          |
 | **`export`** `<obsidian\|wiki>`       | Exports architecture graph to an Obsidian Vault (with `[[wikilinks]]`) or Wikipedia-style portal.                                |
 | **`concept`** `<action>`              | Manages concept blueprints (`new <title>`, `scaffold <doc>`, `list`).                                                            |
 | **`phase`** `<action>`                | Manages 5-phase lifecycle (`status [file]`, `check <file>`, `advance <file> [phase]`).                                           |

@@ -96,10 +96,14 @@ console.log('Running TALE Linter Test Suite...\n');
 
 // 8. Code Comment String Literal False Positive Test
 {
-  const code = 'const url = "https://example.com//not-a-comment";\n// This is an ensure comment\nconst x = 1;';
+  const code =
+    'const url = "https://example.com//not-a-comment";\n// This is an ensure comment\nconst x = 1;';
   const sentences = extractCodeComments(code);
   assert.strictEqual(sentences.length, 1, `Expected 1 comment sentence, got ${sentences.length}`);
-  assert.ok(sentences[0].text.includes('ensure comment'), 'Extracted comment should be actual comment');
+  assert.ok(
+    sentences[0].text.includes('ensure comment'),
+    'Extracted comment should be actual comment',
+  );
   console.log("✓ Test 8 Passed: String literals containing '//' are not treated as comments.");
 }
 
@@ -108,18 +112,23 @@ console.log('Running TALE Linter Test Suite...\n');
   const input = "You can't utilize this e.g. script. Ensure it works.";
   const { fixed, fixCount } = autoFixContent(input, false, false);
   assert.ok(fixCount >= 3, `Expected at least 3 fixes, got ${fixCount}`);
-  assert.ok(fixed.includes('cannot'), 'can\'t replaced with cannot');
+  assert.ok(fixed.includes('cannot'), "can't replaced with cannot");
   assert.ok(fixed.includes('use'), 'utilize replaced with use');
   assert.ok(fixed.includes('for example,'), 'e.g. replaced with for example,');
   assert.ok(fixed.includes('Make sure that'), 'Ensure replaced with Make sure that');
-  console.log('✓ Test 9 Passed: Auto-fix correctly remediates contractions, Latin, and safe terms.');
+  console.log(
+    '✓ Test 9 Passed: Auto-fix correctly remediates contractions, Latin, and safe terms.',
+  );
 }
 
 // 10. ADR-001 Multi-byte Emoji Detection & Auto-fix Test
 {
   const docWithEmoji = '# Title 🚀\n\nThis is a test 🛠️ for emojis.';
   const issues = lintAgentFirst(docWithEmoji);
-  assert.ok(issues.some((i) => i.rule.includes('ADR-001 Rule 1')), 'Emoji issue should be detected');
+  assert.ok(
+    issues.some((i) => i.rule.includes('ADR-001 Rule 1')),
+    'Emoji issue should be detected',
+  );
   const { fixed, fixCount } = autoFixContent(docWithEmoji, true, false);
   assert.ok(fixCount >= 2, `Expected at least 2 fixes, got ${fixCount}`);
   assert.ok(!fixed.includes('🚀'), 'Rocket emoji removed');
@@ -131,19 +140,27 @@ console.log('Running TALE Linter Test Suite...\n');
 {
   const docWithLink = 'See the [API Specification](docs/api.md) for details.';
   const issues = lintAgentFirst(docWithLink);
-  assert.ok(issues.some((i) => i.rule.includes('ADR-001 Rule 3')), 'Redundant link should be detected');
+  assert.ok(
+    issues.some((i) => i.rule.includes('ADR-001 Rule 3')),
+    'Redundant link should be detected',
+  );
   const { fixed, fixCount } = autoFixContent(docWithLink, true, false);
   assert.ok(fixCount >= 1, `Expected link fix, got ${fixCount}`);
   assert.ok(fixed.includes('[docs/api.md]'), 'Link normalized to direct anchor');
   assert.ok(!fixed.includes('[API Specification]'), 'Redundant label removed');
-  console.log('✓ Test 11 Passed: ADR-001 redundant links detected and normalized to direct anchors.');
+  console.log(
+    '✓ Test 11 Passed: ADR-001 redundant links detected and normalized to direct anchors.',
+  );
 }
 
 // 12. ADR-001 Consecutive Blank Lines Detection & Auto-fix Test
 {
   const docWithBlanks = '# Title\n\n\n\nParagraph after three blank lines.';
   const issues = lintAgentFirst(docWithBlanks);
-  assert.ok(issues.some((i) => i.rule.includes('ADR-001 Rule 5')), 'Blank line issue detected');
+  assert.ok(
+    issues.some((i) => i.rule.includes('ADR-001 Rule 5')),
+    'Blank line issue detected',
+  );
   const { fixed, fixCount } = autoFixContent(docWithBlanks, true, false);
   assert.ok(fixCount >= 1, `Expected blank line fix, got ${fixCount}`);
   assert.ok(!fixed.includes('\n\n\n'), 'Consecutive blank lines collapsed');
@@ -154,7 +171,10 @@ console.log('Running TALE Linter Test Suite...\n');
 {
   const tableContent = '| Name | Description |\n| :--- | :--- |\n| Val  | Info        |';
   const issues = lintAgentFirst(tableContent);
-  assert.ok(issues.some((i) => i.rule.includes('ADR-001 Rule 2')), 'Table issue detected');
+  assert.ok(
+    issues.some((i) => i.rule.includes('ADR-001 Rule 2')),
+    'Table issue detected',
+  );
   console.log('✓ Test 13 Passed: ADR-001 markdown table delimiter detected.');
 }
 
@@ -162,16 +182,28 @@ console.log('Running TALE Linter Test Suite...\n');
 {
   const content = '```mermaid\ngraph TD\nA --> B\n```';
   const issues = lintAgentFirst(content);
-  assert.ok(issues.some((i) => i.rule.includes('ADR-001 Rule 7')), 'Expected mermaid issue');
+  assert.ok(
+    issues.some((i) => i.rule.includes('ADR-001 Rule 7')),
+    'Expected mermaid issue',
+  );
   console.log('✓ Test 14 Passed: ADR-001 embedded Mermaid diagram detected.');
 }
 
 // 15. ADR-001 File Classification & Glob Matching Test
 {
   assert.ok(matchesGlobPattern('AGENTS.md', 'AGENTS.md'), 'AGENTS.md must match');
-  assert.ok(matchesGlobPattern('knowledge/architecture/context-map.md', '**/*context*'), 'context file must match');
-  assert.ok(!isAgentFirstFile('README.md', '', DEFAULT_TALE_CONFIG), 'README.md is excluded from agent-first');
-  assert.ok(!isAgentFirstFile('QUICKSTART.md', '', DEFAULT_TALE_CONFIG), 'QUICKSTART.md is excluded from agent-first');
+  assert.ok(
+    matchesGlobPattern('knowledge/architecture/context-map.md', '**/*context*'),
+    'context file must match',
+  );
+  assert.ok(
+    !isAgentFirstFile('README.md', '', DEFAULT_TALE_CONFIG),
+    'README.md is excluded from agent-first',
+  );
+  assert.ok(
+    !isAgentFirstFile('QUICKSTART.md', '', DEFAULT_TALE_CONFIG),
+    'QUICKSTART.md is excluded from agent-first',
+  );
   console.log('✓ Test 15 Passed: ADR-001 file classification and glob pattern matching verified.');
 }
 
@@ -179,23 +211,30 @@ console.log('Running TALE Linter Test Suite...\n');
 {
   const asciiBox = '```text\n+---+\n| A |\n+---+\n```';
   const issues1 = lintAgentFirst(asciiBox);
-  assert.ok(issues1.some((i) => i.rule.includes('ADR-001 Rule 1') && i.message.includes('ASCII art')));
+  assert.ok(
+    issues1.some((i) => i.rule.includes('ADR-001 Rule 1') && i.message.includes('ASCII art')),
+  );
 
   const unicodeBox = '│ Box text │';
   const issues2 = lintAgentFirst(unicodeBox);
-  assert.ok(issues2.some((i) => i.rule.includes('ADR-001 Rule 1') && i.message.includes('box-drawing')));
+  assert.ok(
+    issues2.some((i) => i.rule.includes('ADR-001 Rule 1') && i.message.includes('box-drawing')),
+  );
   console.log('✓ Test 16 Passed: ADR-001 ASCII art and Unicode box drawing detected.');
 }
 
 // 17. ADR-001 Markdown Table Auto-Fix to Compact Records Test
 {
-  const tableContent = '# Topic Table\n\n| Feature | Status |\n| :--- | :--- |\n| Router | Active |\n| Compiler | Stable |\n';
+  const tableContent =
+    '# Topic Table\n\n| Feature | Status |\n| :--- | :--- |\n| Router | Active |\n| Compiler | Stable |\n';
   const { fixed, fixCount } = autoFixContent(tableContent, true, false);
   assert.ok(fixCount >= 1, 'Expected table conversion fixCount');
   assert.ok(!fixed.includes('| :--- |'), 'Alignment delimiter row removed');
   assert.ok(fixed.includes('- Feature | Status'), 'Header converted to compact pipe record');
   assert.ok(fixed.includes('- Router | Active'), 'Row converted to compact pipe record');
-  console.log('✓ Test 17 Passed: ADR-001 Markdown table auto-fix converts to compact pipe records.');
+  console.log(
+    '✓ Test 17 Passed: ADR-001 Markdown table auto-fix converts to compact pipe records.',
+  );
 }
 
 // 18. ADR-001 Decorative Divider Rule Auto-Fix Removal Test
@@ -203,13 +242,17 @@ console.log('Running TALE Linter Test Suite...\n');
   const docWithDividers = '---\ntitle: Doc\n---\n\nSection 1\n\n---\n\nSection 2';
   const { fixed } = autoFixContent(docWithDividers, true, false);
   assert.ok(fixed.startsWith('---\ntitle: Doc\n---'), 'Frontmatter header must be preserved');
-  assert.ok(!fixed.slice(20).includes('---'), 'Decorative divider rule outside frontmatter removed');
+  assert.ok(
+    !fixed.slice(20).includes('---'),
+    'Decorative divider rule outside frontmatter removed',
+  );
   console.log('✓ Test 18 Passed: ADR-001 decorative divider rules removed outside frontmatter.');
 }
 
 // 19. ADR-001 Unicode Box-Drawing Frame Auto-Fix Test
 {
-  const boxContent = '```\n┌──────────────────────────┐\n│ [ Active Tab ] Idle Tab  │\n└──────────────────────────┘\n├─► Option A\n└─► Option B\n```';
+  const boxContent =
+    '```\n┌──────────────────────────┐\n│ [ Active Tab ] Idle Tab  │\n└──────────────────────────┘\n├─► Option A\n└─► Option B\n```';
   const { fixed, fixCount } = autoFixContent(boxContent, true, false);
   assert.ok(fixCount >= 1, 'Expected box cleanup fixCount');
   assert.ok(!fixed.includes('┌'), 'Top box border removed');
@@ -221,7 +264,8 @@ console.log('Running TALE Linter Test Suite...\n');
 
 // 20. Prose Semicolon Auto-Fix to Periods Test
 {
-  const proseWithSemi = 'Semicolons are prohibited; always split thoughts into separate sentences; finally verify.';
+  const proseWithSemi =
+    'Semicolons are prohibited; always split thoughts into separate sentences; finally verify.';
   const { text: fixedSemi, fixCount } = fixProseSemicolons(proseWithSemi);
   assert.strictEqual(fixCount, 2, `Expected 2 semicolon fixes, got ${fixCount}`);
   assert.strictEqual(
@@ -230,13 +274,19 @@ console.log('Running TALE Linter Test Suite...\n');
   );
 
   // Entities, code spans, URLs must be preserved
-  const complexProse = 'Use &amp; in XML; run `const a = 1;` safely; see https://example.com/test?a=1;b=2 for details.';
+  const complexProse =
+    'Use &amp; in XML; run `const a = 1;` safely; see https://example.com/test?a=1;b=2 for details.';
   const { text: complexFixed } = fixProseSemicolons(complexProse);
   assert.ok(complexFixed.includes('&amp;'), 'HTML entity preserved');
   assert.ok(complexFixed.includes('`const a = 1;`'), 'Code span preserved');
   assert.ok(complexFixed.includes('https://example.com/test?a=1;b=2'), 'URL preserved');
-  assert.ok(complexFixed.includes('Run `const a = 1;` safely. See https'), 'Prose semicolons converted');
-  console.log('✓ Test 20 Passed: Prose semicolon auto-fix converts to periods and preserves code/entities/URLs.');
+  assert.ok(
+    complexFixed.includes('Run `const a = 1;` safely. See https'),
+    'Prose semicolons converted',
+  );
+  console.log(
+    '✓ Test 20 Passed: Prose semicolon auto-fix converts to periods and preserves code/entities/URLs.',
+  );
 }
 
 // 21. Code Comments Auto-Fix Safety Test (Executable code untouched)
@@ -254,11 +304,22 @@ export function verifyUser(token: string): boolean {
 `;
   const { fixed, fixCount } = formatCodeComments(tsCode);
   assert.ok(fixCount >= 3, `Expected at least 3 comment fixes, got ${fixCount}`);
-  assert.ok(fixed.includes('// Check the user credentials. Make sure that the token exists'), 'Single-line comment fixed');
-  assert.ok(fixed.includes('/* The system must do the validation. Return result */'), 'Multi-line comment fixed');
-  assert.ok(fixed.includes('const query = "SELECT * FROM users WHERE token = \'xyz\';"'), 'Code string literal untouched');
-  assert.ok(fixed.includes('import * as fs from \'fs\';'), 'Code import semicolon untouched');
-  console.log('✓ Test 21 Passed: Code comment formatting remediates comments without touching executable code.');
+  assert.ok(
+    fixed.includes('// Check the user credentials. Make sure that the token exists'),
+    'Single-line comment fixed',
+  );
+  assert.ok(
+    fixed.includes('/* The system must do the validation. Return result */'),
+    'Multi-line comment fixed',
+  );
+  assert.ok(
+    fixed.includes('const query = "SELECT * FROM users WHERE token = \'xyz\';"'),
+    'Code string literal untouched',
+  );
+  assert.ok(fixed.includes("import * as fs from 'fs';"), 'Code import semicolon untouched');
+  console.log(
+    '✓ Test 21 Passed: Code comment formatting remediates comments without touching executable code.',
+  );
 }
 
 // 22. Target File Exclusion Test (README, QUICKSTART, tests/temp_*)
@@ -267,9 +328,14 @@ export function verifyUser(token: string): boolean {
   assert.ok(isPathExcluded('QUICKSTART.md'), 'QUICKSTART.md must be excluded');
   assert.ok(isPathExcluded('packages/cli/README.md'), 'packages/cli/README.md must be excluded');
   assert.ok(isPathExcluded('tests/temp_install_test_abc/test.md'), 'tests/temp_* must be excluded');
-  assert.ok(!isPathExcluded('knowledge/architecture/context-map.md'), 'context-map.md must NOT be excluded');
+  assert.ok(
+    !isPathExcluded('knowledge/architecture/context-map.md'),
+    'context-map.md must NOT be excluded',
+  );
   assert.ok(!isPathExcluded('packages/cli/src/index.ts'), 'index.ts must NOT be excluded');
-  console.log('✓ Test 22 Passed: Default exclusions correctly ignore README.md, QUICKSTART.md, and test artifacts.');
+  console.log(
+    '✓ Test 22 Passed: Default exclusions correctly ignore README.md, QUICKSTART.md, and test artifacts.',
+  );
 }
 
 // 23. Expanded Safe Word Auto-Fixes Test
@@ -278,7 +344,9 @@ export function verifyUser(token: string): boolean {
   const { fixed } = autoFixContent(sample, false, false);
   assert.ok(fixed.includes('client must do the task'), 'shall perform -> must do');
   assert.ok(fixed.includes('It must replace each part'), 'should portion -> must part');
-  console.log('✓ Test 23 Passed: Expanded safe words (shall, should, perform, portion) remediated.');
+  console.log(
+    '✓ Test 23 Passed: Expanded safe words (shall, should, perform, portion) remediated.',
+  );
 }
 
 // 24. Trailing Whitespace and Code Block Protection in Markdown Test

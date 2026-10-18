@@ -15,15 +15,16 @@ module.exports = tseslint.config(
   },
   {
     ignores: [
-      'dist/',
-      '.agents/',
-      '.stubs/',
-      'node_modules/',
+      '**/dist/**',
+      '**/.agents/**',
+      '**/.stubs/**',
+      '**/node_modules/**',
       'eslint.config.js',
       'jest.config.js',
       '**/*.js',
       '**/*.cjs',
-      'public/',
+      '**/*.mjs',
+      '**/public/**',
     ],
   },
 );

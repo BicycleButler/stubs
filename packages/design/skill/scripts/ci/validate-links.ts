@@ -22,7 +22,9 @@ async function getFiles(
         files.push(fullPath);
       }
     }
-  } catch (e) {}
+  } catch {
+    /* ignore unreadable or missing directories */
+  }
   return files;
 }
 

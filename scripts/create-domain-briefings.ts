@@ -2,20 +2,29 @@
 // scripts/create-domain-briefings.ts
 // Generates domain briefings and stub sidecars from the stubs AST graph.
 // Usage: tsx scripts/create-domain-briefings.ts [--repo <path>] [--overwrite]
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
-import { join, dirname } from 'path';
+import { existsSync, mkdirSync, writeFileSync } from 'fs';
+import { join } from 'path';
 import { execFile } from 'child_process';
 
-function runSqlite3(dbFile: string, sql: string): Promise<any[]> {
+function runSqlite3(dbFile: string, sql: string, params: (string | number)[] = []): Promise<any[]> {
+  let formattedSql = sql;
+  for (const param of params) {
+    const escaped =
+      typeof param === 'number' ? String(param) : `'${String(param).replace(/'/g, "''")}'`;
+    formattedSql = formattedSql.replace('?', escaped);
+  }
   return new Promise((resolve, reject) => {
-    execFile('sqlite3', [dbFile, sql], (err, stdout, stderr) => {
+    execFile('sqlite3', [dbFile, formattedSql], (err, stdout, _stderr) => {
       if (err) {
         reject(err);
         return;
       }
       // Parse output as lines, each line is a row separated by | (default separator)
-      const lines = stdout.trim().split('\n').filter(line => line.length > 0);
-      const rows = lines.map(line => line.split('|').map(cell => cell.trim()));
+      const lines = stdout
+        .trim()
+        .split('\n')
+        .filter((line) => line.length > 0);
+      const rows = lines.map((line) => line.split('|').map((cell) => cell.trim()));
       resolve(rows);
     });
   });
@@ -23,7 +32,7 @@ function runSqlite3(dbFile: string, sql: string): Promise<any[]> {
 
 async function runCommand(cmd: string, args: string[] = []): Promise<string> {
   return new Promise((resolve, reject) => {
-    execFile(cmd, args, (err, stdout, stderr) => {
+    execFile(cmd, args, (err, stdout, _stderr) => {
       if (err) {
         reject(err);
         return;
@@ -55,13 +64,16 @@ async function main() {
   }
 
   // Get distinct domain prefixes (first two path components) from graph_nodes
-  const prefixRows = await runSqlite3(graphPath, `
+  const prefixRows = await runSqlite3(
+    graphPath,
+    `
     SELECT DISTINCT 
       substr(file_path, 1, instr(file_path, '/') + 
         instr(substr(file_path, instr(file_path, '/') + 1), '/') - 1) as domain_prefix
     FROM graph_nodes
     WHERE file_path LIKE 'apps/%' OR file_path LIKE 'packages/%'
-  `);
+  `,
+  );
   const domainPrefixes: string[] = [];
   for (const row of prefixRows) {
     if (row[0]) domainPrefixes.push(row[0]);
@@ -86,36 +98,44 @@ async function main() {
     console.log(`🔧 Processing domain: ${prefix}`);
 
     // Get nodes for this domain
-    const nodesRows = await runSqlite3(graphPath, `
+    const nodesRows = await runSqlite3(
+      graphPath,
+      `
       SELECT id, file_path, kind, symbol_name
       FROM graph_nodes
       WHERE file_path LIKE ?
-    `, [prefix + '%']);
+    `,
+      [prefix + '%'],
+    );
     const nodes = nodesRows.map((r: any[]) => ({
       id: r[0],
       file_path: r[1],
       kind: r[2],
-      symbol_name: r[3]
+      symbol_name: r[3],
     }));
     if (nodes.length === 0) {
       console.log(`⚠️  No nodes found for ${prefix}, skipping`);
       continue;
     }
 
-    const nodeMap = new Map(nodes.map(n => [n.id, n]));
+    const nodeMap = new Map(nodes.map((n) => [n.id, n]));
 
     // Get edges within this domain
-    const edgesRows = await runSqlite3(graphPath, `
+    const edgesRows = await runSqlite3(
+      graphPath,
+      `
       SELECT ge.source_id, ge.target_id, ge.relation
       FROM graph_edges ge
       JOIN graph_nodes gn_src ON ge.source_id = gn_src.id
       JOIN graph_nodes gn_tgt ON ge.target_id = gn_tgt.id
       WHERE gn_src.file_path LIKE ? AND gn_tgt.file_path LIKE ?
-    `, [prefix + '%', prefix + '%']);
+    `,
+      [prefix + '%', prefix + '%'],
+    );
     const edges = edgesRows.map((r: any[]) => ({
       source_id: r[0],
       target_id: r[1],
-      relation: r[2]
+      relation: r[2],
     }));
 
     // Compute degree
@@ -127,12 +147,12 @@ async function main() {
 
     // Top 3 hub nodes by degree
     const hubNodes = nodes
-      .map(n => ({ node: n, degree: degreeMap.get(n.id) || 0 }))
+      .map((n) => ({ node: n, degree: degreeMap.get(n.id) || 0 }))
       .sort((a, b) => b.degree - a.degree)
       .slice(0, 3)
-      .map(item => item.node);
+      .map((item) => item.node);
 
-    const members = nodes.map(n => n.file_path);
+    const members = nodes.map((n) => n.file_path);
 
     const imports: { source: string; target: string }[] = [];
     const exports: { source: string; target: string }[] = [];
@@ -153,13 +173,16 @@ async function main() {
     // Generate mermaid diagram (subset)
     const mermaidLines = ['graph TD'];
     const added = new Set<string>();
-    function addNode(filePath: string) {
+    const addNode = (filePath: string) => {
       if (!added.has(filePath)) {
         added.add(filePath);
-        const lastPart = filePath.split('/').pop()!.replace(/\.[^/.]+$/, '');
+        const lastPart = filePath
+          .split('/')
+          .pop()!
+          .replace(/\.[^/.]+$/, '');
         mermaidLines.push(`    ${JSON.stringify(filePath)}[${lastPart}]`);
       }
-    }
+    };
     for (const c of calls) {
       addNode(c.source);
       addNode(c.target);
@@ -181,11 +204,11 @@ async function main() {
     const briefing = {
       domain_id: safeId,
       root: prefix,
-      hub_nodes: hubNodes.map(n => ({
+      hub_nodes: hubNodes.map((n) => ({
         file: n.file_path,
         kind: n.kind,
         symbol: n.symbol_name,
-        degree: degreeMap.get(n.id) || 0
+        degree: degreeMap.get(n.id) || 0,
       })),
       members,
       imports,
@@ -203,8 +226,8 @@ async function main() {
         status: 'skeleton',
         tags: [safeId],
         compliance: 'standalone',
-        decision: 'pending'
-      }
+        decision: 'pending',
+      },
     };
 
     writeFileSync(briefingPath, JSON.stringify(briefing, null, 2));
@@ -271,7 +294,7 @@ and adapters that implement this capability.
   console.log('✅ Done.');
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error('❌ Error:', err);
   process.exit(1);
 });

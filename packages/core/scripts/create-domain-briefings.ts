@@ -2,13 +2,19 @@
 // scripts/create-domain-briefings.ts
 // Generates domain briefings and stub sidecars from the stubs AST graph.
 // Usage: tsx scripts/create-domain-briefings.ts [--repo <path>] [--overwrite]
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
-import { join, dirname } from 'path';
+import { existsSync, mkdirSync, writeFileSync } from 'fs';
+import { join } from 'path';
 import { execFile } from 'child_process';
 
-function runSqlite3(dbFile: string, sql: string): Promise<any[]> {
+function runSqlite3(dbFile: string, sql: string, params: (string | number)[] = []): Promise<any[]> {
+  let formattedSql = sql;
+  for (const param of params) {
+    const escaped =
+      typeof param === 'number' ? String(param) : `'${String(param).replace(/'/g, "''")}'`;
+    formattedSql = formattedSql.replace('?', escaped);
+  }
   return new Promise((resolve, reject) => {
-    execFile('sqlite3', [dbFile, sql], (err, stdout, stderr) => {
+    execFile('sqlite3', [dbFile, formattedSql], (err, stdout, _stderr) => {
       if (err) {
         reject(err);
         return;
@@ -26,7 +32,7 @@ function runSqlite3(dbFile: string, sql: string): Promise<any[]> {
 
 async function runCommand(cmd: string, args: string[] = []): Promise<string> {
   return new Promise((resolve, reject) => {
-    execFile(cmd, args, (err, stdout, stderr) => {
+    execFile(cmd, args, (err, stdout, _stderr) => {
       if (err) {
         reject(err);
         return;
@@ -167,7 +173,7 @@ async function main() {
     // Generate mermaid diagram (subset)
     const mermaidLines = ['graph TD'];
     const added = new Set<string>();
-    function addNode(filePath: string) {
+    const addNode = (filePath: string) => {
       if (!added.has(filePath)) {
         added.add(filePath);
         const lastPart = filePath
@@ -176,7 +182,7 @@ async function main() {
           .replace(/\.[^/.]+$/, '');
         mermaidLines.push(`    ${JSON.stringify(filePath)}[${lastPart}]`);
       }
-    }
+    };
     for (const c of calls) {
       addNode(c.source);
       addNode(c.target);

@@ -17,7 +17,7 @@
 
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import * as process from 'node:process';
+import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
 export const RECURRING_ERRORS = {
@@ -600,7 +600,10 @@ export function extractCodeComments(content) {
 
       for (let idx = 0; idx < lines.length; idx++) {
         const line = lines[idx];
-        const trimmed = line.replace(/^\s*\*+\s?/, '').replace(/\*+\s*$/, '').trim();
+        const trimmed = line
+          .replace(/^\s*\*+\s?/, '')
+          .replace(/\*+\s*$/, '')
+          .trim();
         if (
           trimmed &&
           !trimmed.startsWith('@') &&
@@ -1338,7 +1341,9 @@ export function formatCodeComments(codeContent) {
               continue;
             }
 
-            const tagMatch = body.match(/^(@\w+(?:\s+\{[^}]*\})?(?:\s+[a-zA-Z0-9_$]+)?\s*[-–—]?\s*)(.*)$/);
+            const tagMatch = body.match(
+              /^(@\w+(?:\s+\{[^}]*\})?(?:\s+[a-zA-Z0-9_$]+)?\s*[-–—]?\s*)(.*)$/,
+            );
             if (tagMatch) {
               const tagHeader = tagMatch[1];
               const tagDesc = tagMatch[2];
@@ -1532,7 +1537,10 @@ export function autoFixContent(content, isAgentFirst = false, isCode = false) {
       proseText = proseText.replace(redundantLinkRegex, (match, label, target) => {
         const cleanLabel = label.trim();
         const cleanTarget = target.trim();
-        if (cleanLabel !== cleanTarget && (cleanTarget.includes('/') || cleanTarget.includes('.'))) {
+        if (
+          cleanLabel !== cleanTarget &&
+          (cleanTarget.includes('/') || cleanTarget.includes('.'))
+        ) {
           fixCount++;
           return `[${cleanTarget}]`;
         }
@@ -1712,7 +1720,11 @@ export function collectFiles(
     const ext = path.extname(targetPath).toLowerCase();
     const isCode = CODE_EXTENSIONS.has(ext);
     const isDoc = DOC_EXTENSIONS.has(ext);
-    if ((mode === 'all' && (isCode || isDoc)) || (mode === 'code' && isCode) || (mode === 'docs' && isDoc)) {
+    if (
+      (mode === 'all' && (isCode || isDoc)) ||
+      (mode === 'code' && isCode) ||
+      (mode === 'docs' && isDoc)
+    ) {
       return [{ filePath: targetPath, isCode }];
     }
     return [];

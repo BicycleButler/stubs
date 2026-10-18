@@ -22,7 +22,11 @@ test('updateAgentsDocForTale on uninitialized repository', () => {
 test('updateAgentsDocForTale on existing lowercase agents.md', () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'installer-test-'));
   try {
-    fs.writeFileSync(path.join(tempDir, 'agents.md'), '# Existing Project\n\n## CLI Commands\n- Build: npm run build\n', 'utf-8');
+    fs.writeFileSync(
+      path.join(tempDir, 'agents.md'),
+      '# Existing Project\n\n## CLI Commands\n- Build: npm run build\n',
+      'utf-8',
+    );
     const success = updateAgentsDocForTale(tempDir);
     assert.strictEqual(success, true);
     const content = fs.readFileSync(path.join(tempDir, 'agents.md'), 'utf-8');
