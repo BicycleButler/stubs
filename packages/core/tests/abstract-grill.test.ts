@@ -2,7 +2,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { AbstractGrillEngine, AbstractGrillState } from '../src/grill/abstract-engine';
 import { CliRouter } from '../src/cli/router';
-import { parseOkfSpec } from '../src/parser/okf';
 
 describe('Abstract Grill Engine & /abstract-grill', () => {
   const tempFile = path.resolve(__dirname, 'test_abstract_concept.md');

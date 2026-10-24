@@ -76,7 +76,7 @@ describe('AgentsDocSynchronizer & ADR-001 Enforcement', () => {
       expect(content).toContain('# demo-repo — Agent Instructions');
       expect(content).toContain(STUBS_MANAGED_START);
       expect(content).toContain(STUBS_MANAGED_END);
-      expect(content).toContain('## Planning Hub & 5-Phase Lifecycle');
+      expect(content).not.toContain('Planning Hub');
       expect(content).toContain('## Architecture Context Maps — Read First');
       expect(content).toContain('## Architecture Graph & GraphRAG Intelligence');
       expect(content).toContain('## CLI Commands');
@@ -136,7 +136,8 @@ Contextloop orchestrator info here.
       // Verify Stubs block is wrapped in sentinels
       expect(updated).toContain(STUBS_MANAGED_START);
       expect(updated).toContain(STUBS_MANAGED_END);
-      expect(updated).toContain('## Planning Hub & 5-Phase Lifecycle');
+      expect(updated).not.toContain('Planning Hub');
+      expect(updated).toContain('## Architecture Context Maps — Read First');
       expect(updated).toContain('## Architecture Graph & GraphRAG Intelligence');
 
       // Verify ADR-001 compliance
@@ -159,7 +160,9 @@ Contextloop orchestrator info here.
       expect(updated).toContain('## Custom Post Section');
       expect(updated).toContain('Custom content preserved here.');
       expect(updated).not.toContain('Old Stubs Content');
-      expect(updated).toContain('## Planning Hub & 5-Phase Lifecycle');
+      expect(updated).not.toContain('Planning Hub');
+      expect(updated).toContain('## Architecture Context Maps — Read First');
+      expect(updated).toContain('## Architecture Graph & GraphRAG Intelligence');
 
       const violations = auditAdr001Compliance(updated);
       expect(violations).toHaveLength(0);
@@ -185,16 +188,14 @@ Contextloop orchestrator info here.
   });
 
   describe('syncAgentsDoc with Tale skill present', () => {
-    it('should include Tale CLI commands and ASD-STE100 instructions when Tale skill is detected', async () => {
+    it('should include Tale CLI commands and not include verbose section when Tale skill is detected', async () => {
       fs.mkdirSync(path.join(tempDir, '.agents/skills/tale'), { recursive: true });
       const result = await syncAgentsDoc(tempDir, { projectName: 'tale-repo' });
       const content = fs.readFileSync(result.filePath, 'utf8');
 
       expect(content).toContain('npx stubs tale');
       expect(content).toContain('npx stubs tale --fix');
-      expect(content).toContain('ASD-STE100 Technical English & Formatting (Tale)');
-      expect(content).toContain('Audit Language & Formatting');
-      expect(content).toContain('Auto-Remediate Violations');
+      expect(content).not.toContain('ASD-STE100 Technical English & Formatting (Tale)');
     });
   });
 });

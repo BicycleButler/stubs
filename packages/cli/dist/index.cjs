@@ -165,6 +165,7 @@ __export(index_exports, {
   getAvailableSkills: () => getAvailableSkills,
   installSkills: () => installSkills,
   registerMcpServer: () => registerMcpServer,
+  updateAgentsDoc: () => updateAgentsDoc,
   updateAgentsDocForTale: () => updateAgentsDocForTale
 });
 module.exports = __toCommonJS(index_exports);
@@ -837,28 +838,29 @@ function getRepositoryRoot() {
   return path.resolve(__dirname, "../../..");
 }
 function getAvailableSkills() {
-  const repoRoot2 = getRepositoryRoot();
+  const repoRoot = getRepositoryRoot();
   return {
     tale: {
       name: "tale",
       description: "ASD-STE100 Issue 9 Simplified Technical English rules and linter",
-      skillDir: path.join(repoRoot2, "packages/tale/skill"),
-      rulesDir: path.join(repoRoot2, "packages/tale/rules")
+      skillDir: path.join(repoRoot, "packages/tale/skill"),
+      rulesDir: path.join(repoRoot, "packages/tale/rules")
     },
     stubs: {
       name: "stubs",
       description: "Architecture-as-code planning and multi-language sidecar framework",
-      skillDir: path.join(repoRoot2, ".agents/skills/stubs"),
-      rulesDir: path.join(repoRoot2, "RULES.md")
+      skillDir: path.join(repoRoot, ".agents/skills/stubs"),
+      rulesDir: path.join(repoRoot, "RULES.md")
     },
     "abstract-grill": {
       name: "abstract-grill",
       description: "Stress-test architecture, abstractions, and deep modules with orthogonal paradigms",
-      skillDir: path.join(repoRoot2, ".agents/skills/abstract-grill")
+      skillDir: path.join(repoRoot, ".agents/skills/abstract-grill")
     }
   };
 }
 function installSkills(options) {
+  const repoRoot = getRepositoryRoot();
   const available = getAvailableSkills();
   const installed = [];
   const errors = [];
@@ -952,12 +954,105 @@ function installSkills(options) {
     } catch {
     }
   }
-  if (options.target === "local" && installed.includes("tale")) {
-    updateAgentsDocForTale(baseDir);
+  if (options.target === "local" && (installed.includes("stubs") || installed.includes("tale") || installed.includes("abstract-grill"))) {
+    updateAgentsDoc(baseDir);
   }
   return { installed, errors };
 }
-function updateAgentsDocForTale(targetDir) {
+function generateStubsInstructionBlock(targetDir, _projectName) {
+  let specsDir = "src";
+  const configPath = path.join(targetDir, ".stubs/config.json");
+  if (fs.existsSync(configPath)) {
+    try {
+      const cfg = JSON.parse(fs.readFileSync(configPath, "utf8"));
+      if (cfg.paths?.specs_dir) {
+        specsDir = cfg.paths.specs_dir;
+      }
+    } catch {
+    }
+  }
+  const lines = [];
+  lines.push("## Architecture Context Maps \u2014 Read First");
+  lines.push("");
+  lines.push("Agent entry point: knowledge/architecture/context-map.md");
+  lines.push("Repo ADRs: knowledge/architecture/ADR/");
+  lines.push(`Module specs: co-located \`*.ts.md\` sidecars in \`${specsDir}/\`.`);
+  lines.push("");
+  lines.push("## Architecture Graph & GraphRAG Intelligence");
+  lines.push("");
+  lines.push(
+    "AST dependency graph in `.stubs/graph.sqlite` with Louvain community detection, PageRank centrality, FTS5 BM25 hybrid search."
+  );
+  lines.push("");
+  lines.push(
+    '- Querying GraphRAG: `npx stubs query "<query>"` (preferred single call, 3-tier progressive disclosure):'
+  );
+  lines.push(
+    '  - `npx stubs query "map:"`: Level 0 Macro Map (subsystem communities, hubs, domains)'
+  );
+  lines.push(
+    '  - `npx stubs query "stub: <target>"`: Level 1 Interface Skeleton Stubs (stripped signatures, types, line links)'
+  );
+  lines.push(
+    '  - `npx stubs query "explain: <target>"`: Level 2 Symbol Profile (callers, callees, PageRank)'
+  );
+  lines.push('  - `npx stubs query "path: <A> to <B>"`: Level 2 Shortest dependency path chain');
+  lines.push(
+    '  - `npx stubs query "blast: <target>"`: Level 2 Downstream impact radius and dependents'
+  );
+  lines.push('  - `npx stubs query "pkg:<package> <query>"`: Monorepo package-scoped query');
+  lines.push(
+    '  - `npx stubs query "<concept>"`: Multi-hop token-budgeted GraphRAG context retrieval'
+  );
+  lines.push("- Model Context Protocol (MCP): connect through standard JSON-RPC 2.0 stdio:");
+  lines.push("  ```json");
+  lines.push("  {");
+  lines.push('    "mcpServers": {');
+  lines.push('      "stubs": {');
+  lines.push('        "command": "node",');
+  lines.push('        "args": [".agents/skills/stubs/dist/cli.cjs", "mcp"]');
+  lines.push("      }");
+  lines.push("    }");
+  lines.push("  }");
+  lines.push("  ```");
+  lines.push(
+    '  (or `"command": "npx", "args": ["stubs", "mcp"]`). Ultra-lean suite exposes `stubs_query` and `stubs_scan`.'
+  );
+  lines.push("- Monorepo & workspace boundary resolution:");
+  lines.push(
+    "  - Discovers package boundaries through `package.json` (`workspaces`), `pnpm-workspace.yaml`, `Cargo.toml` (`[workspace]`), `go.work`."
+  );
+  lines.push(
+    "  - Path aliases in `tsconfig.json` (`compilerOptions.paths`) and package exports map directly to canonical source files."
+  );
+  lines.push(
+    '  - Monorepo query prefix: `pkg:<package>` (for example, `npx stubs query "pkg:billing invoice"`).'
+  );
+  lines.push(
+    "- Automatic graph maintenance: auto-checks file mtime (<30ms) for 0% staleness. Refresh manually through `npx stubs scan`."
+  );
+  lines.push("");
+  lines.push("## CLI Commands");
+  lines.push("");
+  lines.push("- Scan & Index Code Graph: `npx stubs scan`");
+  lines.push('- Query GraphRAG Subgraph: `npx stubs query "<question>"`');
+  lines.push(
+    '- Unified Surgical Query: `npx stubs query "explain: <target>"` | `path: <A> to <B>` | `blast: <target>`'
+  );
+  lines.push("- Concrete Spec Grilling: `npx stubs grill <file.md>`");
+  lines.push("- Abstract Architecture Grilling: `npx stubs abstract-grill <file.md>`");
+  lines.push(
+    "- Architecture Mapping: `npx stubs map --generate` (refreshes prerequisite domain maps + root context-map.md)"
+  );
+  lines.push("- Domain Maps Only: `npx stubs map --domains` | `npx stubs map --domain <name>`");
+  lines.push("- Export Knowledge Graph: `npx stubs export <obsidian|wiki> [--out <dir>]`");
+  lines.push("- Start MCP Stdio Server: `npx stubs mcp`");
+  lines.push("- Install Assistant Rules: `npx stubs hook install`");
+  lines.push("- Audit ASD-STE100 Compliance: `npx stubs tale`");
+  lines.push("- Auto-Remediate Prose & Formatting: `npx stubs tale --fix`");
+  return lines.join("\n");
+}
+function updateAgentsDoc(targetDir) {
   try {
     let targetFileName = "AGENTS.md";
     let isNew = true;
@@ -972,52 +1067,77 @@ function updateAgentsDocForTale(targetDir) {
       }
     }
     const fullPath = path.join(targetDir, targetFileName);
-    const taleSection = [
-      "<!-- tale-instructions-start -->",
-      "## ASD-STE100 Technical English & Formatting (Tale)",
-      "",
-      "The repository enforces ASD-STE100 Issue 9 Simplified Technical English for documentation (*.md) and code comments (*.ts, *.js, and so on).",
-      "",
-      "- Audit Language & Formatting: `npx stubs tale` (or `npm run tale` / `npm run lint:tale`) \u2014 audits Markdown files and code comments across the workspace.",
-      "- Auto-Remediate Violations: `npx stubs tale --fix` (or `npm run tale:fix` / `npm run format:tale`) \u2014 fixes prose semicolons, contractions, Latin abbreviations, and safe vocabulary without changing executable code.",
-      "- File Scope & Exclusions: automatically skips build and test artifacts (`dist`, `node_modules`, `coverage`, `.stubs`), `.gitignore` paths, and strictly ignores `README.md` and `QUICKSTART.md`.",
-      "<!-- tale-instructions-end -->"
-    ].join("\n");
+    const stubsSection = generateStubsInstructionBlock(targetDir);
     if (isNew) {
-      const initialContent = `# Agent Instructions
+      let projectName = path.basename(targetDir);
+      try {
+        const pkgPath = path.join(targetDir, "package.json");
+        if (fs.existsSync(pkgPath)) {
+          projectName = JSON.parse(fs.readFileSync(pkgPath, "utf-8")).name || projectName;
+        }
+      } catch {
+      }
+      const initialContent = `# ${projectName} \u2014 Agent Instructions
 
-${taleSection}
+${stubsSection}
 `;
       fs.writeFileSync(fullPath, initialContent, "utf-8");
       return true;
     }
     let content = fs.readFileSync(fullPath, "utf-8");
-    if (content.includes("<!-- tale-instructions-start -->")) {
+    content = content.replace(
+      /\n*<!-- tale-instructions-start -->[\s\S]*?<!-- tale-instructions-end -->/g,
+      ""
+    );
+    content = content.replace(
+      /\n*## (?:ASD-STE100[^\n]*|TALE[^\n]*|Tale[^\n]*)[\s\S]*?(?=\n##\s+|$)/g,
+      ""
+    );
+    if (content.includes("<!-- stubs-instructions-start -->")) {
       content = content.replace(
-        /<!-- tale-instructions-start -->[\s\S]*?<!-- tale-instructions-end -->/,
-        taleSection
+        /<!-- stubs-instructions-start -->[\s\S]*?<!-- stubs-instructions-end -->/,
+        `<!-- stubs-instructions-start -->
+${stubsSection}
+<!-- stubs-instructions-end -->`
       );
     } else {
-      const legacyRegex = /## (?:ASD-STE100[^\n]*|TALE[^\n]*|Tale[^\n]*)[\s\S]*?(?=\n##\s+|$)/;
-      if (legacyRegex.test(content)) {
-        content = content.replace(legacyRegex, taleSection);
+      const stubsRegex = /## (?:Architecture Context Maps|Planning Hub)[^\n]*[\s\S]*?(?=\n##\s+(?!(?:Architecture Graph|CLI Commands))|$)/;
+      if (stubsRegex.test(content)) {
+        content = content.replace(stubsRegex, stubsSection);
+      } else if (content.includes("## CLI Commands")) {
+        const commands = [
+          "- Scan & Index Code Graph: `npx stubs scan`",
+          '- Query GraphRAG Subgraph: `npx stubs query "<question>"`',
+          '- Unified Surgical Query: `npx stubs query "explain: <target>"` | `path: <A> to <B>` | `blast: <target>`',
+          "- Concrete Spec Grilling: `npx stubs grill <file.md>`",
+          "- Abstract Architecture Grilling: `npx stubs abstract-grill <file.md>`",
+          "- Architecture Mapping: `npx stubs map --generate` (refreshes prerequisite domain maps + root context-map.md)",
+          "- Domain Maps Only: `npx stubs map --domains` | `npx stubs map --domain <name>`",
+          "- Export Knowledge Graph: `npx stubs export <obsidian|wiki> [--out <dir>]`",
+          "- Start MCP Stdio Server: `npx stubs mcp`",
+          "- Install Assistant Rules: `npx stubs hook install`",
+          "- Audit ASD-STE100 Compliance: `npx stubs tale`",
+          "- Auto-Remediate Prose & Formatting: `npx stubs tale --fix`"
+        ];
+        for (const cmd of commands) {
+          const key = cmd.split(":")[0];
+          if (!content.includes(key)) {
+            content = content.replace(/(## CLI Commands[\s\S]*?)(?=\n##|$)/, `$1
+${cmd}`);
+          }
+        }
       } else {
-        content = content.trimEnd() + "\n\n" + taleSection + "\n";
+        content = content.trimEnd() + "\n\n" + stubsSection + "\n";
       }
     }
-    if (content.includes("## CLI Commands") && !content.includes("stubs tale")) {
-      content = content.replace(
-        /(## CLI Commands[\s\S]*?)(?=\n##|\n<!-- stubs-instructions-end -->|$)/,
-        (match) => {
-          return match.trimEnd() + "\n- Audit ASD-STE100 Compliance: `npx stubs tale` (or `npm run tale`)\n- Auto-Remediate Prose & Formatting: `npx stubs tale --fix` (or `npm run tale:fix`)\n";
-        }
-      );
-    }
-    fs.writeFileSync(fullPath, content, "utf-8");
+    fs.writeFileSync(fullPath, content.trim() + "\n", "utf-8");
     return true;
   } catch {
     return false;
   }
+}
+function updateAgentsDocForTale(targetDir) {
+  return updateAgentsDoc(targetDir);
 }
 function copyRecursive(src, dest) {
   const stat = fs.statSync(src);
@@ -1332,5 +1452,6 @@ if (isCliEntry) {
   getAvailableSkills,
   installSkills,
   registerMcpServer,
+  updateAgentsDoc,
   updateAgentsDocForTale
 });

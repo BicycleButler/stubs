@@ -1,6 +1,6 @@
 {
   "name": "@bicyclebutler/tale",
-  "version": "1.4.5",
+  "version": "1.4.6",
   "description": "ASD-STE100 Simplified Technical English (STE) governance, rules, and linter for AI coding agents",
   "main": "src/tale.mjs",
   "bin": {

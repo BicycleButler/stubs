@@ -1996,7 +1996,10 @@ export class {{pascalName}} {
     ];
     const sourceBundle = candidateBundles.find((p) => existsSync(p));
     const targetBundleDir = path.join(destDir, 'dist');
-    if (sourceBundle && path.resolve(sourceBundle) !== path.resolve(path.join(targetBundleDir, 'cli.cjs'))) {
+    if (
+      sourceBundle &&
+      path.resolve(sourceBundle) !== path.resolve(path.join(targetBundleDir, 'cli.cjs'))
+    ) {
       await fs.mkdir(targetBundleDir, { recursive: true });
       await fs.copyFile(sourceBundle, path.join(targetBundleDir, 'cli.cjs'));
       const sourceWasm = path.join(path.dirname(sourceBundle), 'sql-wasm.wasm');

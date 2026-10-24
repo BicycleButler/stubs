@@ -13,7 +13,9 @@ test('updateAgentsDocForTale on uninitialized repository', () => {
     const content = fs.readFileSync(path.join(tempDir, 'AGENTS.md'), 'utf-8');
     assert.ok(content.includes('npx stubs tale'));
     assert.ok(content.includes('npx stubs tale --fix'));
-    assert.ok(content.includes('ASD-STE100 Technical English & Formatting (Tale)'));
+    assert.ok(content.includes('## Architecture Context Maps — Read First'));
+    assert.ok(content.includes('## Architecture Graph & GraphRAG Intelligence'));
+    assert.strictEqual(content.includes('ASD-STE100 Technical English & Formatting (Tale)'), false);
   } finally {
     fs.rmSync(tempDir, { recursive: true, force: true });
   }
@@ -32,7 +34,7 @@ test('updateAgentsDocForTale on existing lowercase agents.md', () => {
     const content = fs.readFileSync(path.join(tempDir, 'agents.md'), 'utf-8');
     assert.ok(content.includes('npx stubs tale'));
     assert.ok(content.includes('npx stubs tale --fix'));
-    assert.ok(content.includes('ASD-STE100 Technical English & Formatting (Tale)'));
+    assert.strictEqual(content.includes('ASD-STE100 Technical English & Formatting (Tale)'), false);
     assert.strictEqual(fs.readdirSync(tempDir).includes('AGENTS.md'), false);
     assert.strictEqual(fs.readdirSync(tempDir).includes('agents.md'), true);
   } finally {
@@ -54,7 +56,8 @@ test('installSkills updates AGENTS.md when tale is installed locally', () => {
     const content = fs.readFileSync(path.join(tempDir, 'AGENTS.md'), 'utf-8');
     assert.ok(content.includes('npx stubs tale'));
     assert.ok(content.includes('npx stubs tale --fix'));
-    assert.ok(content.includes('ASD-STE100 Technical English & Formatting (Tale)'));
+    assert.ok(content.includes('## Architecture Context Maps — Read First'));
+    assert.strictEqual(content.includes('ASD-STE100 Technical English & Formatting (Tale)'), false);
   } finally {
     fs.rmSync(tempDir, { recursive: true, force: true });
   }

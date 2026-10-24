@@ -3,10 +3,15 @@ import path from 'path';
 import { spawnSync } from 'child_process';
 import pc from 'picocolors';
 import { runInteractiveTui } from './tui';
-import { getAvailableSkills, installSkills, updateAgentsDocForTale } from './installer';
+import {
+  getAvailableSkills,
+  installSkills,
+  updateAgentsDoc,
+  updateAgentsDocForTale,
+} from './installer';
 import { getAvailableMcpServers, registerMcpServer } from './mcp';
 
-export { getAvailableSkills, installSkills, updateAgentsDocForTale };
+export { getAvailableSkills, installSkills, updateAgentsDoc, updateAgentsDocForTale };
 export { getAvailableMcpServers, registerMcpServer };
 
 async function main(): Promise<void> {
