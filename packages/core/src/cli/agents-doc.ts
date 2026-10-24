@@ -246,6 +246,10 @@ export function generateStubsInstructionBlock(targetDir: string, _projectName?: 
   lines.push(
     '- Unified Surgical Query: `npx stubs query "explain: <target>"` | `path: <A> to <B>` | `blast: <target>`',
   );
+  lines.push('- Concrete Spec Grilling: `npx stubs grill <file.md>`');
+  lines.push(
+    '- Abstract Architecture Grilling: `npx stubs abstract-grill <file.md>` (or `/abstract-grill`)',
+  );
   lines.push(
     '- Architecture Mapping: `npx stubs map --generate` (refreshes prerequisite domain maps + root context-map.md)',
   );

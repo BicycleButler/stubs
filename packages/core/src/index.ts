@@ -133,3 +133,11 @@ export {
   PhaseTransition,
 } from './changelog/engine';
 export { loadConfig, StubsConfig, DEFAULT_CONFIG } from './config/schema';
+export { GrillEngine, GrillState, GrillEngineOptions } from './grill/engine';
+export {
+  AbstractGrillEngine,
+  AbstractGrillState,
+  AbstractGrillOptions,
+  AbstractGrillQuestion,
+  AbstractGrillArchetype,
+} from './grill/abstract-engine';

@@ -76,6 +76,8 @@ export class CliRouter {
           return await this.handleEvaluate(context);
         case 'grill':
           return await this.handleGrill(context);
+        case 'abstract-grill':
+          return await this.handleAbstractGrill(context);
         case 'sand':
         case 'sync':
           return await this.handleSync(context);
@@ -214,6 +216,7 @@ Commands:
   hook [install]      Install graph-first rules and hooks for AI coding assistants (--platform).
   phase <action>      Manage 5-phase lifecycle. Actions: status [file], check <file>, advance <file> [targetPhase]
   grill <file>       Execute the Interactive Grill Engine on a sidecar specification.
+  abstract-grill <file> Execute the Abstract Grill Engine on concepts, architectures, or specs.
   materialize <file>  Parse, extract, typecheck, and write executable code from sidecar.
   audit [options]     Audit sidecars or inspect hotspots (--hotspots, --cycles, --json).
   sand [file]         Synchronize sidecars and code files (with auto-healing depends_on).
@@ -449,6 +452,108 @@ Options:
       return 0;
     } catch (error: any) {
       console.error(`Grill execution failed: ${error.message || error}`);
+      return 1;
+    }
+  }
+
+  private async handleAbstractGrill(ctx: CliContext): Promise<number> {
+    let targetFile = '';
+    let depth: 'light_probe' | 'standard_drill' | 'deep_interrogation' = 'standard_drill';
+    let nonInteractive = false;
+    let outputTarget: 'plan' | 'adr' | 'sidecar' | 'all' = 'sidecar';
+
+    let i = 0;
+    while (i < ctx.args.length) {
+      const arg = ctx.args[i];
+      if (arg === '--non-interactive') {
+        nonInteractive = true;
+        i++;
+      } else if (arg === '--depth') {
+        const nextArg = ctx.args[i + 1];
+        if (
+          nextArg === 'light_probe' ||
+          nextArg === 'standard_drill' ||
+          nextArg === 'deep_interrogation'
+        ) {
+          depth = nextArg;
+          i += 2;
+        } else {
+          console.error(
+            `Error: Invalid depth "${nextArg}". Allowed values are: light_probe, standard_drill, deep_interrogation.`,
+          );
+          return 1;
+        }
+      } else if (arg.startsWith('--depth=')) {
+        const val = arg.split('=')[1];
+        if (val === 'light_probe' || val === 'standard_drill' || val === 'deep_interrogation') {
+          depth = val;
+          i++;
+        } else {
+          console.error(
+            `Error: Invalid depth "${val}". Allowed values are: light_probe, standard_drill, deep_interrogation.`,
+          );
+          return 1;
+        }
+      } else if (arg === '--output') {
+        const nextArg = ctx.args[i + 1];
+        if (nextArg === 'plan' || nextArg === 'adr' || nextArg === 'sidecar' || nextArg === 'all') {
+          outputTarget = nextArg;
+          i += 2;
+        } else {
+          console.error(
+            `Error: Invalid output "${nextArg}". Allowed values are: plan, adr, sidecar, all.`,
+          );
+          return 1;
+        }
+      } else if (arg.startsWith('--output=')) {
+        const val = arg.split('=')[1];
+        if (val === 'plan' || val === 'adr' || val === 'sidecar' || val === 'all') {
+          outputTarget = val as any;
+          i++;
+        } else {
+          console.error(
+            `Error: Invalid output "${val}". Allowed values are: plan, adr, sidecar, all.`,
+          );
+          return 1;
+        }
+      } else if (arg.startsWith('-')) {
+        console.error(`Error: Unknown option "${arg}".`);
+        return 1;
+      } else {
+        if (!targetFile) {
+          targetFile = arg;
+        } else {
+          console.error(`Error: Multiple files specified: "${targetFile}" and "${arg}".`);
+          return 1;
+        }
+        i++;
+      }
+    }
+
+    if (!targetFile) {
+      console.error('Error: "abstract-grill" command requires a file path argument.');
+      console.error('Usage: stubs abstract-grill <file.md> [options]');
+      return 1;
+    }
+
+    const fullPath = path.resolve(targetFile);
+    if (!existsSync(fullPath)) {
+      console.error(`Error: File not found at "${fullPath}"`);
+      return 1;
+    }
+
+    try {
+      const { AbstractGrillEngine } = await import('../grill/abstract-engine');
+      const engine = new AbstractGrillEngine();
+      await engine.grill(fullPath, {
+        depth,
+        nonInteractive,
+        outputTarget,
+        configPath: ctx.configPath,
+      });
+      return 0;
+    } catch (error: any) {
+      console.error(`Abstract grill execution failed: ${error.message || error}`);
       return 1;
     }
   }

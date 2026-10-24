@@ -1260,6 +1260,8 @@ ${import_picocolors3.default.bold("Core Architecture Commands:")}
   stubs sand                Run bidirectional sync between specs and code
   stubs lint-arch           Check architectural guardrails (hierarchy, cycles)
   stubs status              Check architecture and sidecar drift status
+  stubs grill <file>        Stress-test sidecar specification with Q&A
+  stubs abstract-grill <file> Stress-test high-level architecture with orthogonal paradigms
   stubs materialize         Materialize code from sidecars
 `);
     return;

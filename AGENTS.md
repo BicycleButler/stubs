@@ -74,6 +74,8 @@ AST dependency graph in `.stubs/graph.sqlite` with Louvain community detection, 
 - Scan & Index Code Graph: `npx stubs scan`
 - Query GraphRAG Subgraph: `npx stubs query "<question>"`
 - Unified Surgical Query: `npx stubs query "explain: <target>"` | `path: <A> to <B>` | `blast: <target>`
+- Concrete Spec Grilling: `npx stubs grill <file.md>`
+- Abstract Architecture Grilling: `npx stubs abstract-grill <file.md>` (or `/abstract-grill` slash command)
 - Architecture Mapping: `npx stubs map --generate` (refreshes prerequisite domain maps + root context-map.md)
 - Domain Maps Only: `npx stubs map --domains` | `npx stubs map --domain <name>`
 - Visual Diagram: `npx stubs map --visual`
