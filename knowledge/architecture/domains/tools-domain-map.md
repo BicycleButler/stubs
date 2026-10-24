@@ -20,8 +20,8 @@ The Verification & Tool Suite coordinates domain logic, core types, and services
 ## Key Modules & Files
 src/prune/engine.ts (Hub) -> deps: none | caps: PruneIssueType, PruneIssue, PruneAuditSummary, PruneAuditResult, PruneOptions, PruneFixResult, PruneEngine, scanFiles
 src/diagram/engine.ts -> deps: none | caps: DiagramType, DiagramOptions, DiagramResult, DiagramEngine, sanitizeNodeId, generateDiagram, generateArchitectureDiagram, generateSequenceDiagram
-src/mock/engine.ts -> deps: none | caps: TestFramework, MockOptions, MockedTestCase, MockedSymbolSuite, MockScaffoldResult, classifyExportedSymbols, MockEngine, generateTestScaffold
 src/lint/engine.ts -> deps: none | caps: ArchRuleType, ArchViolation, ArchLintOptions, ArchLintSummary, ArchLintResult, getModuleLayer, ArchLintEngine, lintWorkspace
+src/mock/engine.ts -> deps: none | caps: TestFramework, MockOptions, MockedTestCase, MockedSymbolSuite, MockScaffoldResult, classifyExportedSymbols, MockEngine, generateTestScaffold
 src/changelog/engine.ts -> deps: none | caps: AdrChange, ExportChange, PhaseTransition, SpecDiff, ChangelogSummary, ArchitecturalChangelog, ChangelogOptions, ChangelogEngine
 src/changelog/engine.ts.md -> deps: none | caps: ChangelogEngine, ChangelogOptions, ArchitecturalChangelog, ChangelogSummary, SpecDiff, AdrChange, ExportChange, PhaseTransition
 src/lint/engine.ts.md -> deps: none | caps: ArchLintEngine, ArchLintOptions, ArchLintResult, ArchLintSummary, ArchViolation, ArchRuleType, LAYER_DEFINITIONS, getModuleLayer

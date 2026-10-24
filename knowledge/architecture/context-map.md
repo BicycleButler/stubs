@@ -13,7 +13,7 @@ tags:
 ## Routing & Entrypoints
 Entry (Layer 0): src/context/engine.ts -> domain: core
 Entry (Layer 0): src/context/engine.ts.md -> domain: core
-Entry (Layer 0): src/jwt.ts -> domain: core
+Entry (Layer 0): src/jwt.ts.md -> domain: core
 
 ## Subsystem Matrix
 Graph Engine (L1): src/graph/engine.ts -> deps: none | caps: normalizePosixPath, resolvePosixPath, fallbackGlob, IndexSummary
@@ -24,7 +24,7 @@ Autonomy Protocol (L5): src/concept/engine.ts -> deps: graph, parser | caps: Cre
 Parser Engine (L6): src/parser/okf.ts.md -> deps: none | caps: OkfFrontmatter, ParsedOkfSpec, FileTreeEntry, isCodeSidecar
 Storage Layer (L7): src/storage/index.ts -> deps: none | caps: FileStorageDriver, FileSystemDriver, PreparedStatement, DatabaseDriver
 Sanding & Sync Engine (L8): src/sanding/engine.ts -> deps: none | caps: SyncResult, sha256, stripSyncStateFromYaml, stripSyncStateFromContent
-CLI & Router (L9): src/cli/router.ts -> deps: graph | caps: CliContext, CliRouter, route, parseArgs
+CLI & Router (L9): src/cli/router.ts -> deps: none | caps: CliContext, CliRouter, route, parseArgs
 Interactive Grill Engine (L10): src/grill/engine.ts -> deps: none | caps: GrillState, GrillEngineOptions, GrillEngine, getState
 Materializer Engine (L11): src/materializer/engine.ts -> deps: none | caps: MaterializeResult, stringifyOkfSpec, MaterializerEngine, computeSha256
 

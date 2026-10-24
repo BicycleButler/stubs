@@ -18,7 +18,7 @@ Parent Context Map: knowledge/architecture/context-map.md
 The CLI & Router coordinates domain logic, core types, and services for the cli subsystem.
 
 ## Key Modules & Files
-src/cli/router.ts (Hub) -> deps: src/query/engine.ts.md | caps: CliContext, CliRouter, route, parseArgs, printHelp, handleInit, printVersion, handleGrill
+src/cli/router.ts (Hub) -> deps: none | caps: CliContext, CliRouter, route, parseArgs, printHelp, handleInit, printVersion, handleGrill
 src/cli/agents-doc.ts -> deps: none | caps: SyncAgentsDocOptions, SyncAgentsDocResult, resolveAgentsPath, formatAccordingToAdr001, auditAdr001Compliance, generateStubsInstructionBlock, syncAgentsDoc
 src/cli/router.ts.md -> deps: none | caps: CliContext, CliRouter
 src/cli/auth.ts -> deps: none | caps: askTokenMasked, handleLogin

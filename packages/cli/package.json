@@ -1,6 +1,6 @@
 {
   "name": "@bicyclebutler/stubs",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "description": "Unified AI Agent Skills, Rules, CLI & MCP Manager with interactive TUI",
   "main": "dist/index.js",
   "bin": {

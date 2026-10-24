@@ -22,8 +22,8 @@ src/graph/engine.ts (Hub) -> deps: none | caps: normalizePosixPath, resolvePosix
 src/graph/topology.ts -> deps: none | caps: BlastRadiusNode, BlastRadiusResult, ShortestPathStep, ShortestPathResult, SmellGodNode, SmellCycle, SmellDomainLeak, ArchitecturalSmellsReport
 src/query/engine.ts -> deps: none | caps: SurgicalQueryKind, QueryOptions, QuerySubGraphNode, QuerySubGraphEdge, MacroMapCommunity, MacroMapResult, QueryResult, QueryEngine
 src/graph/engine.ts.md -> deps: none | caps: GraphEngine, IndexSummary, SidecarInput, SearchOptions, SearchResult, TaskRow, PlannedFileRow, PlanningHubSummary
-src/graph/domain.ts -> deps: none | caps: DomainModuleInfo, DomainInfo, DomainEngine, matchesGlob, extractDomainFromSidecar, deriveDomainForFile, discoverDomains, discoverDomainsFromGraph
 src/graph/extractor.ts -> deps: none | caps: EdgeConfidence, GraphNode, GraphEdge, ExtractedGraph, resolveRelativeImport, extractFileGraph, tryLoadOptionalParser, extractMarkdownGraph
+src/graph/domain.ts -> deps: none | caps: DomainModuleInfo, DomainInfo, DomainEngine, matchesGlob, extractDomainFromSidecar, deriveDomainForFile, discoverDomains, discoverDomainsFromGraph
 src/graph/workspace.ts -> deps: none | caps: WorkspacePackage, WorkspaceConfig, WorkspaceManager, loadWorkspace, resolveImportPath, getPackageForFile, parseYamlPackagePatterns, parseCargoWorkspaceMembers
 src/graph/skeleton.ts -> deps: none | caps: SkeletonOptions, SkeletonResult, SkeletonGenerator, generateSkeleton, generateTypeScriptSkeleton, extractFunctionHeader, extractClassHeader, extractMemberHeader
 src/query/engine.ts.md -> deps: none | caps: QueryEngine, QueryOptions, QueryResult, QuerySubGraphNode, QuerySubGraphEdge, SurgicalQueryKind, MacroMapResult, MacroMapCommunity

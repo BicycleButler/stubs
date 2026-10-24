@@ -72,6 +72,7 @@ moment of settling, not at the end of the project.
 **Options**
 A. … then this result
 B. … then this result
+C. … then this result
 
 ️ **Recommended: A** — [reason from the codebase or a rule, not from taste]
 

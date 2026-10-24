@@ -83,9 +83,9 @@ user_notes:
     status: resolved
 stale_details: null
 sync_state:
-  last_sync_timestamp: '2026-10-18T01:09:09.614Z'
-  sidecar_hash: 8ebbf0565a8e3675c2330a2bc7e07d6d7b659ffef09ec9d69f30bbba380af30d
-  code_hash: aa249b03ab4f51ccbbbaac259dfc54e2a0243d35d15edabd4d83f486e1120b80
+  last_sync_timestamp: '2026-10-24T18:06:52.615Z'
+  sidecar_hash: 66a9fa22e004d5b2e953e0cc9208f55fa8cb687ad06e83164fc02ed84e9cab51
+  code_hash: 08289170bbbec41e51155ed5d2834202a18dc02f6b276c5047544ebe60e1c667
 depends_on:
   - ../crypto
 ---
@@ -113,6 +113,8 @@ with the actual implementation section below.
 ## Implementation
 
 ```typescript
+// Do not edit this header.
+
 import * as crypto from 'crypto';
 
 export interface AuthContext {

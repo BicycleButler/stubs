@@ -20,8 +20,8 @@ The Core Entrypoints & Runtime coordinates domain logic, core types, and service
 ## Key Modules & Files
 src/context/engine.ts (Hub) -> deps: src/graph/engine.ts.md | caps: ContextOptions, Tier0TargetContext, Tier1DependencyContext, Tier1DependentContext, Tier2BoundaryContext, ContextPackage, ContextEngine, generateContextPackage
 src/context/engine.ts.md -> deps: none | caps: ContextEngine, ContextPackage, ContextOptions, Tier0TargetContext, Tier1DependencyContext, Tier1DependentContext, Tier2BoundaryContext
-src/jwt.ts -> deps: none | caps: AuthContext, JwtPayload, signToken, verifyToken
 src/jwt.ts.md -> deps: none | caps: AuthContext, JwtPayload, signToken, verifyToken
+src/jwt.ts -> deps: none | caps: AuthContext, JwtPayload, signToken, verifyToken
 src/config/schema.ts -> deps: none | caps: StubsConfig, loadConfig, sanitizeConfig
 src/config/schema.ts.md -> deps: none | caps: StubsConfig, DEFAULT_CONFIG, loadConfig
 src/cli.ts -> deps: src/cli/router.ts.md | caps: main

@@ -215901,7 +215901,7 @@ var init_level2 = __esm({
       }
       /**
        * Generates a vector embedding using host-configured OpenAI-compatible API,
-       * falling back to a deterministic local mock embedding if keys are missing or requests fail.
+       * falling back to a deterministic local mock embedding if keys are absent or requests fail.
        */
       async generateEmbedding(text) {
         const apiKey = process.env.OPENAI_API_KEY;
@@ -223472,7 +223472,7 @@ var MockEngine = class {
     };
   }
   /**
-   * Renders the complete TypeScript test file code.
+   * Renders completed TypeScript test file code.
    */
   renderTestCode(scaffold) {
     const lines = [];
@@ -224640,7 +224640,7 @@ var WorkspaceManager = class {
     return null;
   }
   /**
-   * Finds the owning workspace package for any given file path.
+   * Finds the owning workspace package for each given file path.
    */
   getPackageForFile(filePath, config) {
     const norm = normalizePosixPath(filePath);
@@ -226599,7 +226599,7 @@ var DomainEngine = class {
   }
   /**
    * Generates all discovered domain maps as a prerequisite to context-map.md,
-   * pruning any obsolete domain maps that were merged or deleted.
+   * pruning all obsolete domain maps that were merged or deleted.
    */
   async generateAllDomainMaps(domainsDir, options = {}) {
     const domains = await this.discoverDomains();
