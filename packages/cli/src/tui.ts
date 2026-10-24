@@ -18,7 +18,7 @@ export async function runInteractiveTui(): Promise<void> {
   const selectedSkills = (await p.multiselect({
     message: 'Select skills and rules to install into your project:',
     options: skillChoices,
-    initialValues: ['tale', 'design', 'stubs'],
+    initialValues: ['tale', 'stubs'],
     required: false,
   })) as string[];
 

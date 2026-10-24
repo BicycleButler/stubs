@@ -100,7 +100,6 @@ The repository is organized as an npm workspaces monorepo:
 - `packages/cli` (`@bicyclebutler/stubs`): Unified interactive CLI & TUI orchestrator.
 - `packages/core` (`@bicyclebutler/stubs-core`): Graph engine, parser, and sidecar compiler.
 - `packages/tale` (`@bicyclebutler/tale`): ASD-STE100 technical English linter & skill.
-- `packages/design` (`@bicyclebutler/design`): UI/UX design tokens, ADRs, and compliance scripts.
 
 - Package manager: npm workspaces (npx for binaries)
 - Build Project: `npm run build`

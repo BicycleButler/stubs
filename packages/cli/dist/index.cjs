@@ -845,18 +845,6 @@ function getAvailableSkills() {
       skillDir: path.join(repoRoot, "packages/tale/skill"),
       rulesDir: path.join(repoRoot, "packages/tale/rules")
     },
-    design: {
-      name: "design",
-      description: "UI/UX design guidelines, token scales, and automated compliance tools",
-      skillDir: path.join(repoRoot, "packages/design/skill"),
-      rulesDir: path.join(repoRoot, "packages/design/rules"),
-      rootFiles: [
-        {
-          src: path.join(repoRoot, "packages/design/RULES.md"),
-          dest: "RULES.md"
-        }
-      ]
-    },
     stubs: {
       name: "stubs",
       description: "Architecture-as-code planning and multi-language sidecar framework",
@@ -1022,12 +1010,6 @@ function getAvailableMcpServers() {
       description: "ASD-STE100 Simplified Technical English Linter MCP Server",
       command: "npx",
       args: ["-y", "@bicyclebutler/tale", "mcp-serve"]
-    },
-    design: {
-      name: "design",
-      description: "Design Guidelines and Compliance Auditor MCP Server",
-      command: "npx",
-      args: ["-y", "@bicyclebutler/design", "mcp-serve"]
     }
   };
 }
@@ -1071,7 +1053,7 @@ async function runInteractiveTui() {
   const selectedSkills = await pe({
     message: "Select skills and rules to install into your project:",
     options: skillChoices,
-    initialValues: ["tale", "design", "stubs"],
+    initialValues: ["tale", "stubs"],
     required: false
   });
   if (BD(selectedSkills)) {
@@ -1185,7 +1167,7 @@ async function main() {
     const items = args.slice(1).filter((a2) => !a2.startsWith("-"));
     if (items.length === 0) {
       console.error(import_picocolors3.default.red("Error: Specify one or more skills to add, e.g.:"));
-      console.error("  npx stubs add tale design");
+      console.error("  npx stubs add tale stubs");
       console.error("  npx stubs add all");
       process.exit(1);
     }
@@ -1261,7 +1243,7 @@ ${import_picocolors3.default.bold("Usage:")}
   stubs                     Launch interactive TUI
   stubs run [options]       Unified pipeline: scan, map, sand, lint-arch & tale
   stubs init                Guided project workspace setup
-  stubs add <items...>      Install specific skills (e.g. tale, design, stubs, all)
+  stubs add <items...>      Install specific skills (e.g. tale, stubs, all)
   stubs list                List all available skills, rules, and MCP servers
   stubs mcp add <server>    Register an MCP server into .agents/mcp_config.json
   stubs tale [options]      Unified audit & format of docs and code comments (--fix)

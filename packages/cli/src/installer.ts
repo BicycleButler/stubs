@@ -3,7 +3,7 @@ import * as path from 'node:path';
 import * as os from 'node:os';
 
 export interface InstallOptions {
-  skills: string[]; // for example, ['tale', 'design', 'stubs']
+  skills: string[]; // for example, ['tale', 'stubs']
   target: 'local' | 'global';
   targetDir?: string;
   installHooks?: boolean;
@@ -40,18 +40,6 @@ export function getAvailableSkills(): Record<string, SkillManifest> {
       description: 'ASD-STE100 Issue 9 Simplified Technical English rules and linter',
       skillDir: path.join(repoRoot, 'packages/tale/skill'),
       rulesDir: path.join(repoRoot, 'packages/tale/rules'),
-    },
-    design: {
-      name: 'design',
-      description: 'UI/UX design guidelines, token scales, and automated compliance tools',
-      skillDir: path.join(repoRoot, 'packages/design/skill'),
-      rulesDir: path.join(repoRoot, 'packages/design/rules'),
-      rootFiles: [
-        {
-          src: path.join(repoRoot, 'packages/design/RULES.md'),
-          dest: 'RULES.md',
-        },
-      ],
     },
     stubs: {
       name: 'stubs',

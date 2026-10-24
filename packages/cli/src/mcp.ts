@@ -23,12 +23,6 @@ export function getAvailableMcpServers(): Record<string, McpServerDefinition> {
       command: 'npx',
       args: ['-y', '@bicyclebutler/tale', 'mcp-serve'],
     },
-    design: {
-      name: 'design',
-      description: 'Design Guidelines and Compliance Auditor MCP Server',
-      command: 'npx',
-      args: ['-y', '@bicyclebutler/design', 'mcp-serve'],
-    },
   };
 }
 

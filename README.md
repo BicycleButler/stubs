@@ -181,7 +181,6 @@ The `stubs` project is organized as a high-performance npm monorepo with modular
 | **CLI**    | [`@bicyclebutler/stubs`](packages/cli)          | Interactive Clack TUI orchestrator, project initializer, and workflow runner. |
 | **Core**   | [`@bicyclebutler/stubs-core`](packages/core)   | Zero-LLM local AST engine, SQLite dependency graph, and sidecar materializer. |
 | **TALE**   | [`@bicyclebutler/tale`](packages/tale)         | ASD-STE100 Issue 9 Simplified Technical English linter and skill suite.       |
-| **Design** | [`@bicyclebutler/design`](packages/design)     | UI/UX design tokens, accessibility rules, ADR compliance, and audits.         |
 
 ---
 
