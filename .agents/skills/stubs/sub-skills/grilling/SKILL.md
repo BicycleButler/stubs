@@ -120,10 +120,3 @@ Use the depth flag as an effort control. Each flag sets the effort level.
   The CLI appends instead, because it computes `body + qaLog`, so it adds a new section on each run.
 
 Set `status: grilling` to `spec` in the frontmatter. Keep `user_notes[].status` a top-level field.
-
-## 6. Known limits
-
-- A node can receive too little effort. It can look narrow and still matter. No rule prevents this.
-- A grill that stores its decisions badly is worse than no grill, because it makes weak decisions
-  permanent.
-- The rules above are a list, not a script. A script would do the work of the CLI again.

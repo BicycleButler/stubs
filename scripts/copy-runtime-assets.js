@@ -21,17 +21,29 @@ const path = require('path');
 const repoRoot = path.resolve(__dirname, '..');
 const primaryDist = path.join(repoRoot, '.agents/skills/stubs/dist');
 const rootDist = path.join(repoRoot, 'dist');
-const targetDirs = [primaryDist, rootDist];
+const cliDist = path.join(repoRoot, 'packages/cli/dist');
+const coreDist = path.join(repoRoot, 'packages/core/dist');
+const targetDirs = [primaryDist, rootDist, coreDist];
+const skillTargetDirs = [primaryDist, rootDist, coreDist, cliDist];
 
 for (const dir of targetDirs) {
   fs.mkdirSync(dir, { recursive: true });
 }
 
-// Mirror cli.cjs into root dist if it was generated in primaryDist
-const primaryBundle = path.join(primaryDist, 'cli.cjs');
-const rootBundle = path.join(rootDist, 'cli.cjs');
-if (fs.existsSync(primaryBundle)) {
-  fs.copyFileSync(primaryBundle, rootBundle);
+// Mirror fresh cli.cjs bundle across all target dist locations
+const sourceBundleCandidates = [
+  path.join(coreDist, 'cli.cjs'),
+  path.join(primaryDist, 'cli.cjs'),
+  path.join(rootDist, 'cli.cjs'),
+];
+const freshBundle = sourceBundleCandidates.find((p) => fs.existsSync(p));
+if (freshBundle) {
+  for (const dir of [primaryDist, rootDist]) {
+    const dest = path.join(dir, 'cli.cjs');
+    if (path.resolve(freshBundle) !== path.resolve(dest)) {
+      fs.copyFileSync(freshBundle, dest);
+    }
+  }
 }
 
 // Search candidate locations for sql-wasm.wasm
@@ -135,17 +147,26 @@ console.log(`Template molds staged: ${molds.length} across ${targetDirs.length} 
 const skillsSrc = path.join(repoRoot, '.agents/skills/stubs');
 if (fs.existsSync(skillsSrc)) {
   const skillEntries = fs.readdirSync(skillsSrc).filter((entry) => entry !== 'dist');
-  for (const dir of targetDirs) {
+  for (const dir of skillTargetDirs) {
     const skillsDest = path.join(dir, 'skills');
+    const stubsDest = path.join(dir, 'skills/stubs');
     fs.mkdirSync(skillsDest, { recursive: true });
+    fs.mkdirSync(stubsDest, { recursive: true });
     for (const entry of skillEntries) {
       const srcItem = path.join(skillsSrc, entry);
-      const destItem = path.join(skillsDest, entry);
-      fs.cpSync(srcItem, destItem, { recursive: true });
+      fs.cpSync(srcItem, path.join(skillsDest, entry), { recursive: true });
+      fs.cpSync(srcItem, path.join(stubsDest, entry), { recursive: true });
     }
   }
-  console.log(`Agent skills staged across ${targetDirs.length} dist folders.`);
 }
+const abstractGrillSrc = path.join(repoRoot, '.agents/skills/abstract-grill');
+if (fs.existsSync(abstractGrillSrc)) {
+  for (const dir of skillTargetDirs) {
+    const dest = path.join(dir, 'skills/abstract-grill');
+    fs.cpSync(abstractGrillSrc, dest, { recursive: true });
+  }
+}
+console.log(`Agent skills staged across ${skillTargetDirs.length} dist folders.`);
 
 // Stage web client assets
 const webSrc = path.join(repoRoot, 'dist/web');

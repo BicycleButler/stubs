@@ -47,6 +47,12 @@ export function getAvailableSkills(): Record<string, SkillManifest> {
       skillDir: path.join(repoRoot, '.agents/skills/stubs'),
       rulesDir: path.join(repoRoot, 'RULES.md'),
     },
+    'abstract-grill': {
+      name: 'abstract-grill',
+      description:
+        'Stress-test architecture, abstractions, and deep modules with orthogonal paradigms',
+      skillDir: path.join(repoRoot, '.agents/skills/abstract-grill'),
+    },
   };
 }
 
@@ -71,7 +77,16 @@ export function installSkills(options: InstallOptions): { installed: string[]; e
   fs.mkdirSync(skillsDestDir, { recursive: true });
   fs.mkdirSync(rulesDestDir, { recursive: true });
 
-  for (const skillKey of options.skills) {
+  // Automatically co-install abstract-grill whenever stubs is installed
+  const requestedSkills = [...options.skills];
+  if (
+    (requestedSkills.includes('stubs') || requestedSkills.includes('all')) &&
+    !requestedSkills.includes('abstract-grill')
+  ) {
+    requestedSkills.push('abstract-grill');
+  }
+
+  for (const skillKey of requestedSkills) {
     const key = skillKey.toLowerCase();
     const manifest = available[key];
     if (!manifest) {
@@ -82,18 +97,48 @@ export function installSkills(options: InstallOptions): { installed: string[]; e
     try {
       // 1. Copy Skill directory
       const destSkillPath = path.join(skillsDestDir, manifest.name);
-      if (fs.existsSync(manifest.skillDir)) {
+      let resolvedSkillDir = manifest.skillDir;
+      if (!fs.existsSync(resolvedSkillDir)) {
+        const fallbacks = [
+          path.join(__dirname, 'skills', manifest.name),
+          path.join(__dirname, '../skills', manifest.name),
+          path.join(os.homedir(), '.gemini/config/skills', manifest.name),
+          path.join(repoRoot, '.agents/skills', manifest.name),
+        ];
+        const found = fallbacks.find((p) => fs.existsSync(p));
+        if (found) {
+          resolvedSkillDir = found;
+        }
+      }
+
+      if (fs.existsSync(resolvedSkillDir)) {
         fs.mkdirSync(destSkillPath, { recursive: true });
-        copyRecursive(manifest.skillDir, destSkillPath);
+        copyRecursive(resolvedSkillDir, destSkillPath);
+      } else {
+        errors.push(`Could not locate source for skill: ${manifest.name}`);
       }
 
       // 2. Copy Rule files
-      if (manifest.rulesDir && fs.existsSync(manifest.rulesDir)) {
-        if (fs.statSync(manifest.rulesDir).isDirectory()) {
-          copyRecursive(manifest.rulesDir, rulesDestDir);
+      let resolvedRulesDir = manifest.rulesDir;
+      if (resolvedRulesDir && !fs.existsSync(resolvedRulesDir)) {
+        const fileName = path.basename(resolvedRulesDir);
+        const fallbacks = [
+          path.join(__dirname, 'rules', fileName),
+          path.join(__dirname, '../rules', fileName),
+          path.join(os.homedir(), '.gemini/config/rules', fileName),
+        ];
+        const found = fallbacks.find((p) => fs.existsSync(p));
+        if (found) {
+          resolvedRulesDir = found;
+        }
+      }
+
+      if (resolvedRulesDir && fs.existsSync(resolvedRulesDir)) {
+        if (fs.statSync(resolvedRulesDir).isDirectory()) {
+          copyRecursive(resolvedRulesDir, rulesDestDir);
         } else {
-          const fileName = path.basename(manifest.rulesDir);
-          fs.copyFileSync(manifest.rulesDir, path.join(rulesDestDir, fileName));
+          const fileName = path.basename(resolvedRulesDir);
+          fs.copyFileSync(resolvedRulesDir, path.join(rulesDestDir, fileName));
         }
       }
 

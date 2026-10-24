@@ -837,19 +837,24 @@ function getRepositoryRoot() {
   return path.resolve(__dirname, "../../..");
 }
 function getAvailableSkills() {
-  const repoRoot = getRepositoryRoot();
+  const repoRoot2 = getRepositoryRoot();
   return {
     tale: {
       name: "tale",
       description: "ASD-STE100 Issue 9 Simplified Technical English rules and linter",
-      skillDir: path.join(repoRoot, "packages/tale/skill"),
-      rulesDir: path.join(repoRoot, "packages/tale/rules")
+      skillDir: path.join(repoRoot2, "packages/tale/skill"),
+      rulesDir: path.join(repoRoot2, "packages/tale/rules")
     },
     stubs: {
       name: "stubs",
       description: "Architecture-as-code planning and multi-language sidecar framework",
-      skillDir: path.join(repoRoot, ".agents/skills/stubs"),
-      rulesDir: path.join(repoRoot, "RULES.md")
+      skillDir: path.join(repoRoot2, ".agents/skills/stubs"),
+      rulesDir: path.join(repoRoot2, "RULES.md")
+    },
+    "abstract-grill": {
+      name: "abstract-grill",
+      description: "Stress-test architecture, abstractions, and deep modules with orthogonal paradigms",
+      skillDir: path.join(repoRoot2, ".agents/skills/abstract-grill")
     }
   };
 }
@@ -862,7 +867,11 @@ function installSkills(options) {
   const rulesDestDir = options.target === "global" ? path.join(baseDir, "rules") : path.join(baseDir, ".agents/rules");
   fs.mkdirSync(skillsDestDir, { recursive: true });
   fs.mkdirSync(rulesDestDir, { recursive: true });
-  for (const skillKey of options.skills) {
+  const requestedSkills = [...options.skills];
+  if ((requestedSkills.includes("stubs") || requestedSkills.includes("all")) && !requestedSkills.includes("abstract-grill")) {
+    requestedSkills.push("abstract-grill");
+  }
+  for (const skillKey of requestedSkills) {
     const key = skillKey.toLowerCase();
     const manifest = available[key];
     if (!manifest) {
@@ -871,16 +880,44 @@ function installSkills(options) {
     }
     try {
       const destSkillPath = path.join(skillsDestDir, manifest.name);
-      if (fs.existsSync(manifest.skillDir)) {
-        fs.mkdirSync(destSkillPath, { recursive: true });
-        copyRecursive(manifest.skillDir, destSkillPath);
+      let resolvedSkillDir = manifest.skillDir;
+      if (!fs.existsSync(resolvedSkillDir)) {
+        const fallbacks = [
+          path.join(__dirname, "skills", manifest.name),
+          path.join(__dirname, "../skills", manifest.name),
+          path.join(os.homedir(), ".gemini/config/skills", manifest.name),
+          path.join(repoRoot, ".agents/skills", manifest.name)
+        ];
+        const found = fallbacks.find((p2) => fs.existsSync(p2));
+        if (found) {
+          resolvedSkillDir = found;
+        }
       }
-      if (manifest.rulesDir && fs.existsSync(manifest.rulesDir)) {
-        if (fs.statSync(manifest.rulesDir).isDirectory()) {
-          copyRecursive(manifest.rulesDir, rulesDestDir);
+      if (fs.existsSync(resolvedSkillDir)) {
+        fs.mkdirSync(destSkillPath, { recursive: true });
+        copyRecursive(resolvedSkillDir, destSkillPath);
+      } else {
+        errors.push(`Could not locate source for skill: ${manifest.name}`);
+      }
+      let resolvedRulesDir = manifest.rulesDir;
+      if (resolvedRulesDir && !fs.existsSync(resolvedRulesDir)) {
+        const fileName = path.basename(resolvedRulesDir);
+        const fallbacks = [
+          path.join(__dirname, "rules", fileName),
+          path.join(__dirname, "../rules", fileName),
+          path.join(os.homedir(), ".gemini/config/rules", fileName)
+        ];
+        const found = fallbacks.find((p2) => fs.existsSync(p2));
+        if (found) {
+          resolvedRulesDir = found;
+        }
+      }
+      if (resolvedRulesDir && fs.existsSync(resolvedRulesDir)) {
+        if (fs.statSync(resolvedRulesDir).isDirectory()) {
+          copyRecursive(resolvedRulesDir, rulesDestDir);
         } else {
-          const fileName = path.basename(manifest.rulesDir);
-          fs.copyFileSync(manifest.rulesDir, path.join(rulesDestDir, fileName));
+          const fileName = path.basename(resolvedRulesDir);
+          fs.copyFileSync(resolvedRulesDir, path.join(rulesDestDir, fileName));
         }
       }
       if (options.target === "local" && manifest.rootFiles) {

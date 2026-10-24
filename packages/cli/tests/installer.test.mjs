@@ -59,3 +59,20 @@ test('installSkills updates AGENTS.md when tale is installed locally', () => {
     fs.rmSync(tempDir, { recursive: true, force: true });
   }
 });
+
+test('installSkills co-installs abstract-grill when stubs is requested', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'installer-stubs-test-'));
+  try {
+    const res = installSkills({
+      skills: ['stubs'],
+      target: 'local',
+      targetDir: tempDir,
+    });
+    assert.ok(res.installed.includes('stubs'));
+    assert.ok(res.installed.includes('abstract-grill'));
+    assert.ok(fs.existsSync(path.join(tempDir, '.agents/skills/stubs/SKILL.md')));
+    assert.ok(fs.existsSync(path.join(tempDir, '.agents/skills/abstract-grill/SKILL.md')));
+  } finally {
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  }
+});

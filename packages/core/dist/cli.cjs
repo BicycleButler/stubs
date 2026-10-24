@@ -219520,6 +219520,7 @@ init_credentials();
 // src/cli/router.ts
 var import_fs4 = require("fs");
 var path30 = __toESM(require("path"));
+var os4 = __toESM(require("os"));
 var import_child_process2 = require("child_process");
 init_okf();
 init_engine();
@@ -228536,9 +228537,9 @@ ${diagResult.mermaidCode}
       if (!isJson) console.log(`  \u2717 Error: Could not locate tale.mjs`);
     } else {
       try {
-        const os4 = require("os");
+        const os5 = require("os");
         const tmpJsonPath = path30.join(
-          os4.tmpdir(),
+          os5.tmpdir(),
           `stubs-tale-${Date.now()}-${Math.random().toString(36).slice(2)}.json`
         );
         const taleArgs = ["--json", "--output", tmpJsonPath];
@@ -229161,6 +229162,7 @@ export class {{pascalName}} {
   async seedAgentSkills(targetDir, options = {}) {
     const destDir = path30.join(targetDir, ".agents/skills/stubs");
     const SUB_SKILL_NAMES = [
+      "abstract-grilling",
       "auditing",
       "changelog",
       "conceptualizing",
@@ -229177,6 +229179,7 @@ export class {{pascalName}} {
     const SKILL_FILES = [
       ".agents/skills/stubs/SKILL.md",
       ".agents/skills/stubs/.gitignore",
+      ".agents/skills/abstract-grill/SKILL.md",
       ...SUB_SKILL_NAMES.map((name) => `.agents/skills/stubs/sub-skills/${name}/SKILL.md`)
     ];
     const repo = options.repo || "BicycleButler/stubs";
@@ -229204,12 +229207,22 @@ export class {{pascalName}} {
           path30.resolve(__dirname, "skills"),
           path30.resolve(__dirname, "../skills"),
           path30.resolve(__dirname, ".."),
-          path30.resolve(__dirname, "../..")
+          path30.resolve(__dirname, "../.."),
+          path30.resolve(__dirname, "../../.."),
+          path30.join(os4.homedir(), ".gemini/config"),
+          path30.join(os4.homedir(), ".gemini/config/skills")
         ];
         let fallbackFound = false;
         for (const root of candidateRoots) {
-          const srcPath = (0, import_fs4.existsSync)(path30.join(root, "SKILL.md")) ? path30.join(root, file.replace(/^\.agents\/skills\/stubs\//, "")) : path30.join(root, file);
-          if ((0, import_fs4.existsSync)(srcPath)) {
+          const candidateSrcs = [
+            path30.join(root, file),
+            path30.join(root, file.replace(/^\.agents\/skills\/stubs\//, "")),
+            path30.join(root, file.replace(/^\.agents\/skills\//, "")),
+            path30.join(root, "skills", file.replace(/^\.agents\/skills\//, "")),
+            path30.join(root, path30.basename(file))
+          ];
+          const srcPath = candidateSrcs.find((p) => (0, import_fs4.existsSync)(p));
+          if (srcPath) {
             const localPath = path30.join(targetDir, file);
             await import_fs4.promises.mkdir(path30.dirname(localPath), { recursive: true });
             const content = await import_fs4.promises.readFile(srcPath);
@@ -229225,6 +229238,31 @@ export class {{pascalName}} {
           );
         }
       }
+    }
+    const candidateBundles = [
+      path30.resolve(__dirname, "cli.cjs"),
+      path30.resolve(__dirname, "../dist/cli.cjs"),
+      path30.resolve(__dirname, "../../core/dist/cli.cjs"),
+      path30.resolve(__dirname, "../../../dist/cli.cjs")
+    ];
+    const sourceBundle = candidateBundles.find((p) => (0, import_fs4.existsSync)(p));
+    const targetBundleDir = path30.join(destDir, "dist");
+    if (sourceBundle && path30.resolve(sourceBundle) !== path30.resolve(path30.join(targetBundleDir, "cli.cjs"))) {
+      await import_fs4.promises.mkdir(targetBundleDir, { recursive: true });
+      await import_fs4.promises.copyFile(sourceBundle, path30.join(targetBundleDir, "cli.cjs"));
+      const sourceWasm = path30.join(path30.dirname(sourceBundle), "sql-wasm.wasm");
+      if ((0, import_fs4.existsSync)(sourceWasm)) {
+        await import_fs4.promises.copyFile(sourceWasm, path30.join(targetBundleDir, "sql-wasm.wasm"));
+      }
+    }
+    try {
+      const globalSkillDir = path30.join(os4.homedir(), ".gemini/config/skills/abstract-grill");
+      const abstractGrillSrc = path30.join(targetDir, ".agents/skills/abstract-grill/SKILL.md");
+      if ((0, import_fs4.existsSync)(abstractGrillSrc)) {
+        await import_fs4.promises.mkdir(globalSkillDir, { recursive: true });
+        await import_fs4.promises.copyFile(abstractGrillSrc, path30.join(globalSkillDir, "SKILL.md"));
+      }
+    } catch {
     }
     if (options.claude || options.allAgents) {
       const claudeSkillDir = path30.join(targetDir, ".claude/skills/stubs");

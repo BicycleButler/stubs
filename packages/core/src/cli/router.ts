@@ -1,5 +1,6 @@
 import { promises as fs, existsSync } from 'fs';
 import * as path from 'path';
+import * as os from 'os';
 import { execSync } from 'child_process';
 import { parseOkfSpec } from '../parser/okf';
 import { GraphEngine, TopologyEngine, normalizePosixPath } from '../graph/engine';
@@ -1904,6 +1905,7 @@ export class {{pascalName}} {
   ): Promise<void> {
     const destDir = path.join(targetDir, '.agents/skills/stubs');
     const SUB_SKILL_NAMES = [
+      'abstract-grilling',
       'auditing',
       'changelog',
       'conceptualizing',
@@ -1921,6 +1923,7 @@ export class {{pascalName}} {
     const SKILL_FILES = [
       '.agents/skills/stubs/SKILL.md',
       '.agents/skills/stubs/.gitignore',
+      '.agents/skills/abstract-grill/SKILL.md',
       ...SUB_SKILL_NAMES.map((name) => `.agents/skills/stubs/sub-skills/${name}/SKILL.md`),
     ];
 
@@ -1946,19 +1949,27 @@ export class {{pascalName}} {
             { cause: fetchErr },
           );
         }
-        // If remote fetch fails during non-install (for example, update in offline environment), fallback to local bundled assets
+        // Fallback to local bundled assets
         const candidateRoots = [
           path.resolve(__dirname, 'skills'),
           path.resolve(__dirname, '../skills'),
           path.resolve(__dirname, '..'),
           path.resolve(__dirname, '../..'),
+          path.resolve(__dirname, '../../..'),
+          path.join(os.homedir(), '.gemini/config'),
+          path.join(os.homedir(), '.gemini/config/skills'),
         ];
         let fallbackFound = false;
         for (const root of candidateRoots) {
-          const srcPath = existsSync(path.join(root, 'SKILL.md'))
-            ? path.join(root, file.replace(/^\.agents\/skills\/stubs\//, ''))
-            : path.join(root, file);
-          if (existsSync(srcPath)) {
+          const candidateSrcs = [
+            path.join(root, file),
+            path.join(root, file.replace(/^\.agents\/skills\/stubs\//, '')),
+            path.join(root, file.replace(/^\.agents\/skills\//, '')),
+            path.join(root, 'skills', file.replace(/^\.agents\/skills\//, '')),
+            path.join(root, path.basename(file)),
+          ];
+          const srcPath = candidateSrcs.find((p) => existsSync(p));
+          if (srcPath) {
             const localPath = path.join(targetDir, file);
             await fs.mkdir(path.dirname(localPath), { recursive: true });
             const content = await fs.readFile(srcPath);
@@ -1974,6 +1985,36 @@ export class {{pascalName}} {
           );
         }
       }
+    }
+
+    // Refresh CLI bundle in target project's .agents/skills/stubs/dist if candidate bundle exists
+    const candidateBundles = [
+      path.resolve(__dirname, 'cli.cjs'),
+      path.resolve(__dirname, '../dist/cli.cjs'),
+      path.resolve(__dirname, '../../core/dist/cli.cjs'),
+      path.resolve(__dirname, '../../../dist/cli.cjs'),
+    ];
+    const sourceBundle = candidateBundles.find((p) => existsSync(p));
+    const targetBundleDir = path.join(destDir, 'dist');
+    if (sourceBundle && path.resolve(sourceBundle) !== path.resolve(path.join(targetBundleDir, 'cli.cjs'))) {
+      await fs.mkdir(targetBundleDir, { recursive: true });
+      await fs.copyFile(sourceBundle, path.join(targetBundleDir, 'cli.cjs'));
+      const sourceWasm = path.join(path.dirname(sourceBundle), 'sql-wasm.wasm');
+      if (existsSync(sourceWasm)) {
+        await fs.copyFile(sourceWasm, path.join(targetBundleDir, 'sql-wasm.wasm'));
+      }
+    }
+
+    // Make sure global abstract-grill skill is synced
+    try {
+      const globalSkillDir = path.join(os.homedir(), '.gemini/config/skills/abstract-grill');
+      const abstractGrillSrc = path.join(targetDir, '.agents/skills/abstract-grill/SKILL.md');
+      if (existsSync(abstractGrillSrc)) {
+        await fs.mkdir(globalSkillDir, { recursive: true });
+        await fs.copyFile(abstractGrillSrc, path.join(globalSkillDir, 'SKILL.md'));
+      }
+    } catch {
+      // Non-fatal if global config is not writable
     }
 
     // Claude Code adapter (.claude/skills/stubs/SKILL.md)
