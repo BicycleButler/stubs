@@ -489,7 +489,8 @@ export function extractCodeComments(content) {
 
   const isRegexStart = (lc, lw) => {
     if (!lc) return true;
-    if ('(=[;,!?:&|~^%*<>+-{'.includes(lc)) return true;
+    if (lc === '<' || lc === '*') return false;
+    if ('(=[;,!?:&|~^%+-{'.includes(lc)) return true;
     return [
       'return',
       'case',
@@ -1399,7 +1400,8 @@ export function formatCodeComments(codeContent) {
 
   const isRegexStart = (lc, lw) => {
     if (!lc) return true;
-    if ('(=[;,!?:&|~^%*<>+-{'.includes(lc)) return true;
+    if (lc === '<' || lc === '*') return false;
+    if ('(=[;,!?:&|~^%+-{'.includes(lc)) return true;
     return [
       'return',
       'case',
@@ -1556,6 +1558,8 @@ export function formatCodeComments(codeContent) {
         fixCount += fixes;
       }
       i = commentEnd;
+      lastChar = '\n';
+      lastWord = '';
       continue;
     }
 
@@ -1607,6 +1611,8 @@ export function formatCodeComments(codeContent) {
         fixed += formattedLines.join('\n');
       }
       i = actualEnd;
+      lastChar = '/';
+      lastWord = '';
       continue;
     }
 

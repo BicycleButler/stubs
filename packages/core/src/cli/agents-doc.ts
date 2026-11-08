@@ -128,77 +128,43 @@ export function generateStubsInstructionBlock(targetDir: string, _projectName?: 
   lines.push('## Architecture Graph & GraphRAG Intelligence');
   lines.push('');
   lines.push(
-    'AST dependency graph in `.stubs/graph.sqlite` with Louvain community detection, PageRank centrality, FTS5 BM25 hybrid search.',
-  );
-  lines.push('');
-  lines.push(
-    '- Querying GraphRAG: `npx stubs query "<query>"` (preferred single call, 3-tier progressive disclosure):',
+    'AST dependency graph in `.stubs/graph.sqlite`. Query via `npx stubs query "<query>"`:',
   );
   lines.push(
-    '  - `npx stubs query "map:"`: Level 0 Macro Map (subsystem communities, hubs, domains)',
+    '- `map:`: Level 0 Macro Map (subsystem communities, hubs, domains)',
   );
   lines.push(
-    '  - `npx stubs query "stub: <target>"`: Level 1 Interface Skeleton Stubs (stripped signatures, types, line links)',
+    '- `stub: <target>`: Level 1 Interface Skeleton Stubs (stripped signatures, types, line links)',
   );
   lines.push(
-    '  - `npx stubs query "explain: <target>"`: Level 2 Symbol Profile (callers, callees, PageRank)',
+    '- `explain: <target>`: Level 2 Symbol Profile (callers, callees, PageRank)',
   );
-  lines.push('  - `npx stubs query "path: <A> to <B>"`: Level 2 Shortest dependency path chain');
+  lines.push('- `path: <A> to <B>`: Shortest dependency path chain');
   lines.push(
-    '  - `npx stubs query "blast: <target>"`: Level 2 Downstream impact radius and dependents',
+    '- `blast: <target>`: Downstream impact radius and dependents',
   );
-  lines.push('  - `npx stubs query "pkg:<package> <query>"`: Monorepo package-scoped query');
+  lines.push('- `pkg:<package> <query>`: Monorepo package-scoped query');
   lines.push(
-    '  - `npx stubs query "<concept>"`: Multi-hop token-budgeted GraphRAG context retrieval',
-  );
-  lines.push('- Model Context Protocol (MCP): connect through standard JSON-RPC 2.0 stdio:');
-  lines.push('  ```json');
-  lines.push('  {');
-  lines.push('    "mcpServers": {');
-  lines.push('      "stubs": {');
-  lines.push('        "command": "node",');
-  lines.push('        "args": [".agents/skills/stubs/dist/cli.cjs", "mcp"]');
-  lines.push('      }');
-  lines.push('    }');
-  lines.push('  }');
-  lines.push('  ```');
-  lines.push(
-    '  (or `"command": "npx", "args": ["stubs", "mcp"]`). Ultra-lean suite exposes `stubs_query` and `stubs_scan`.',
-  );
-  lines.push('- Monorepo & workspace boundary resolution:');
-  lines.push(
-    '  - Discovers package boundaries through `package.json` (`workspaces`), `pnpm-workspace.yaml`, `Cargo.toml` (`[workspace]`), `go.work`.',
-  );
-  lines.push(
-    '  - Path aliases in `tsconfig.json` (`compilerOptions.paths`) and package exports map directly to canonical source files.',
-  );
-  lines.push(
-    '  - Monorepo query prefix: `pkg:<package>` (for example, `npx stubs query "pkg:billing invoice"`).',
-  );
-  lines.push(
-    '- Automatic graph maintenance: auto-checks file mtime (<30ms) for 0% staleness. Refresh manually through `npx stubs scan`.',
+    '- **Automatic Graph Maintenance:** Auto-checks file mtime (<30ms). Refresh and synchronize via `npx stubs run`.',
   );
   lines.push('');
 
-  // 3. CLI Commands
-  lines.push('## CLI Commands');
+  // 3. Core CLI Commands
+  lines.push('## Core CLI Commands');
   lines.push('');
-  lines.push('- Scan & Index Code Graph: `npx stubs scan`');
-  lines.push('- Query GraphRAG Subgraph: `npx stubs query "<question>"`');
   lines.push(
-    '- Unified Surgical Query: `npx stubs query "explain: <target>"` | `path: <A> to <B>` | `blast: <target>`',
+    '- **Unified Repository Pipeline:** `npx stubs run` (runs scan, map, sand, lint-arch & automated tale remediation)',
   );
-  lines.push('- Concrete Spec Grilling: `npx stubs grill <file.md>`');
-  lines.push('- Abstract Architecture Grilling: `npx stubs abstract-grill <file.md>`');
   lines.push(
-    '- Architecture Mapping: `npx stubs map --generate` (refreshes prerequisite domain maps + root context-map.md)',
+    '- **GraphRAG Surgical Query:** `npx stubs query "explain: <target>"` | `path: <A> to <B>` | `blast: <target>`',
   );
-  lines.push('- Domain Maps Only: `npx stubs map --domains` | `npx stubs map --domain <name>`');
-  lines.push('- Export Knowledge Graph: `npx stubs export <obsidian|wiki> [--out <dir>]`');
-  lines.push('- Start MCP Stdio Server: `npx stubs mcp`');
-  lines.push('- Install Assistant Rules: `npx stubs hook install`');
-  lines.push('- Audit ASD-STE100 Compliance: `npx stubs tale`');
-  lines.push('- Auto-Remediate Prose & Formatting: `npx stubs tale --fix`');
+  lines.push(
+    '- **Architecture Mapping:** `npx stubs map --generate` (refreshes prerequisite domain maps + root context-map.md)',
+  );
+  lines.push(
+    '- **Spec & Architecture Grilling:** `npx stubs grill <file.md>` | `npx stubs abstract-grill <file.md>`',
+  );
+  lines.push('- **Export Knowledge Graph:** `npx stubs export <obsidian|wiki> [--out <dir>]`');
 
   return lines.join('\n');
 }
@@ -329,7 +295,10 @@ export async function syncAgentsDoc(
         continue;
       }
 
-      if (headerLine.toLowerCase() === 'cli commands') {
+      if (
+        headerLine.toLowerCase() === 'cli commands' ||
+        headerLine.toLowerCase() === 'core cli commands'
+      ) {
         // Separate custom repository commands from stubs commands
         const lines = part.split('\n').slice(1);
         for (const line of lines) {

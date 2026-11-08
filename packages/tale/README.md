@@ -8,7 +8,7 @@ ASD-STE100 Issue 9 Simplified Technical English (STE) governance, rules, and lin
 
 1. **Rule Engine**: Validates sentence lengths, active voice, approved vocabulary, and ADR-001 structural formatting.
 2. **Linter CLI**: `tale-lint` can scan markdown documents and source code comments.
-3. **AI Agent Skill**: Ready-to-use `.agents/skills/tale` skill and `.agents/rules/agent-conciseness-and-tale.md` rule.
+3. **AI Agent Skill**: Ready-to-use `.agents/skills/tale` skill with automated remediation via `stubs tale --fix`.
 
 ## Installation
 

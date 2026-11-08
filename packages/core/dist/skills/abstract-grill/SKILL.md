@@ -12,6 +12,7 @@ This skill stress-tests software architecture, general abstractions, and deep mo
 - When the user invokes the `/abstract-grill` slash command.
 - When designing high-level domain abstractions, system boundaries, and reusable primitives.
 - When evaluating architectural initiatives in `knowledge/planning/` before writing concrete sidecars.
+- For autonomous multi-round self-selection, planning updates, and code implementation loops, use [../auto-abstract-grill/SKILL.md].
 
 ## 1. Core Principles
 

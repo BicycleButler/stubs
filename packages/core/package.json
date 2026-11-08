@@ -1,6 +1,6 @@
 {
   "name": "@bicyclebutler/stubs-core",
-  "version": "1.4.6",
+  "version": "1.4.7",
   "description": "stubs AST graph engine, OKF parser, and architecture sidecar compiler",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

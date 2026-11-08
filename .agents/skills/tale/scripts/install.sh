@@ -91,10 +91,6 @@ fi
 if [[ -n "${SKILL_ROOT}" ]] && [[ -f "${SKILL_ROOT}/SKILL.md" ]]; then
   echo "[tale-install] Using local source tree at: ${SKILL_ROOT}"
   SOURCE_DIR="${SKILL_ROOT}"
-  RULES_SRC="$(cd "${SKILL_ROOT}/../rules" 2>/dev/null && pwd)/agent-conciseness-and-tale.md"
-  if [[ ! -f "${RULES_SRC}" ]]; then
-    RULES_SRC="$(cd "${SKILL_ROOT}/../../rules" 2>/dev/null && pwd)/agent-conciseness-and-tale.md"
-  fi
 else
   echo "[tale-install] Fetching tale skill from ${REPO_URL} (${BRANCH})..."
   mkdir -p "${TMP_DIR}"
@@ -106,11 +102,10 @@ else
 
   (
     cd "${TMP_DIR}"
-    git sparse-checkout set packages/tale/skill packages/tale/rules >/dev/null 2>&1 || true
+    git sparse-checkout set packages/tale/skill >/dev/null 2>&1 || true
   )
 
   SOURCE_DIR="${TMP_DIR}/packages/tale/skill"
-  RULES_SRC="${TMP_DIR}/packages/tale/rules/agent-conciseness-and-tale.md"
 fi
 
 if [[ ! -f "${SOURCE_DIR}/SKILL.md" ]]; then
@@ -144,11 +139,7 @@ if [[ -d "${SOURCE_DIR}/resources" ]]; then
   cp -R "${SOURCE_DIR}/resources/." "${SKILL_DEST}/resources/"
 fi
 
-# Copy governance rules
-if [[ -f "${RULES_SRC}" ]]; then
-  cp "${RULES_SRC}" "${RULES_DEST}/agent-conciseness-and-tale.md"
-  echo "  ✓ Installed governance rule: ${RULES_DEST}/agent-conciseness-and-tale.md"
-fi
+# Governance rules are maintained centrally in RULES.md
 
 # Make scripts executable
 if [[ -d "${SKILL_DEST}/scripts" ]]; then

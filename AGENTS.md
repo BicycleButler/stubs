@@ -11,48 +11,22 @@ Module specs: co-located `*.ts.md` sidecars in `src/`.
 
 ## Architecture Graph & GraphRAG Intelligence
 
-AST dependency graph in `.stubs/graph.sqlite` with Louvain community detection, PageRank centrality, FTS5 BM25 hybrid search.
+AST dependency graph in `.stubs/graph.sqlite`. Query via `npx stubs query "<query>"`:
+- `map:`: Level 0 Macro Map (subsystem communities, hubs, domains)
+- `stub: <target>`: Level 1 Interface Skeleton Stubs (stripped signatures, types, line links)
+- `explain: <target>`: Level 2 Symbol Profile (callers, callees, PageRank)
+- `path: <A> to <B>`: Shortest dependency path chain
+- `blast: <target>`: Downstream impact radius and dependents
+- `pkg:<package> <query>`: Monorepo package-scoped query
+- **Automatic Graph Maintenance:** Auto-checks file mtime (<30ms). Refresh and synchronize via `npx stubs run`.
 
-- Querying GraphRAG: `npx stubs query "<query>"` (preferred single call, 3-tier progressive disclosure):
-  - `npx stubs query "map:"`: Level 0 Macro Map (subsystem communities, hubs, domains)
-  - `npx stubs query "stub: <target>"`: Level 1 Interface Skeleton Stubs (stripped signatures, types, line links)
-  - `npx stubs query "explain: <target>"`: Level 2 Symbol Profile (callers, callees, PageRank)
-  - `npx stubs query "path: <A> to <B>"`: Level 2 Shortest dependency path chain
-  - `npx stubs query "blast: <target>"`: Level 2 Downstream impact radius and dependents
-  - `npx stubs query "pkg:<package> <query>"`: Monorepo package-scoped query
-  - `npx stubs query "<concept>"`: Multi-hop token-budgeted GraphRAG context retrieval
-- Model Context Protocol (MCP): connect through standard JSON-RPC 2.0 stdio:
-  ```json
-  {
-    "mcpServers": {
-      "stubs": {
-        "command": "node",
-        "args": [".agents/skills/stubs/dist/cli.cjs", "mcp"]
-      }
-    }
-  }
-  ```
-  (or `"command": "npx", "args": ["stubs", "mcp"]`). Ultra-lean suite exposes `stubs_query` and `stubs_scan`.
-- Monorepo & workspace boundary resolution:
-  - Discovers package boundaries through `package.json` (`workspaces`), `pnpm-workspace.yaml`, `Cargo.toml` (`[workspace]`), `go.work`.
-  - Path aliases in `tsconfig.json` (`compilerOptions.paths`) and package exports map directly to canonical source files.
-  - Monorepo query prefix: `pkg:<package>` (for example, `npx stubs query "pkg:billing invoice"`).
-- Automatic graph maintenance: auto-checks file mtime (<30ms) for 0% staleness. Refresh manually through `npx stubs scan`.
+## Core CLI Commands
 
-## CLI Commands
-
-- Scan & Index Code Graph: `npx stubs scan`
-- Query GraphRAG Subgraph: `npx stubs query "<question>"`
-- Unified Surgical Query: `npx stubs query "explain: <target>"` | `path: <A> to <B>` | `blast: <target>`
-- Concrete Spec Grilling: `npx stubs grill <file.md>`
-- Abstract Architecture Grilling: `npx stubs abstract-grill <file.md>`
-- Architecture Mapping: `npx stubs map --generate` (refreshes prerequisite domain maps + root context-map.md)
-- Domain Maps Only: `npx stubs map --domains` | `npx stubs map --domain <name>`
-- Export Knowledge Graph: `npx stubs export <obsidian|wiki> [--out <dir>]`
-- Start MCP Stdio Server: `npx stubs mcp`
-- Install Assistant Rules: `npx stubs hook install`
-- Audit ASD-STE100 Compliance: `npx stubs tale`
-- Auto-Remediate Prose & Formatting: `npx stubs tale --fix`
+- **Unified Repository Pipeline:** `npx stubs run` (runs scan, map, sand, lint-arch & automated tale remediation)
+- **GraphRAG Surgical Query:** `npx stubs query "explain: <target>"` | `path: <A> to <B>` | `blast: <target>`
+- **Architecture Mapping:** `npx stubs map --generate` (refreshes prerequisite domain maps + root context-map.md)
+- **Spec & Architecture Grilling:** `npx stubs grill <file.md>` | `npx stubs abstract-grill <file.md>`
+- **Export Knowledge Graph:** `npx stubs export <obsidian|wiki> [--out <dir>]`
 <!-- stubs-instructions-end -->
 
 ## Monorepo Workspaces & Toolchain

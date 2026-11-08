@@ -1,15 +1,20 @@
 ---
 name: tale
 description: >-
-  Enforces ASD-STE100 Issue 9 Simplified Technical English (STE) rules across AI agent
-  communication, codebase documentation, architecture records, commit messages, and PRs.
-  Use this skill when authoring or reviewing documentation, checking STE compliance,
-  or running the STE linter.
+  Enforces ASD-STE100 Issue 9 Simplified Technical English (STE) rules for authoring
+  NEW markdown files and NEW code comments only. Do NOT invoke this skill when modifying
+  or editing existing markdown files or code comments; automated script fixes are applied via 'npx stubs run'.
 ---
 
 # ASD-STE100 Issue 9 Simplified Technical English (STE)
 
-This skill governs the written communication style for **AI agents, code comments, architecture records, pull request descriptions, and user-facing reports**.
+This skill governs the written communication style for **authoring new markdown documentation and new code comments**.
+
+> [!IMPORTANT] Invariant Invocation Rule: New Files & New Comments Only
+> - **Invoke this skill ONLY when writing NEW markdown files or NEW code comments from scratch.**
+> - **When editing, modifying, or refactoring existing markdown files or comments, do NOT invoke this skill.**
+> - Routine script-level fixes (semicolons, contractions, table formatting, basic vocabulary) are handled automatically by `npx stubs run`.
+> - Do not manually edit prose or formatting in existing files unless explicitly requested by the user.
 
 All documentation and agent output must obey the writing rules and controlled vocabulary defined in **ASD-STE100 Issue 9 (January 15, 2025)** ([resources/ASD-STE100_ISSUE9.pdf](resources/ASD-STE100_ISSUE9.pdf)).
 
@@ -26,7 +31,24 @@ All documentation and agent output must obey the writing rules and controlled vo
 7. **Multi-Word Noun Limit:** Multi-word nouns must not exceed **three words** (for example, _APU shutoff valve_).
 8. **Paragraph Limits:** Maximum of **one topic** and **six sentences** per paragraph.
 
-## 2. Fast Reference Routing
+## 2. CLI Invocation & Pipeline Automation
+
+The preferred command for repository health, graph maintenance, and automated TALE governance is `npx stubs run`:
+
+- Invocation | Behavior
+- `npx stubs run` | Unified pipeline: scan, map, sand, lint-arch, and automated tale remediation (`--fix` by default)
+- `npx stubs run --check` | Unified pipeline in read-only audit mode
+- `npx stubs tale` | Audit only (used when specifically requested by user)
+- `npx stubs tale --fix` | Direct tale auto-remediation (used when specifically requested by user)
+
+### Pipeline Governance Workflow
+
+1. **Unified Pipeline Automation (Default):**
+   Run `npx stubs run` as part of repository verification. It automatically applies all deterministic fixes (contractions, semicolons, table formatting, and vocabulary replacements) across the workspace. Agents do not need to manually edit existing documents.
+2. **Authoring New Markdown or Comments:**
+   When creating brand-new files or writing initial documentation, apply the Eight Non-Negotiable STE rules directly. Run `npx stubs run` upon completion.
+3. **User-Requested In-Depth Review:**
+   Only when a user explicitly asks for deeper vocabulary polishing or manual sentence restructuring must agents run `npx stubs tale --agent` and apply fine-grained replacements.## 2. Fast Reference Routing
 
 When crafting text, consult these specialized sub-references:
 
@@ -97,16 +119,21 @@ bash .agents/skills/tale/scripts/install.sh --project /path/to/project
 bash .agents/skills/tale/scripts/install.sh --global
 ```
 
-## 6. Token-Optimized Agent Remediation Loop
+## 6. Token-Optimized Agent Remediation Loop (RECOMMENDED WORKFLOW)
 
-When generating responses, authoring documentation, or writing code comments in this repository:
+**When authoring new documentation or new code comments in this repository:**
 
-1. **Write Plain STE:** Follow the Eight Non-Negotiable Rules (short active sentences, no semicolons, no contractions, <=3-word noun clusters).
-2. **Auto-Remediate:** Run `npx stubs tale --fix` (or `npm run tale:fix`) to repair language, formatting, safe vocabulary, code comment keywords, and markdown tables automatically.
-3. **Inspect Remaining Items with Zero File-Reading Overhead:** If violations remain, run `npx stubs tale --agent`.
-   - Each item includes `file`, `line`, `target` (the exact sentence), and `suggestedFix`.
-   - Apply `replace_file_content` directly using `target` and `suggestedFix` without reading the whole file with `view_file`.
-4. **Verify Compliance:** Run `npx stubs tale` (or `npm run tale`) and confirm zero remaining violations across all scanned files.
+1. **Write Plain STE for New Files/Comments:** Follow the Eight Non-Negotiable Rules (short active sentences, no semicolons, no contractions, <=3-word noun clusters).
+2. **Unified Pipeline Auto-Remediation:** Run `npx stubs run`. The pipeline automatically executes AST indexing, domain mapping, sidecar sanding, architectural linting, and deterministic TALE auto-remediation (`--fix` by default).
+   - The script applies fixes directly to file contents.
+   - Agents do NOT manually rewrite existing files or comments.
+3. **Editing Existing Documents or Comments:**
+   - Do NOT invoke the TALE skill when making edits to existing files.
+   - Run `npx stubs run` to let deterministic automated fixes handle mechanical formatting.
+4. **User-Requested Detailed Vocabulary Review:**
+   - Only when explicitly requested by a user to review vocabulary or formatting in detail, run `npx stubs tale --agent`.
+   - Each item includes `file`, `line`, `target`, and `suggestedFix`.
+   - Apply direct replacement using `target` and `suggestedFix` without reading the whole file.
 
 ## 7. Agent Reasoning & Internal Monologue Standard
 

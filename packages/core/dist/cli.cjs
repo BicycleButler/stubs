@@ -227264,75 +227264,41 @@ function generateStubsInstructionBlock(targetDir, _projectName) {
   lines.push("## Architecture Graph & GraphRAG Intelligence");
   lines.push("");
   lines.push(
-    "AST dependency graph in `.stubs/graph.sqlite` with Louvain community detection, PageRank centrality, FTS5 BM25 hybrid search."
+    'AST dependency graph in `.stubs/graph.sqlite`. Query via `npx stubs query "<query>"`:'
+  );
+  lines.push(
+    "- `map:`: Level 0 Macro Map (subsystem communities, hubs, domains)"
+  );
+  lines.push(
+    "- `stub: <target>`: Level 1 Interface Skeleton Stubs (stripped signatures, types, line links)"
+  );
+  lines.push(
+    "- `explain: <target>`: Level 2 Symbol Profile (callers, callees, PageRank)"
+  );
+  lines.push("- `path: <A> to <B>`: Shortest dependency path chain");
+  lines.push(
+    "- `blast: <target>`: Downstream impact radius and dependents"
+  );
+  lines.push("- `pkg:<package> <query>`: Monorepo package-scoped query");
+  lines.push(
+    "- **Automatic Graph Maintenance:** Auto-checks file mtime (<30ms). Refresh and synchronize via `npx stubs run`."
   );
   lines.push("");
-  lines.push(
-    '- Querying GraphRAG: `npx stubs query "<query>"` (preferred single call, 3-tier progressive disclosure):'
-  );
-  lines.push(
-    '  - `npx stubs query "map:"`: Level 0 Macro Map (subsystem communities, hubs, domains)'
-  );
-  lines.push(
-    '  - `npx stubs query "stub: <target>"`: Level 1 Interface Skeleton Stubs (stripped signatures, types, line links)'
-  );
-  lines.push(
-    '  - `npx stubs query "explain: <target>"`: Level 2 Symbol Profile (callers, callees, PageRank)'
-  );
-  lines.push('  - `npx stubs query "path: <A> to <B>"`: Level 2 Shortest dependency path chain');
-  lines.push(
-    '  - `npx stubs query "blast: <target>"`: Level 2 Downstream impact radius and dependents'
-  );
-  lines.push('  - `npx stubs query "pkg:<package> <query>"`: Monorepo package-scoped query');
-  lines.push(
-    '  - `npx stubs query "<concept>"`: Multi-hop token-budgeted GraphRAG context retrieval'
-  );
-  lines.push("- Model Context Protocol (MCP): connect through standard JSON-RPC 2.0 stdio:");
-  lines.push("  ```json");
-  lines.push("  {");
-  lines.push('    "mcpServers": {');
-  lines.push('      "stubs": {');
-  lines.push('        "command": "node",');
-  lines.push('        "args": [".agents/skills/stubs/dist/cli.cjs", "mcp"]');
-  lines.push("      }");
-  lines.push("    }");
-  lines.push("  }");
-  lines.push("  ```");
-  lines.push(
-    '  (or `"command": "npx", "args": ["stubs", "mcp"]`). Ultra-lean suite exposes `stubs_query` and `stubs_scan`.'
-  );
-  lines.push("- Monorepo & workspace boundary resolution:");
-  lines.push(
-    "  - Discovers package boundaries through `package.json` (`workspaces`), `pnpm-workspace.yaml`, `Cargo.toml` (`[workspace]`), `go.work`."
-  );
-  lines.push(
-    "  - Path aliases in `tsconfig.json` (`compilerOptions.paths`) and package exports map directly to canonical source files."
-  );
-  lines.push(
-    '  - Monorepo query prefix: `pkg:<package>` (for example, `npx stubs query "pkg:billing invoice"`).'
-  );
-  lines.push(
-    "- Automatic graph maintenance: auto-checks file mtime (<30ms) for 0% staleness. Refresh manually through `npx stubs scan`."
-  );
+  lines.push("## Core CLI Commands");
   lines.push("");
-  lines.push("## CLI Commands");
-  lines.push("");
-  lines.push("- Scan & Index Code Graph: `npx stubs scan`");
-  lines.push('- Query GraphRAG Subgraph: `npx stubs query "<question>"`');
   lines.push(
-    '- Unified Surgical Query: `npx stubs query "explain: <target>"` | `path: <A> to <B>` | `blast: <target>`'
+    "- **Unified Repository Pipeline:** `npx stubs run` (runs scan, map, sand, lint-arch & automated tale remediation)"
   );
-  lines.push("- Concrete Spec Grilling: `npx stubs grill <file.md>`");
-  lines.push("- Abstract Architecture Grilling: `npx stubs abstract-grill <file.md>`");
   lines.push(
-    "- Architecture Mapping: `npx stubs map --generate` (refreshes prerequisite domain maps + root context-map.md)"
+    '- **GraphRAG Surgical Query:** `npx stubs query "explain: <target>"` | `path: <A> to <B>` | `blast: <target>`'
   );
-  lines.push("- Domain Maps Only: `npx stubs map --domains` | `npx stubs map --domain <name>`");
-  lines.push("- Export Knowledge Graph: `npx stubs export <obsidian|wiki> [--out <dir>]`");
-  lines.push("- Start MCP Stdio Server: `npx stubs mcp`");
-  lines.push("- Install Assistant Rules: `npx stubs hook install`");
-  lines.push("- Audit ASD-STE100 Compliance: `npx stubs tale`");
-  lines.push("- Auto-Remediate Prose & Formatting: `npx stubs tale --fix`");
+  lines.push(
+    "- **Architecture Mapping:** `npx stubs map --generate` (refreshes prerequisite domain maps + root context-map.md)"
+  );
+  lines.push(
+    "- **Spec & Architecture Grilling:** `npx stubs grill <file.md>` | `npx stubs abstract-grill <file.md>`"
+  );
+  lines.push("- **Export Knowledge Graph:** `npx stubs export <obsidian|wiki> [--out <dir>]`");
   return lines.join("\n");
 }
 async function syncAgentsDoc(targetDir, options = {}) {
@@ -227424,7 +227390,7 @@ ${post}`;
       if (isStubsSection) {
         continue;
       }
-      if (headerLine.toLowerCase() === "cli commands") {
+      if (headerLine.toLowerCase() === "cli commands" || headerLine.toLowerCase() === "core cli commands") {
         const lines = part.split("\n").slice(1);
         for (const line of lines) {
           const trimmed = line.trim();
@@ -227519,6 +227485,7 @@ var CliRouter = class {
         case "grill":
           return await this.handleGrill(context);
         case "abstract-grill":
+        case "auto-abstract-grill":
           return await this.handleAbstractGrill(context);
         case "sand":
         case "sync":
@@ -227657,6 +227624,7 @@ Commands:
   phase <action>      Manage 5-phase lifecycle. Actions: status [file], check <file>, advance <file> [targetPhase]
   grill <file>       Execute the Interactive Grill Engine on a sidecar specification.
   abstract-grill <file> Execute the Abstract Grill Engine on concepts, architectures, or specs.
+  auto-abstract-grill <file> Execute the Abstract Grill Engine autonomously (non-interactive).
   materialize <file>  Parse, extract, typecheck, and write executable code from sidecar.
   audit [options]     Audit sidecars or inspect hotspots (--hotspots, --cycles, --json).
   sand [file]         Synchronize sidecars and code files (with auto-healing depends_on).
@@ -227850,9 +227818,10 @@ Options:
     }
   }
   async handleAbstractGrill(ctx) {
+    const isAuto = ctx.command === "auto-abstract-grill";
     let targetFile = "";
     let depth = "standard_drill";
-    let nonInteractive = false;
+    let nonInteractive = isAuto;
     let outputTarget = "sidecar";
     let i = 0;
     while (i < ctx.args.length) {
@@ -227918,8 +227887,9 @@ Options:
       }
     }
     if (!targetFile) {
-      console.error('Error: "abstract-grill" command requires a file path argument.');
-      console.error("Usage: stubs abstract-grill <file.md> [options]");
+      const cmdName = isAuto ? "auto-abstract-grill" : "abstract-grill";
+      console.error(`Error: "${cmdName}" command requires a file path argument.`);
+      console.error(`Usage: stubs ${cmdName} <file.md> [options]`);
       return 1;
     }
     const fullPath = path30.resolve(targetFile);
@@ -229111,6 +229081,7 @@ export class {{pascalName}} {
     const SUB_SKILL_NAMES = [
       "abstract-grilling",
       "auditing",
+      "auto-abstract-grilling",
       "changelog",
       "conceptualizing",
       "context",
@@ -229127,6 +229098,7 @@ export class {{pascalName}} {
       ".agents/skills/stubs/SKILL.md",
       ".agents/skills/stubs/.gitignore",
       ".agents/skills/abstract-grill/SKILL.md",
+      ".agents/skills/auto-abstract-grill/SKILL.md",
       ...SUB_SKILL_NAMES.map((name) => `.agents/skills/stubs/sub-skills/${name}/SKILL.md`)
     ];
     const repo = options.repo || "BicycleButler/stubs";
@@ -229208,6 +229180,12 @@ export class {{pascalName}} {
       if ((0, import_fs4.existsSync)(abstractGrillSrc)) {
         await import_fs4.promises.mkdir(globalSkillDir, { recursive: true });
         await import_fs4.promises.copyFile(abstractGrillSrc, path30.join(globalSkillDir, "SKILL.md"));
+      }
+      const globalAutoSkillDir = path30.join(os4.homedir(), ".gemini/config/skills/auto-abstract-grill");
+      const autoAbstractGrillSrc = path30.join(targetDir, ".agents/skills/auto-abstract-grill/SKILL.md");
+      if ((0, import_fs4.existsSync)(autoAbstractGrillSrc)) {
+        await import_fs4.promises.mkdir(globalAutoSkillDir, { recursive: true });
+        await import_fs4.promises.copyFile(autoAbstractGrillSrc, path30.join(globalAutoSkillDir, "SKILL.md"));
       }
     } catch {
     }

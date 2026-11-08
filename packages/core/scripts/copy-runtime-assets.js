@@ -168,6 +168,13 @@ if (fs.existsSync(abstractGrillSrc)) {
     fs.cpSync(abstractGrillSrc, dest, { recursive: true });
   }
 }
+const autoAbstractGrillSrc = path.join(repoRoot, '.agents/skills/auto-abstract-grill');
+if (fs.existsSync(autoAbstractGrillSrc)) {
+  for (const dir of skillTargetDirs) {
+    const dest = path.join(dir, 'skills/auto-abstract-grill');
+    fs.cpSync(autoAbstractGrillSrc, dest, { recursive: true });
+  }
+}
 console.log(`Agent skills staged across ${skillTargetDirs.length} dist folders.`);
 
 // Stage web client assets

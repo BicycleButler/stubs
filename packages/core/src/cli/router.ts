@@ -78,6 +78,7 @@ export class CliRouter {
         case 'grill':
           return await this.handleGrill(context);
         case 'abstract-grill':
+        case 'auto-abstract-grill':
           return await this.handleAbstractGrill(context);
         case 'sand':
         case 'sync':
@@ -218,6 +219,7 @@ Commands:
   phase <action>      Manage 5-phase lifecycle. Actions: status [file], check <file>, advance <file> [targetPhase]
   grill <file>       Execute the Interactive Grill Engine on a sidecar specification.
   abstract-grill <file> Execute the Abstract Grill Engine on concepts, architectures, or specs.
+  auto-abstract-grill <file> Execute the Abstract Grill Engine autonomously (non-interactive).
   materialize <file>  Parse, extract, typecheck, and write executable code from sidecar.
   audit [options]     Audit sidecars or inspect hotspots (--hotspots, --cycles, --json).
   sand [file]         Synchronize sidecars and code files (with auto-healing depends_on).
@@ -458,9 +460,10 @@ Options:
   }
 
   private async handleAbstractGrill(ctx: CliContext): Promise<number> {
+    const isAuto = ctx.command === 'auto-abstract-grill';
     let targetFile = '';
     let depth: 'light_probe' | 'standard_drill' | 'deep_interrogation' = 'standard_drill';
-    let nonInteractive = false;
+    let nonInteractive = isAuto;
     let outputTarget: 'plan' | 'adr' | 'sidecar' | 'all' = 'sidecar';
 
     let i = 0;
@@ -532,8 +535,9 @@ Options:
     }
 
     if (!targetFile) {
-      console.error('Error: "abstract-grill" command requires a file path argument.');
-      console.error('Usage: stubs abstract-grill <file.md> [options]');
+      const cmdName = isAuto ? 'auto-abstract-grill' : 'abstract-grill';
+      console.error(`Error: "${cmdName}" command requires a file path argument.`);
+      console.error(`Usage: stubs ${cmdName} <file.md> [options]`);
       return 1;
     }
 
@@ -1907,6 +1911,7 @@ export class {{pascalName}} {
     const SUB_SKILL_NAMES = [
       'abstract-grilling',
       'auditing',
+      'auto-abstract-grilling',
       'changelog',
       'conceptualizing',
       'context',
@@ -1924,6 +1929,7 @@ export class {{pascalName}} {
       '.agents/skills/stubs/SKILL.md',
       '.agents/skills/stubs/.gitignore',
       '.agents/skills/abstract-grill/SKILL.md',
+      '.agents/skills/auto-abstract-grill/SKILL.md',
       ...SUB_SKILL_NAMES.map((name) => `.agents/skills/stubs/sub-skills/${name}/SKILL.md`),
     ];
 
@@ -2008,13 +2014,19 @@ export class {{pascalName}} {
       }
     }
 
-    // Make sure global abstract-grill skill is synced
+    // Make sure global abstract-grill and auto-abstract-grill skills are synced
     try {
       const globalSkillDir = path.join(os.homedir(), '.gemini/config/skills/abstract-grill');
       const abstractGrillSrc = path.join(targetDir, '.agents/skills/abstract-grill/SKILL.md');
       if (existsSync(abstractGrillSrc)) {
         await fs.mkdir(globalSkillDir, { recursive: true });
         await fs.copyFile(abstractGrillSrc, path.join(globalSkillDir, 'SKILL.md'));
+      }
+      const globalAutoSkillDir = path.join(os.homedir(), '.gemini/config/skills/auto-abstract-grill');
+      const autoAbstractGrillSrc = path.join(targetDir, '.agents/skills/auto-abstract-grill/SKILL.md');
+      if (existsSync(autoAbstractGrillSrc)) {
+        await fs.mkdir(globalAutoSkillDir, { recursive: true });
+        await fs.copyFile(autoAbstractGrillSrc, path.join(globalAutoSkillDir, 'SKILL.md'));
       }
     } catch {
       // Non-fatal if global config is not writable

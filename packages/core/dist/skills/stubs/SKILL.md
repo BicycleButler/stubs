@@ -41,14 +41,15 @@ The `stubs` skill delegates to modular sub-skills located under `.agents/skills/
 3. **[./sub-skills/context/SKILL.md]:** Extract token-optimized, tiered context briefings and blast-radius impact analysis for AI agents.
 4. **[./sub-skills/grilling/SKILL.md]:** Stress-test software designs using frontier-based dependency tree rounds.
 5. **[./sub-skills/abstract-grilling/SKILL.md]:** Stress-test high-level architecture, general abstractions, and deep modules using orthogonal conceptual paradigms and hybrid recommendations.
-6. **[./sub-skills/sanding/SKILL.md]:** Reconcile code-to-spec or spec-to-code drift using AST structural hashes and bi-directional synchronization.
-7. **[./sub-skills/materialization/SKILL.md]:** Extract implementation blocks from sidecar specs into runnable code files (.ts, .py, .go, and so on.).
-8. **[./sub-skills/auditing/SKILL.md]:** Do static analysis, health checks, and graph validation across the workspace.
-9. **[./sub-skills/lint/SKILL.md]:** Validate downward layer hierarchy, cycle bans, and manifest parity in CI.
-10. **[./sub-skills/mock/SKILL.md]:** Synthesize unit test suites and typed mocks directly from sidecar specs and AST signatures.
-11. **[./sub-skills/diagram/SKILL.md]:** Generate living Mermaid architecture and sequence diagrams directly from the dependency graph.
-12. **[./sub-skills/pruning/SKILL.md]:** Audit and clean up phantom specs, untracked code files, and stale database records.
-13. **[./sub-skills/changelog/SKILL.md]:** Synthesize semantic architectural changelogs, ADR evolution logs, and contract drift reports from git history.
+6. **[./sub-skills/auto-abstract-grilling/SKILL.md]:** Run autonomous abstract-grilling rounds, select recommended paradigms, update planning docs, and implement code in a loop.
+7. **[./sub-skills/sanding/SKILL.md]:** Reconcile code-to-spec or spec-to-code drift using AST structural hashes and bi-directional synchronization.
+8. **[./sub-skills/materialization/SKILL.md]:** Extract implementation blocks from sidecar specs into runnable code files (.ts, .py, .go, and so on.).
+9. **[./sub-skills/auditing/SKILL.md]:** Do static analysis, health checks, and graph validation across the workspace.
+10. **[./sub-skills/lint/SKILL.md]:** Validate downward layer hierarchy, cycle bans, and manifest parity in CI.
+11. **[./sub-skills/mock/SKILL.md]:** Synthesize unit test suites and typed mocks directly from sidecar specs and AST signatures.
+12. **[./sub-skills/diagram/SKILL.md]:** Generate living Mermaid architecture and sequence diagrams directly from the dependency graph.
+13. **[./sub-skills/pruning/SKILL.md]:** Audit and clean up phantom specs, untracked code files, and stale database records.
+14. **[./sub-skills/changelog/SKILL.md]:** Synthesize semantic architectural changelogs, ADR evolution logs, and contract drift reports from git history.
 
 ## Core Commands Reference
 

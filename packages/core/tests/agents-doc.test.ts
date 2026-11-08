@@ -79,7 +79,7 @@ describe('AgentsDocSynchronizer & ADR-001 Enforcement', () => {
       expect(content).not.toContain('Planning Hub');
       expect(content).toContain('## Architecture Context Maps — Read First');
       expect(content).toContain('## Architecture Graph & GraphRAG Intelligence');
-      expect(content).toContain('## CLI Commands');
+      expect(content).toContain('## Core CLI Commands');
       expect(content).toContain('## Toolchain & Conventions');
 
       const violations = auditAdr001Compliance(content);
@@ -188,13 +188,12 @@ Contextloop orchestrator info here.
   });
 
   describe('syncAgentsDoc with Tale skill present', () => {
-    it('should include Tale CLI commands and not include verbose section when Tale skill is detected', async () => {
+    it('should include unified pipeline command and not include verbose section when Tale skill is detected', async () => {
       fs.mkdirSync(path.join(tempDir, '.agents/skills/tale'), { recursive: true });
       const result = await syncAgentsDoc(tempDir, { projectName: 'tale-repo' });
       const content = fs.readFileSync(result.filePath, 'utf8');
 
-      expect(content).toContain('npx stubs tale');
-      expect(content).toContain('npx stubs tale --fix');
+      expect(content).toContain('npx stubs run');
       expect(content).not.toContain('ASD-STE100 Technical English & Formatting (Tale)');
     });
   });
